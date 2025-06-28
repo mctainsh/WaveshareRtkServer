@@ -2,6 +2,10 @@
 	"cSpell.words": [
 		"lvgl",
 		"moononournation",
+		"QSPI",
 		"robtillaart"
-	]
+	],
+	"files.associations": {
+		"new": "cpp"
+	}
 }
