@@ -41,7 +41,7 @@ void my_print(lv_log_level_t level, const char *buf)
 }
 #endif
 
-static void sw_event_cb(lv_event_t *e)
+static void sw_event_cbX(lv_event_t *e)
 {
 	lv_obj_t *sw = lv_event_get_target_obj(e);
 	lv_obj_t *label = (lv_obj_t *)lv_event_get_user_data(e);
@@ -176,13 +176,7 @@ public:
 		lv_obj_t *sw = lv_switch_create(lv_scr_act());
 		lv_obj_align(sw, LV_ALIGN_TOP_MID, 0, 50);
 		lv_obj_add_state(sw, LV_STATE_CHECKED);
-		lv_obj_add_event_cb(sw, sw_event_cb, LV_EVENT_VALUE_CHANGED, label);
-
-		// Bottom switch
-		sw = lv_switch_create(lv_scr_act());
-		lv_obj_align(sw, LV_ALIGN_BOTTOM_MID, 0, -50);
-		lv_obj_add_state(sw, LV_STATE_CHECKED);
-		lv_obj_add_event_cb(sw, sw_event_cb, LV_EVENT_VALUE_CHANGED, label);
+		lv_obj_add_event_cb(sw, sw_event_cbX, LV_EVENT_VALUE_CHANGED, label);
 
 		// Slider
 		lv_obj_t *slider = lv_slider_create(lv_scr_act());

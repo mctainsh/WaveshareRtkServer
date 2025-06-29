@@ -3,7 +3,8 @@
 		"lvgl",
 		"moononournation",
 		"QSPI",
-		"robtillaart"
+		"robtillaart",
+		"SNAPPABLE"
 	],
 	"files.associations": {
 		"new": "cpp"
