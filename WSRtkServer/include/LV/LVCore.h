@@ -170,28 +170,25 @@ public:
 		 */
 		lv_obj_t *label = lv_label_create(lv_scr_act());
 		lv_label_set_text(label, "JRM 1.6 LVGL(V" GFX_STR(LVGL_VERSION_MAJOR) "." GFX_STR(LVGL_VERSION_MINOR) "." GFX_STR(LVGL_VERSION_PATCH) ")");
-		lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+		lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
 
 		// Top switch
 		lv_obj_t *sw = lv_switch_create(lv_scr_act());
-		lv_obj_align(sw, LV_ALIGN_TOP_MID, 0, 50);
+		lv_obj_align(sw, LV_ALIGN_TOP_RIGHT, 0, 0);
 		lv_obj_add_state(sw, LV_STATE_CHECKED);
 		lv_obj_add_event_cb(sw, sw_event_cbX, LV_EVENT_VALUE_CHANGED, label);
 
 		// Slider
 		lv_obj_t *slider = lv_slider_create(lv_scr_act());
 		lv_slider_set_value(slider, 75, LV_ANIM_ON);
-		lv_obj_set_width(slider, 200); /*Set the width*/
-		// lv_obj_center(slider);														/*Align to the center of the parent (screen)*/
-		lv_obj_align_to(slider, label, LV_ALIGN_OUT_TOP_MID, 0, -15);
+		lv_obj_set_width(slider, 300);
+		lv_obj_align_to(slider, label, LV_ALIGN_TOP_MID, 0, 30);
 		lv_obj_add_event_cb(slider, LVCore::OnSlider, LV_EVENT_VALUE_CHANGED, NULL); /*Assign an event function*/
-		// lv_obj_add_event_cb(slider, std::bind(&LVCore::OnSlider,this), LV_EVENT_VALUE_CHANGED, NULL); /*Assign an event function*/
-		// lv_obj_add_event_cb(slider, [this](lv_event_t* e) {OnSlider(e);}, LV_EVENT_VALUE_CHANGED, NULL); /*Assign an event function*/
 
 		/*Create a label above the slider*/
 		_lblBright = lv_label_create(lv_screen_active());
 		lv_label_set_text(_lblBright, "0");
-		lv_obj_align_to(_lblBright, slider, LV_ALIGN_OUT_TOP_MID, 0, -85); /*Align top of the slider*/
+		lv_obj_align_to(_lblBright, slider, LV_ALIGN_OUT_TOP_MID, 0, 85); /*Align top of the slider*/
 		return true;
 	}
 
@@ -253,3 +250,6 @@ void my_touchpad_read(lv_indev_t *indev, lv_indev_data_t *data)
 		data->state = LV_INDEV_STATE_REL;
 	}
 }
+
+
+

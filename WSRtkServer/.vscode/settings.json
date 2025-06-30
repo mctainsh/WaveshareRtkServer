@@ -7,6 +7,8 @@
 		"SNAPPABLE"
 	],
 	"files.associations": {
-		"new": "cpp"
+		"new": "cpp",
+		"ui_screen1.h": "c",
+		"lvgl.h": "c"
 	}
 }
