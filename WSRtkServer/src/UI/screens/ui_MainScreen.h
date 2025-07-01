@@ -13,9 +13,8 @@ extern "C" {
 // SCREEN: ui_MainScreen
 extern void ui_MainScreen_screen_init(void);
 extern void ui_MainScreen_screen_destroy(void);
-extern lv_obj_t * ui_MainScreen;
-extern lv_obj_t * _uiPageGroupPanel;
-
+extern lv_obj_t * UIMainScreen;
+extern lv_obj_t * UIPageGroupPanel;
 
 
 #ifdef __cplusplus

@@ -71,19 +71,8 @@ public:
 	LVCore() : TCA(0x20),
 			   _bus(new Arduino_ESP32QSPI(LCD_QSPI_CS, LCD_QSPI_CLK, LCD_QSPI_D0, LCD_QSPI_D1, LCD_QSPI_D2, LCD_QSPI_D3)),
 			   _gfx(new Arduino_AXS15231B(_bus, -1 /* RST */, 0 /* rotation */, false, W, H))
-
-	{
-		//	Arduino_DataBus *bus = new Arduino_ESP32QSPI(LCD_QSPI_CS, LCD_QSPI_CLK, LCD_QSPI_D0, LCD_QSPI_D1, LCD_QSPI_D2, LCD_QSPI_D3);
-
-		//	_gfx = new Arduino_AXS15231B(bus, -1 /* RST */, 0 /* rotation */, false, 320, 480);
-		// _srcW = 0;
-		// _srcH = 0;
-		// bufSize = 0;
-		// disp
-		// disp_draw_buf1 = nullptr;
-		// disp_draw_buf2 = nullptr;
-	}
-
+	{}
+	
 	///////////////////////////////////////////////////////////////////////////
 	// Setup the LVGL controls
 	// @return true if setup is successful, false otherwise
@@ -102,10 +91,7 @@ public:
 		TCA.write1(1, 1);
 		delay(200);
 		bsp_touch_init(&Wire, -1, 0, W, H);
-		Serial.begin(115200);
-		// Serial.setDebugOutput(true);
-		// while(!Serial);
-		Serial.println("Waveshare RTK Server " APP_VERSION);
+
 		String LVGL_Arduino = String('V') + lv_version_major() + "." + lv_version_minor() + "." + lv_version_patch();
 		Serial.println(LVGL_Arduino);
 

@@ -5,110 +5,101 @@
 
 #include "../ui.h"
 
-lv_obj_t *uic_btn1;
-lv_obj_t *ui_MainScreen = NULL;
-lv_obj_t *_uiPageGroupPanel = NULL;
-lv_obj_t *ui_Calendar2 = NULL;
-lv_obj_t *ui_Checkbox2 = NULL;
-lv_obj_t *ui_Spinbox2 = NULL;
-lv_obj_t *ui_Switch1 = NULL;
-lv_obj_t *ui_Slider2 = NULL;
-lv_obj_t *ui_Roller3 = NULL;
-lv_obj_t *ui_Panel2 = NULL;
+//lv_obj_t *uic_btn1;
+lv_obj_t *UIMainScreen = NULL;
+lv_obj_t *UIPageGroupPanel = NULL;
+//lv_obj_t *ui_Calendar2 = NULL;
+//lv_obj_t *ui_Checkbox2 = NULL;
+//lv_obj_t *ui_Spinbox2 = NULL;
+//lv_obj_t *ui_Switch1 = NULL;
+//lv_obj_t *ui_Slider2 = NULL;
+//lv_obj_t *ui_Roller3 = NULL;
+//lv_obj_t *ui_Panel2 = NULL;
 // event funtions
 
 // build funtions
 
 void ui_MainScreen_screen_init(void)
 {
-	ui_MainScreen = lv_scr_act();
-	lv_obj_remove_flag(ui_MainScreen, LV_OBJ_FLAG_SCROLLABLE); /// Flags
+	UIMainScreen = lv_scr_act();
+	lv_obj_remove_flag(UIMainScreen, LV_OBJ_FLAG_SCROLLABLE); /// Flags
 
 	// Main page panel group
-	_uiPageGroupPanel = lv_obj_create(ui_MainScreen);
-	lv_obj_set_width(_uiPageGroupPanel, 320);
-	lv_obj_set_height(_uiPageGroupPanel, 420);
-	lv_obj_set_x(_uiPageGroupPanel, 0);
-	lv_obj_set_y(_uiPageGroupPanel, 0);
-	lv_obj_set_align(_uiPageGroupPanel, LV_ALIGN_BOTTOM_MID);
-	lv_obj_set_flex_flow(_uiPageGroupPanel, LV_FLEX_FLOW_ROW);
-	lv_obj_set_flex_align(_uiPageGroupPanel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-	lv_obj_set_scroll_snap_x(_uiPageGroupPanel, LV_SCROLL_SNAP_CENTER);
+	UIPageGroupPanel = lv_obj_create(UIMainScreen);
+	lv_obj_set_width(UIPageGroupPanel, 320);
+	lv_obj_set_height(UIPageGroupPanel, 420);
+	lv_obj_set_x(UIPageGroupPanel, 0);
+	lv_obj_set_y(UIPageGroupPanel, 0);
+	lv_obj_set_align(UIPageGroupPanel, LV_ALIGN_BOTTOM_MID);
+	lv_obj_set_flex_flow(UIPageGroupPanel, LV_FLEX_FLOW_ROW);
+	lv_obj_set_flex_align(UIPageGroupPanel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+	lv_obj_set_scroll_snap_x(UIPageGroupPanel, LV_SCROLL_SNAP_CENTER);
 
-	ui_GpsStatus_screen_init(_uiPageGroupPanel);
+//	ui_GpsStatus_screen_init(UIPageGroupPanel);
 
-	ui_Calendar2 = lv_calendar_create(_uiPageGroupPanel);
-	lv_obj_t *ui_Calendar2_header = lv_calendar_header_arrow_create(ui_Calendar2);
-	lv_obj_set_width(ui_Calendar2, 320);
-	lv_obj_set_height(ui_Calendar2, 240);
-	lv_obj_set_x(ui_Calendar2, -109);
-	lv_obj_set_y(ui_Calendar2, 98);
-	lv_obj_set_align(ui_Calendar2, LV_ALIGN_CENTER);
+	// ui_Calendar2 = lv_calendar_create(UIPageGroupPanel);
+	// lv_obj_t *ui_Calendar2_header = lv_calendar_header_arrow_create(ui_Calendar2);
+	// lv_obj_set_width(ui_Calendar2, 320);
+	// lv_obj_set_height(ui_Calendar2, 240);
+	// lv_obj_set_x(ui_Calendar2, -109);
+	// lv_obj_set_y(ui_Calendar2, 98);
+	// lv_obj_set_align(ui_Calendar2, LV_ALIGN_CENTER);
 
-	ui_Checkbox2 = lv_checkbox_create(_uiPageGroupPanel);
-	lv_checkbox_set_text(ui_Checkbox2, "Checkbox");
-	lv_obj_set_width(ui_Checkbox2, LV_SIZE_CONTENT);  /// 1
-	lv_obj_set_height(ui_Checkbox2, LV_SIZE_CONTENT); /// 1
-	lv_obj_set_align(ui_Checkbox2, LV_ALIGN_CENTER);
-	lv_obj_add_flag(ui_Checkbox2, LV_OBJ_FLAG_SCROLL_ON_FOCUS); /// Flags
+	// ui_Checkbox2 = lv_checkbox_create(UIPageGroupPanel);
+	// lv_checkbox_set_text(ui_Checkbox2, "Checkbox");
+	// lv_obj_set_width(ui_Checkbox2, LV_SIZE_CONTENT);  /// 1
+	// lv_obj_set_height(ui_Checkbox2, LV_SIZE_CONTENT); /// 1
+	// lv_obj_set_align(ui_Checkbox2, LV_ALIGN_CENTER);
+	// lv_obj_add_flag(ui_Checkbox2, LV_OBJ_FLAG_SCROLL_ON_FOCUS); /// Flags
 
-	ui_Spinbox2 = lv_spinbox_create(_uiPageGroupPanel);
-	lv_obj_set_width(ui_Spinbox2, 70);
-	lv_obj_set_height(ui_Spinbox2, 42);
-	lv_obj_set_align(ui_Spinbox2, LV_ALIGN_CENTER);
-	lv_spinbox_set_digit_format(ui_Spinbox2, 4, 2);
-	lv_spinbox_set_range(ui_Spinbox2, 0, 9999);
-	lv_spinbox_set_cursor_pos(ui_Spinbox2, 1 - 1);
+	// ui_Spinbox2 = lv_spinbox_create(UIPageGroupPanel);
+	// lv_obj_set_width(ui_Spinbox2, 70);
+	// lv_obj_set_height(ui_Spinbox2, 42);
+	// lv_obj_set_align(ui_Spinbox2, LV_ALIGN_CENTER);
+	// lv_spinbox_set_digit_format(ui_Spinbox2, 4, 2);
+	// lv_spinbox_set_range(ui_Spinbox2, 0, 9999);
+	// lv_spinbox_set_cursor_pos(ui_Spinbox2, 1 - 1);
 
-	ui_Switch1 = lv_switch_create(_uiPageGroupPanel);
-	lv_obj_set_width(ui_Switch1, 50);
-	lv_obj_set_height(ui_Switch1, 25);
-	lv_obj_set_x(ui_Switch1, -112);
-	lv_obj_set_y(ui_Switch1, -2);
-	lv_obj_set_align(ui_Switch1, LV_ALIGN_CENTER);
+	// ui_Switch1 = lv_switch_create(UIPageGroupPanel);
+	// lv_obj_set_width(ui_Switch1, 50);
+	// lv_obj_set_height(ui_Switch1, 25);
+	// lv_obj_set_x(ui_Switch1, -112);
+	// lv_obj_set_y(ui_Switch1, -2);
+	// lv_obj_set_align(ui_Switch1, LV_ALIGN_CENTER);
 
-	ui_Slider2 = lv_slider_create(_uiPageGroupPanel);
-	lv_slider_set_value(ui_Slider2, 0, LV_ANIM_OFF);
-	if (lv_slider_get_mode(ui_Slider2) == LV_SLIDER_MODE_RANGE)
-		lv_slider_set_left_value(ui_Slider2, 0, LV_ANIM_OFF);
-	lv_obj_set_width(ui_Slider2, 150);
-	lv_obj_set_height(ui_Slider2, 10);
-	lv_obj_set_align(ui_Slider2, LV_ALIGN_CENTER);
+	// ui_Slider2 = lv_slider_create(UIPageGroupPanel);
+	// lv_slider_set_value(ui_Slider2, 0, LV_ANIM_OFF);
+	// if (lv_slider_get_mode(ui_Slider2) == LV_SLIDER_MODE_RANGE)
+	// 	lv_slider_set_left_value(ui_Slider2, 0, LV_ANIM_OFF);
+	// lv_obj_set_width(ui_Slider2, 150);
+	// lv_obj_set_height(ui_Slider2, 10);
+	// lv_obj_set_align(ui_Slider2, LV_ALIGN_CENTER);
 
-	// Compensating for LVGL9.1 draw crash with bar/slider max value when top-padding is nonzero and right-padding is 0
-	if (lv_obj_get_style_pad_top(ui_Slider2, LV_PART_MAIN) > 0)
-		lv_obj_set_style_pad_right(ui_Slider2,
-								   lv_obj_get_style_pad_right(ui_Slider2, LV_PART_MAIN) + 1, LV_PART_MAIN);
-	ui_Roller3 = lv_roller_create(_uiPageGroupPanel);
-	lv_roller_set_options(ui_Roller3, "Option 1\nOption 2\nOption 3", LV_ROLLER_MODE_NORMAL);
-	lv_obj_set_height(ui_Roller3, 100);
-	lv_obj_set_width(ui_Roller3, LV_SIZE_CONTENT); /// 1
-	lv_obj_set_align(ui_Roller3, LV_ALIGN_CENTER);
+	// // Compensating for LVGL9.1 draw crash with bar/slider max value when top-padding is nonzero and right-padding is 0
+	// if (lv_obj_get_style_pad_top(ui_Slider2, LV_PART_MAIN) > 0)
+	// 	lv_obj_set_style_pad_right(ui_Slider2,
+	// 							   lv_obj_get_style_pad_right(ui_Slider2, LV_PART_MAIN) + 1, LV_PART_MAIN);
+	// ui_Roller3 = lv_roller_create(UIPageGroupPanel);
+	// lv_roller_set_options(ui_Roller3, "Option 1\nOption 2\nOption 3", LV_ROLLER_MODE_NORMAL);
+	// lv_obj_set_height(ui_Roller3, 100);
+	// lv_obj_set_width(ui_Roller3, LV_SIZE_CONTENT); /// 1
+	// lv_obj_set_align(ui_Roller3, LV_ALIGN_CENTER);
 
-	ui_Panel2 = lv_obj_create(ui_MainScreen);
-	lv_obj_set_width(ui_Panel2, 100);
-	lv_obj_set_height(ui_Panel2, 50);
-	lv_obj_set_x(ui_Panel2, 249);
-	lv_obj_set_y(ui_Panel2, -129);
-	lv_obj_set_align(ui_Panel2, LV_ALIGN_CENTER);
-	lv_obj_remove_flag(ui_Panel2, LV_OBJ_FLAG_SCROLLABLE); /// Flags
+	// ui_Panel2 = lv_obj_create(UIMainScreen);
+	// lv_obj_set_width(ui_Panel2, 100);
+	// lv_obj_set_height(ui_Panel2, 50);
+	// lv_obj_set_x(ui_Panel2, 249);
+	// lv_obj_set_y(ui_Panel2, -129);
+	// lv_obj_set_align(ui_Panel2, LV_ALIGN_CENTER);
+	// lv_obj_remove_flag(ui_Panel2, LV_OBJ_FLAG_SCROLLABLE); /// Flags
 }
 
 void ui_MainScreen_screen_destroy(void)
 {
-	if (ui_MainScreen)
-		lv_obj_del(ui_MainScreen);
+	if (UIMainScreen)
+		lv_obj_del(UIMainScreen);
 
 	// NULL screen variables
-	ui_MainScreen = NULL;
-	uic_btn1 = NULL;
-
-	_uiPageGroupPanel = NULL;
-	ui_Calendar2 = NULL;
-	ui_Checkbox2 = NULL;
-	ui_Spinbox2 = NULL;
-	ui_Switch1 = NULL;
-	ui_Slider2 = NULL;
-	ui_Roller3 = NULL;
-	ui_Panel2 = NULL;
+	UIMainScreen = NULL;
+	UIPageGroupPanel = NULL;
 }
