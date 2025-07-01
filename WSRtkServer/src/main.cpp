@@ -5,15 +5,18 @@
 #include <LV/SwipePageGps.h>
 #include <LV/SwipePageIO.h>
 #include <SDFile.h>
+#include <LV/SwipePageSettings.h>
 
 SDFile _sdFile; // Create an instance of SDFile
-LVCore _lvCore;				// Create an instance of LVCore
-SwipePageGps _systemPageGps; // Create an instance of SwipePageGps
-SwipePageGps _swipePageGps; // Create an instance of SwipePageGps
-SwipePageIO _swipePageIO; // Create an instance of SwipePageGps
-// PanelLabelValue _panelLabelValue1; // Create an instance of PanelLabelValue
-// PanelLabelValue _panelLabelValue2; // Create an instance of PanelLabelValue
-// PanelLabelValue _panelLabelValue3; // Create an instance of PanelLabelValue
+LVCore _lvCore;				
+
+// Pages
+SwipePageGps _systemPageGps; 
+SwipePageGps _swipePageGps; 
+SwipePageIO _swipePageIO; 
+SwipePageSettings _swipePageSettings; 
+
+
 
 std::string _mdnsHostName; 
 
@@ -33,20 +36,16 @@ void setup()
 	_lvCore.Setup(); // Initialize LVGL and the display
 	Serial.println("Setup done");
 
-	// lv_example_scroll_2(); // Call the example function to create a scrollable panel
-
 	// Create the main screen (Use lv_scr_act())
 	ui_MainScreen_screen_init();
+
 	// Create the GPS status page
 	_systemPageGps.Create(UIPageGroupPanel); // Create the GPS status page and add
 	_swipePageGps.Create(UIPageGroupPanel); // Create the GPS status page and add
 	_swipePageIO.Create(UIPageGroupPanel); // Create the GPS status page and add
+	_swipePageSettings.Create(UIPageGroupPanel); // Create the settings page and add
 
-//	lv_obj_clear_flag(UIPageGroupPanel, LV_OBJ_FLAG_SCROLL_CHAIN_HOR);
-//	lv_obj_clear_flag(UIPageGroupPanel, LV_OBJ_FLAG_SCROLL_CHAIN_VER);
-//lv_obj_add_flag(UIPageGroupPanel, LV_OBJ_FLAG_SCROLLABLE);
-
-// Fix the startup scroll offset error
+	// Fix the startup scroll offset error
 	lv_obj_scroll_to_view(_systemPageGps.GetPanel(), LV_ANIM_OFF);
 
 	_swipePageIO.RefreshData();

@@ -16,7 +16,7 @@ public:
 	{
 		// Single item panel group
 		ui_PanelGroup = lv_obj_create(parent);
-		lv_obj_set_width(ui_PanelGroup, 320);
+		lv_obj_set_width(ui_PanelGroup, lv_pct(100));
 		lv_obj_set_height(ui_PanelGroup, 26);
 		lv_obj_set_x(ui_PanelGroup, 0);
 		lv_obj_set_y(ui_PanelGroup, 0);
@@ -24,6 +24,12 @@ public:
 		lv_obj_remove_flag(ui_PanelGroup, LV_OBJ_FLAG_SCROLLABLE);
 		lv_obj_set_style_bg_color(ui_PanelGroup, lv_color_hex(0xF81717), LV_PART_MAIN | LV_STATE_DEFAULT);
 		lv_obj_set_style_bg_opa(ui_PanelGroup, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+		// No padding
+		lv_obj_set_style_pad_left(ui_PanelGroup, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_right(ui_PanelGroup, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_top(ui_PanelGroup, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_bottom(ui_PanelGroup, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
 		// No border
 		lv_obj_set_style_border_color(ui_PanelGroup, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -59,7 +65,7 @@ public:
 		lv_obj_set_x(ui_PanelTextArea, 10);
 		lv_obj_set_y(ui_PanelTextArea, 0);
 		lv_obj_set_align(ui_PanelTextArea, LV_ALIGN_RIGHT_MID);
-		lv_textarea_set_text(ui_PanelTextArea, "some ZZZZthsf dsfh skjhf ksjdhf kjah ");
+		lv_textarea_set_text(ui_PanelTextArea, value);
 		// lv_textarea_set_placeholder_text(ui_PanelTextArea, "Placeholder...");
 		lv_textarea_set_one_line(ui_PanelTextArea, true);
 		//  lv_obj_remove_flag(ui_PanelTextArea,
@@ -68,10 +74,10 @@ public:
 		lv_obj_set_scrollbar_mode(ui_PanelTextArea, LV_SCROLLBAR_MODE_OFF);
 
 		// Thin padding
-		lv_obj_set_style_pad_left(ui_PanelTextArea, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-		lv_obj_set_style_pad_right(ui_PanelTextArea, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-		lv_obj_set_style_pad_top(ui_PanelTextArea, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
-		lv_obj_set_style_pad_bottom(ui_PanelTextArea, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_left(ui_PanelTextArea, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_right(ui_PanelTextArea, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_top(ui_PanelTextArea, 3, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_bottom(ui_PanelTextArea, 3, LV_PART_MAIN | LV_STATE_DEFAULT);
 	}
 
 	void SetText(const char *text)

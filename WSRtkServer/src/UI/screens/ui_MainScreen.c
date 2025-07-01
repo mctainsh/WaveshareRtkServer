@@ -5,25 +5,13 @@
 
 #include "../ui.h"
 
-//lv_obj_t *uic_btn1;
 lv_obj_t *UIMainScreen = NULL;
 lv_obj_t *UIPageGroupPanel = NULL;
-//lv_obj_t *ui_Calendar2 = NULL;
-//lv_obj_t *ui_Checkbox2 = NULL;
-//lv_obj_t *ui_Spinbox2 = NULL;
-//lv_obj_t *ui_Switch1 = NULL;
-//lv_obj_t *ui_Slider2 = NULL;
-//lv_obj_t *ui_Roller3 = NULL;
-//lv_obj_t *ui_Panel2 = NULL;
-// event funtions
-
-// build funtions
 
 void ui_MainScreen_screen_init(void)
 {
 	UIMainScreen = lv_scr_act();
-	lv_obj_remove_flag(UIMainScreen, LV_OBJ_FLAG_SCROLLABLE); /// Flags
-
+	lv_obj_remove_flag(UIMainScreen, LV_OBJ_FLAG_SCROLLABLE);
 	// Main page panel group
 	UIPageGroupPanel = lv_obj_create(UIMainScreen);
 	lv_obj_set_width(UIPageGroupPanel, 320);
@@ -35,63 +23,19 @@ void ui_MainScreen_screen_init(void)
 	lv_obj_set_flex_align(UIPageGroupPanel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
 	lv_obj_set_scroll_snap_x(UIPageGroupPanel, LV_SCROLL_SNAP_CENTER);
 
-//	ui_GpsStatus_screen_init(UIPageGroupPanel);
+	// Transparent background
+	lv_obj_set_style_bg_color(UIPageGroupPanel, lv_color_hex(0), LV_PART_MAIN | LV_STATE_DEFAULT);
+	lv_obj_set_style_bg_opa(UIPageGroupPanel, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-	// ui_Calendar2 = lv_calendar_create(UIPageGroupPanel);
-	// lv_obj_t *ui_Calendar2_header = lv_calendar_header_arrow_create(ui_Calendar2);
-	// lv_obj_set_width(ui_Calendar2, 320);
-	// lv_obj_set_height(ui_Calendar2, 240);
-	// lv_obj_set_x(ui_Calendar2, -109);
-	// lv_obj_set_y(ui_Calendar2, 98);
-	// lv_obj_set_align(ui_Calendar2, LV_ALIGN_CENTER);
+	// No border
+	lv_obj_set_style_border_color(UIPageGroupPanel, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+	lv_obj_set_style_border_opa(UIPageGroupPanel, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-	// ui_Checkbox2 = lv_checkbox_create(UIPageGroupPanel);
-	// lv_checkbox_set_text(ui_Checkbox2, "Checkbox");
-	// lv_obj_set_width(ui_Checkbox2, LV_SIZE_CONTENT);  /// 1
-	// lv_obj_set_height(ui_Checkbox2, LV_SIZE_CONTENT); /// 1
-	// lv_obj_set_align(ui_Checkbox2, LV_ALIGN_CENTER);
-	// lv_obj_add_flag(ui_Checkbox2, LV_OBJ_FLAG_SCROLL_ON_FOCUS); /// Flags
-
-	// ui_Spinbox2 = lv_spinbox_create(UIPageGroupPanel);
-	// lv_obj_set_width(ui_Spinbox2, 70);
-	// lv_obj_set_height(ui_Spinbox2, 42);
-	// lv_obj_set_align(ui_Spinbox2, LV_ALIGN_CENTER);
-	// lv_spinbox_set_digit_format(ui_Spinbox2, 4, 2);
-	// lv_spinbox_set_range(ui_Spinbox2, 0, 9999);
-	// lv_spinbox_set_cursor_pos(ui_Spinbox2, 1 - 1);
-
-	// ui_Switch1 = lv_switch_create(UIPageGroupPanel);
-	// lv_obj_set_width(ui_Switch1, 50);
-	// lv_obj_set_height(ui_Switch1, 25);
-	// lv_obj_set_x(ui_Switch1, -112);
-	// lv_obj_set_y(ui_Switch1, -2);
-	// lv_obj_set_align(ui_Switch1, LV_ALIGN_CENTER);
-
-	// ui_Slider2 = lv_slider_create(UIPageGroupPanel);
-	// lv_slider_set_value(ui_Slider2, 0, LV_ANIM_OFF);
-	// if (lv_slider_get_mode(ui_Slider2) == LV_SLIDER_MODE_RANGE)
-	// 	lv_slider_set_left_value(ui_Slider2, 0, LV_ANIM_OFF);
-	// lv_obj_set_width(ui_Slider2, 150);
-	// lv_obj_set_height(ui_Slider2, 10);
-	// lv_obj_set_align(ui_Slider2, LV_ALIGN_CENTER);
-
-	// // Compensating for LVGL9.1 draw crash with bar/slider max value when top-padding is nonzero and right-padding is 0
-	// if (lv_obj_get_style_pad_top(ui_Slider2, LV_PART_MAIN) > 0)
-	// 	lv_obj_set_style_pad_right(ui_Slider2,
-	// 							   lv_obj_get_style_pad_right(ui_Slider2, LV_PART_MAIN) + 1, LV_PART_MAIN);
-	// ui_Roller3 = lv_roller_create(UIPageGroupPanel);
-	// lv_roller_set_options(ui_Roller3, "Option 1\nOption 2\nOption 3", LV_ROLLER_MODE_NORMAL);
-	// lv_obj_set_height(ui_Roller3, 100);
-	// lv_obj_set_width(ui_Roller3, LV_SIZE_CONTENT); /// 1
-	// lv_obj_set_align(ui_Roller3, LV_ALIGN_CENTER);
-
-	// ui_Panel2 = lv_obj_create(UIMainScreen);
-	// lv_obj_set_width(ui_Panel2, 100);
-	// lv_obj_set_height(ui_Panel2, 50);
-	// lv_obj_set_x(ui_Panel2, 249);
-	// lv_obj_set_y(ui_Panel2, -129);
-	// lv_obj_set_align(ui_Panel2, LV_ALIGN_CENTER);
-	// lv_obj_remove_flag(ui_Panel2, LV_OBJ_FLAG_SCROLLABLE); /// Flags
+	// No padding
+	lv_obj_set_style_pad_left(UIPageGroupPanel, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+	lv_obj_set_style_pad_right(UIPageGroupPanel, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+	lv_obj_set_style_pad_top(UIPageGroupPanel, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+	lv_obj_set_style_pad_bottom(UIPageGroupPanel, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 }
 
 void ui_MainScreen_screen_destroy(void)

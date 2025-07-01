@@ -11,7 +11,6 @@
 #include <Wire.h>
 
 #define GFX_BL 6			// default backlight pin, you may replace DF_GFX_BL to actual backlight pin
-#define BACKLIGHT_CHANNEL 0 // Use channel 0 for backlight control
 
 #define LCD_QSPI_CS 12
 #define LCD_QSPI_CLK 5
@@ -48,8 +47,6 @@ static void sw_event_cbX(lv_event_t *e)
 	Serial.printf("SW %s %d\n", lv_label_get_text(label), lv_obj_has_state(sw, LV_STATE_CHECKED));
 }
 
-lv_obj_t *_lblBright;
-
 ///////////////////////////////////////////////////////////////////////////////
 // Time functions
 // WARNING : This class is called by logger so do not log yourself
@@ -72,7 +69,7 @@ public:
 			   _bus(new Arduino_ESP32QSPI(LCD_QSPI_CS, LCD_QSPI_CLK, LCD_QSPI_D0, LCD_QSPI_D1, LCD_QSPI_D2, LCD_QSPI_D3)),
 			   _gfx(new Arduino_AXS15231B(_bus, -1 /* RST */, 0 /* rotation */, false, W, H))
 	{}
-	
+
 	///////////////////////////////////////////////////////////////////////////
 	// Setup the LVGL controls
 	// @return true if setup is successful, false otherwise
@@ -151,6 +148,10 @@ public:
 		lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER); // Touchpad should have POINTER type
 		lv_indev_set_read_cb(indev, my_touchpad_read);
 
+		// Black background
+		lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0), LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_bg_opa(lv_scr_act(), 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
 		/* Option 1: Create a simple label
 		 * ---------------------
 		 */
@@ -158,40 +159,16 @@ public:
 		lv_label_set_text(label, "JRM 1.6 LVGL(V" GFX_STR(LVGL_VERSION_MAJOR) "." GFX_STR(LVGL_VERSION_MINOR) "." GFX_STR(LVGL_VERSION_PATCH) ")");
 		lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
 
+		// Blue text
+		lv_obj_set_style_text_color(label, lv_color_hex(0x2020FF), LV_PART_MAIN | LV_STATE_DEFAULT);
+		
 		// Top switch
 		lv_obj_t *sw = lv_switch_create(lv_scr_act());
 		lv_obj_align(sw, LV_ALIGN_TOP_RIGHT, 0, 0);
 		lv_obj_add_state(sw, LV_STATE_CHECKED);
 		lv_obj_add_event_cb(sw, sw_event_cbX, LV_EVENT_VALUE_CHANGED, label);
 
-		// Slider
-		lv_obj_t *slider = lv_slider_create(lv_scr_act());
-		lv_slider_set_value(slider, 75, LV_ANIM_ON);
-		lv_obj_set_width(slider, 300);
-		lv_obj_align_to(slider, label, LV_ALIGN_TOP_MID, 0, 30);
-		lv_obj_add_event_cb(slider, LVCore::OnSlider, LV_EVENT_VALUE_CHANGED, NULL); /*Assign an event function*/
-
-		/*Create a label above the slider*/
-		_lblBright = lv_label_create(lv_screen_active());
-		lv_label_set_text(_lblBright, "0");
-		lv_obj_align_to(_lblBright, slider, LV_ALIGN_OUT_TOP_MID, 0, 85); /*Align top of the slider*/
 		return true;
-	}
-
-	//////////////////////////////////////////////////////////////////
-	// Brightness LV_USE_SLIDER
-	static void OnSlider(lv_event_t *e)
-	{
-		auto *self = static_cast<LVCore *>(lv_event_get_user_data(e));
-		self->OnSliderEvent(e);
-	}
-	void OnSliderEvent(lv_event_t *e)
-	{
-		lv_obj_t *slider = lv_event_get_target_obj(e);
-		int32_t v = lv_slider_get_value(slider);
-		lv_label_set_text_fmt(_lblBright, "%" LV_PRId32, v);
-		lv_obj_align_to(_lblBright, slider, LV_ALIGN_OUT_TOP_MID, v, -55);
-		ledcWrite(BACKLIGHT_CHANNEL, std::max(1, (int)(v * 255 / 100)));
 	}
 };
 extern LVCore _lvCore;

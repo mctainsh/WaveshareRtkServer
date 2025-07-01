@@ -26,18 +26,18 @@ protected:
 		lv_obj_remove_flag(_uiPanelPage, LV_OBJ_FLAG_SCROLLABLE);
 
 		// No padding
-		lv_obj_set_style_pad_left(_uiPanelPage, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-		lv_obj_set_style_pad_right(_uiPanelPage, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_left(_uiPanelPage, 5, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_right(_uiPanelPage, 5, LV_PART_MAIN | LV_STATE_DEFAULT);
 		lv_obj_set_style_pad_top(_uiPanelPage, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 		lv_obj_set_style_pad_bottom(_uiPanelPage, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
 		// No padding between rows and columns
-		lv_obj_set_style_pad_row(_uiPanelPage, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_row(_uiPanelPage, 5, LV_PART_MAIN | LV_STATE_DEFAULT);
 		lv_obj_set_style_pad_column(_uiPanelPage, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
 		// Soft background color
 		lv_obj_set_style_bg_color(_uiPanelPage, lv_color_hex(bgColor), LV_PART_MAIN | LV_STATE_DEFAULT);
-		lv_obj_set_style_bg_opa(_uiPanelPage, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_bg_opa(_uiPanelPage, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 
 		// Add title label
 		lv_obj_t *titleLabel = lv_label_create(_uiPanelPage);
