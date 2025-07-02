@@ -41,7 +41,6 @@ void setup()
 
 	// Create the GPS status page
 	_systemPageGps.Create(UIPageGroupPanel); // Create the GPS status page and add
-	_swipePageGps.Create(UIPageGroupPanel); // Create the GPS status page and add
 	_swipePageIO.Create(UIPageGroupPanel); // Create the GPS status page and add
 	_swipePageSettings.Create(UIPageGroupPanel); // Create the settings page and add
 
