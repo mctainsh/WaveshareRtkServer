@@ -1,3 +1,4 @@
 robtillaart/TCA9554@ 0.1.2
-lvgl/lvgl
+lvgl/lvgl@ 9.3.0
+lewisxhe/SensorLib @ 0.3.1
 moononournation/GFX Library for Arduino@ 1.6.0

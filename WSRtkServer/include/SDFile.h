@@ -121,16 +121,14 @@ public:
 			return "SD_MMC not mounted";
 		if (_error.length() > 0)
 			return _error;
-		return _cardType + ", " + std::to_string(_cardSize / (1024 * 1024)) + "MB";
+		return _cardType;
 	}
 
 	std::string GetDriveSpace()
 	{
 		if (!_isMounted)
 			return "N/A";
-		auto free = SD_MMC.usedBytes();
-		auto total = SD_MMC.totalBytes();
-		return std::to_string(free / (1024 * 1024)) + " / " + std::to_string(total / (1024 * 1024)) + "MB, " + std::to_string((int)(100.0 * free / total)) + "%";
+		return SwipePageBase::MakeKbPercent(SD_MMC.usedBytes(), SD_MMC.totalBytes(), SwipePageBase::MB);
 	}
 
 	///////////////////////////////////////////////////////////////////////////

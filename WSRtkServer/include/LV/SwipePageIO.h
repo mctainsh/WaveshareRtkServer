@@ -40,47 +40,66 @@ public:
 	{
 		CreatePanel(parentGroupPanel, "Disk & Memory", 0x0000FF);
 
+	
+		// // SD Card
+		// _panelSDState.Create(_uiPanelPage, "SD Card", "");
+		// _panelSpace.Create(_uiPanelPage, "Space", "");
+
+		// // Flash memory
+		// _panelSketchSize.Create(_uiPanelPage, "Sketch Size", "");
+		// _panelFreeSketchSpace.Create(_uiPanelPage, "Free Sketch Space", "");
+		// _panelFlashChipSize.Create(_uiPanelPage, "Flash Chip Size", "");
+		// _panelSPIFFS.Create(_uiPanelPage, "SPIFFS", "");
+
+		// // PSRAM
+		// _panelPSRAM.Create(_uiPanelPage, "PSRAM", "");
+
+		// // WiFi
+		// _panelWiFiStrength.Create(_uiPanelPage, "WiFi Strength", "");
+		// _panelAP_Name.Create(_uiPanelPage, "A/P Name", "");
+		// _panelIPAddress.Create(_uiPanelPage, "IP Address", "");
+		// _panelHostName.Create(_uiPanelPage, "Host Name", "");
+		// _panelWiFiMode.Create(_uiPanelPage, "WiFi Mode", "");
+
+
+		CreateTable(_uiPanelPage, LV_SIZE_CONTENT); // Create a table with a height of 200 pixels
+
 		// SD Card
-		_panelSDState.Create(_uiPanelPage, "SD Card", "");
-		_panelSpace.Create(_uiPanelPage, "Space", "");
+		AppendRowTitle("SD Card", TblFormat::Highlight);
+		AppendRowTitle("State");
+		AppendRowTitle("Space");
 
 		// Flash memory
-		_panelSketchSize.Create(_uiPanelPage, "Sketch Size", "");
-		_panelFreeSketchSpace.Create(_uiPanelPage, "Free Sketch Space", "");
-		_panelFlashChipSize.Create(_uiPanelPage, "Flash Chip Size", "");
-		_panelSPIFFS.Create(_uiPanelPage, "SPIFFS", "");
+		AppendRowTitle("Flash", TblFormat::Highlight);
+		AppendRowTitle("Sketch", TblFormat::Right);
+		AppendRowTitle("Size", TblFormat::Right);
+		AppendRowTitle("SPIFFS");
 
 		// PSRAM
-		_panelPSRAM.Create(_uiPanelPage, "PSRAM", "");
+		AppendRowTitle("PSRAM");
 
 		// WiFi
-		_panelWiFiStrength.Create(_uiPanelPage, "WiFi Strength", "");
-		_panelAP_Name.Create(_uiPanelPage, "A/P Name", "");
-		_panelIPAddress.Create(_uiPanelPage, "IP Address", "");
-		_panelHostName.Create(_uiPanelPage, "Host Name", "");
-		_panelWiFiMode.Create(_uiPanelPage, "WiFi Mode", "");
+		AppendRowTitle("WiFi", TblFormat::Highlight);
+		AppendRowTitle("Strength");
+		AppendRowTitle("A/P Name");
+		AppendRowTitle("IP Address");
+		AppendRowTitle("Host Name");
 	}
 
 	void RefreshData()
 	{
-		const int KB = 1024;
-
 		// SD Card
-		_panelSDState.SetText(_sdFile.GetState().c_str());
-		_panelSpace.SetText(_sdFile.GetDriveSpace().c_str());
+		SetTableValue(1, _sdFile.GetState().c_str());
+		SetTableValue(2, _sdFile.GetDriveSpace().c_str());
 
 		// Flash details
-		_panelSketchSize.SetText(std::to_string(ESP.getSketchSize()).c_str());
-		_panelFreeSketchSpace.SetText(std::to_string(ESP.getFreeSketchSpace()).c_str());
-		_panelFlashChipSize.SetText(std::to_string(ESP.getFlashChipSize()).c_str());
-		size_t totalBytes = SPIFFS.totalBytes();
-		size_t usedBytes = SPIFFS.usedBytes();
-		_panelSPIFFS.SetText(totalBytes > 0 ? (std::to_string(usedBytes / KB) + " / " + std::to_string(totalBytes / KB) + "kb  " + std::to_string((int)(100.0 * usedBytes / totalBytes)) + "%").c_str() : "Not mounted");
+		SetTableValue(4, MakeKbPercent( ESP.getSketchSize(), ESP.getFreeSketchSpace()).c_str());
+
+		SetTableValue(5, (ToThousands(ESP.getFlashChipSize()/KB)+ " kb").c_str());
+		SetTableValue(6, MakeKbPercent(SPIFFS.usedBytes(), SPIFFS.totalBytes()).c_str());
 
 		// PSRAM
-		usedBytes = ESP.getFreePsram();
-		totalBytes = ESP.getPsramSize();
-		_panelPSRAM.SetText(totalBytes > 0 ? (std::to_string(usedBytes / KB) + " / " + std::to_string(totalBytes / KB) + "kb  " + std::to_string((int)(100.0 * usedBytes / totalBytes)) + "%").c_str() : "Not mounted");
+		SetTableValue(7, MakeKbPercent(ESP.getFreePsram(), ESP.getPsramSize()).c_str());
 
 		// WiFi
 		auto strength = WiFi.RSSI();
@@ -93,16 +112,14 @@ public:
 			strengthTitle = "Okay";
 		else if (strength > -80)
 			strengthTitle = "Not Good";
-
 		if (strength == 0)
-			_panelWiFiStrength.SetText("Not Connected");
+			SetTableValue(9, "Not Connected");
 		else
-			_panelWiFiStrength.SetText((std::to_string(strength) + "dBm " + strengthTitle).c_str());
-
-		_panelAP_Name.SetText(WiFi.getHostname());
-		_panelIPAddress.SetText(WiFi.localIP().toString().c_str());
-		_panelHostName.SetText((_mdnsHostName + ".local").c_str());
-		_panelWiFiMode.SetText(
+			SetTableValue(9, (std::to_string(strength) + "dBm " + strengthTitle).c_str());
+		SetTableValue(10, WiFi.getHostname());
+		SetTableValue(11, WiFi.localIP().toString().c_str());
+		SetTableValue(12, (_mdnsHostName + ".local").c_str());
+		SetTableValue(13,
 			WiFi.getMode() == WIFI_MODE_NULL
 				? "N/A"
 				: (WiFi.getMode() == WIFI_STA

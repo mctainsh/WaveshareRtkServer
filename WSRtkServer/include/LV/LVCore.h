@@ -89,8 +89,7 @@ public:
 		delay(200);
 		bsp_touch_init(&Wire, -1, 0, W, H);
 
-		String LVGL_Arduino = String('V') + lv_version_major() + "." + lv_version_minor() + "." + lv_version_patch();
-		Serial.println(LVGL_Arduino);
+		Serial.printf("LVGL:%d.%d.%d\r\n", lv_version_major(), + lv_version_minor(), lv_version_patch());
 
 		// Init Display
 		if (!_gfx->begin())
@@ -107,6 +106,26 @@ public:
 		ledcWrite(BACKLIGHT_CHANNEL, 255);		  // 100% brightness
 #endif
 
+		// Draw some test stuff on the screen
+while (millis() < 1000)
+		{
+  // Draw red text
+ _gfx->setTextColor(RED);
+  _gfx->setTextSize(2);
+  _gfx->setCursor(20, 30);
+  _gfx->println("Hello, John!");
+
+		}
+
+		while (millis() < 5000)
+		{
+  // Draw a rectangle
+  _gfx->drawRect(10, 60, 100, 50, BLUE);
+
+		}
+
+
+		// Initialize the LVGL library
 		lv_init();
 
 		// Set a tick source so that LVGL will know how much time elapsed.
