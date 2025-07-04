@@ -1,4 +1,9 @@
-robtillaart/TCA9554@ 0.1.2
-lvgl/lvgl@ 9.3.0
 lewisxhe/SensorLib @ 0.3.1
+lvgl/lvgl@ 9.3.0
 moononournation/GFX Library for Arduino@ 1.6.0
+SPIFFS@2.0.0
+robtillaart/TCA9554@ 0.1.2
+lewisxhe/XPowersLib @ 0.2.9
+tzapu/WiFiManager@2.0.17
+SPI@2.0.0
+FS@2.0.0

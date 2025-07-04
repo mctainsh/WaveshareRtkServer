@@ -3,7 +3,7 @@
 #include "lvgl.h"
 #include "SwipePageBase.h"
 #include "PanelLabelValue.h"
-#include <SDFile.h>
+#include "Hardware/SdFile.h"
 #include <WiFi.h>
 #include <SPIFFS.h>
 
@@ -15,53 +15,13 @@ extern std::string _mdnsHostName;
 class SwipePageIO : public SwipePageBase
 {
 private:
-	// SD Card
-	PanelLabelValue _panelSDState;
-	PanelLabelValue _panelSpace;
-
-	// Flash memory
-	PanelLabelValue _panelSketchSize;
-	PanelLabelValue _panelFreeSketchSpace;
-	PanelLabelValue _panelFlashChipSize;
-	PanelLabelValue _panelSPIFFS;
-
-	// PSRAM
-	PanelLabelValue _panelPSRAM;
-
-	// WiFi
-	PanelLabelValue _panelWiFiStrength;
-	PanelLabelValue _panelAP_Name;
-	PanelLabelValue _panelIPAddress;
-	PanelLabelValue _panelHostName;
-	PanelLabelValue _panelWiFiMode;
 
 public:
 	void Create(lv_obj_t *parentGroupPanel)
 	{
 		CreatePanel(parentGroupPanel, "Disk & Memory", 0x0000FF);
 
-	
-		// // SD Card
-		// _panelSDState.Create(_uiPanelPage, "SD Card", "");
-		// _panelSpace.Create(_uiPanelPage, "Space", "");
-
-		// // Flash memory
-		// _panelSketchSize.Create(_uiPanelPage, "Sketch Size", "");
-		// _panelFreeSketchSpace.Create(_uiPanelPage, "Free Sketch Space", "");
-		// _panelFlashChipSize.Create(_uiPanelPage, "Flash Chip Size", "");
-		// _panelSPIFFS.Create(_uiPanelPage, "SPIFFS", "");
-
-		// // PSRAM
-		// _panelPSRAM.Create(_uiPanelPage, "PSRAM", "");
-
-		// // WiFi
-		// _panelWiFiStrength.Create(_uiPanelPage, "WiFi Strength", "");
-		// _panelAP_Name.Create(_uiPanelPage, "A/P Name", "");
-		// _panelIPAddress.Create(_uiPanelPage, "IP Address", "");
-		// _panelHostName.Create(_uiPanelPage, "Host Name", "");
-		// _panelWiFiMode.Create(_uiPanelPage, "WiFi Mode", "");
-
-
+		// Table
 		CreateTable(_uiPanelPage, LV_SIZE_CONTENT); // Create a table with a height of 200 pixels
 
 		// SD Card

@@ -2,3 +2,5 @@ GFX Library for Arduino
 lvgl
 TCA9554
 /SensorLib/
+/WiFiManager/
+/XPowersLib/

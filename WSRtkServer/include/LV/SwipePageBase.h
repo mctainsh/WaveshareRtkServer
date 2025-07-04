@@ -103,12 +103,67 @@ protected:
 		_rowCount++;
 	}
 
+	///////////////////////////////////////////////////////////////////////////
+	// Create a clear panel for wrapping to add padding
+	static lv_obj_t* ClearPanel(lv_obj_t* parent, int32_t l, int32_t r, int32_t t, int32_t b)
+	{
+		// Add a transparent panel around the button to give it padding
+		lv_obj_t* wrap = lv_obj_create(parent);
+		lv_obj_set_height(wrap, LV_SIZE_CONTENT);
+		lv_obj_set_width(wrap, lv_pct(100));
+		lv_obj_remove_flag(wrap, LV_OBJ_FLAG_SCROLLABLE);
+		//lv_obj_set_flex_flow(wrap, LV_FLEX_FLOW_COLUMN);
+
+		// No background or border
+		lv_obj_set_style_bg_opa(wrap, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_border_opa(wrap, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+		// Padding
+		lv_obj_set_style_pad_left(wrap, l, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_right(wrap, r, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_top(wrap, t, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_bottom(wrap, b, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+		return wrap;
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+	// This function is called when the close button is clicked
+	static lv_obj_t* CreateFancyButton( const char *title, lv_obj_t* parent, lv_event_cb_t event_cb,  int32_t width, int32_t height = 60)
+	{
+		lv_obj_t *wrap = ClearPanel(parent, 6, 6, 6, 6);
+		lv_obj_set_height(wrap, height);
+		lv_obj_set_width(wrap, width);
+
+		// Create the button
+		lv_obj_t *btn = lv_button_create(wrap);
+		lv_obj_remove_style_all(btn); // Remove the style coming from the theme
+		lv_obj_add_style(btn, &StyleFancyButton, 0);
+		lv_obj_add_style(btn, &StyleFancyButtonPressed, LV_STATE_PRESSED);
+		lv_obj_set_size(btn, lv_pct(100), lv_pct(100));
+		lv_obj_center(btn);
+
+		// Add event callback
+		lv_obj_add_event_cb(btn, event_cb, LV_EVENT_CLICKED, NULL);
+
+		// Label
+		lv_obj_t *btnLabel = lv_label_create(btn);
+		lv_label_set_text(btnLabel, title);
+		lv_obj_center(btnLabel);
+
+		return wrap;
+	}
+
 public:
 	///////////////////////////////////////////////////////////////////////////
 	// Set value in the table
 	void SetTableValue(uint32_t row, const char *value)
 	{
 		lv_table_set_cell_value(_table, row, 1, value);
+	}
+		void SetTableString(uint32_t row, const std::string& value)
+	{
+		lv_table_set_cell_value(_table, row, 1, value.c_str());
 	}
 
 	lv_obj_t *GetPanel() { return _uiPanelPage; }

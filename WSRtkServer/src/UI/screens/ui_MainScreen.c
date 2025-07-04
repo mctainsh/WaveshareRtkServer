@@ -12,6 +12,7 @@ void ui_MainScreen_screen_init(void)
 {
 	UIMainScreen = lv_scr_act();
 	lv_obj_remove_flag(UIMainScreen, LV_OBJ_FLAG_SCROLLABLE);
+
 	// Main page panel group
 	UIPageGroupPanel = lv_obj_create(UIMainScreen);
 	lv_obj_set_width(UIPageGroupPanel, 320);
@@ -22,6 +23,7 @@ void ui_MainScreen_screen_init(void)
 	lv_obj_set_flex_flow(UIPageGroupPanel, LV_FLEX_FLOW_ROW);
 	lv_obj_set_flex_align(UIPageGroupPanel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
 	lv_obj_set_scroll_snap_x(UIPageGroupPanel, LV_SCROLL_SNAP_CENTER);
+	lv_obj_add_flag(UIPageGroupPanel, LV_OBJ_FLAG_SCROLL_ONE);
 
 	// Transparent background
 	lv_obj_set_style_bg_color(UIPageGroupPanel, lv_color_hex(0), LV_PART_MAIN | LV_STATE_DEFAULT);

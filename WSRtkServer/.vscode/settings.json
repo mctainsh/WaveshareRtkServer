@@ -1,8 +1,19 @@
 {
 	"cSpell.words": [
+		"Batfet",
+		"BLDO",
+		"CHGLED",
+		"CPUSLDO",
+		"DCDC",
+		"DLDO",
+		"HDANR",
 		"lewisxhe",
 		"lvgl",
 		"moononournation",
+		"Pekey",
+		"PMIC",
+		"PRECHARGE",
+		"PWRKEY",
 		"QSPI",
 		"robtillaart",
 		"SNAPPABLE"
@@ -64,6 +75,7 @@
 		"streambuf": "cpp",
 		"thread": "cpp",
 		"cinttypes": "cpp",
-		"typeinfo": "cpp"
+		"typeinfo": "cpp",
+		"*.tpp": "cpp"
 	}
 }
