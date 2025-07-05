@@ -9,23 +9,29 @@
 #include "Global.h"
 #include <lvgl.h> // Add this include for lv_label_set_text
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // Time functions
 // WARNING : This class is called by logger so do not log yourself
 class HandyTime
 {
 private:
-	const char *_ntpServer = "pool.ntp.org";
 	long _gmtOffset_sec = 0;
 	int _daylightOffset_sec = 0;
 
-	bool _timeSyncEnabled = false;	 // Indicate if time sync is enabled
+	bool _timeSyncEnabled = false;	 // Indicates we have WiFi or read a time from onboard clock
 	unsigned long _lastSyncTime = 0; // Last time we synced the time
 	unsigned long _syncInterval = 0; // Default sync interval of 1 hour
 
-	SensorPCF85063 _rtc;	  // Create an instance of the PCF85063 RTC
-	bool _rtcWorking = false; // Time setup failed, so we will not try to read the time
+	SensorPCF85063 _rtc;		  // Create an instance of the PCF85063 RTC
+	bool _rtcWorking = false;	  // Time setup failed, so we will not try to read the time
+	bool _rtcInitialized = false; // RTC has been initialized
 public:
+	void WiFiReady() { _timeSyncEnabled = true; }
+	bool IsTimeSet() const { return _rtcInitialized; } // Check if the RTC has been initialized
+
+	////////////////////////////////////////////////////////////
+	// Check if we have a time value and use it
 	void Setup()
 	{
 		// Initialize the RTC module using I2C with specified SDA and SCL pins
@@ -35,14 +41,59 @@ public:
 			_rtcWorking = false; // RTC initialization failed
 			return;				 // Do not continue if RTC initialization fails
 		}
+
 		Logln("PCF85063 RTC initialized successfully");
 		_rtcWorking = true; // RTC initialized successfully
 
 		if (!_rtc.isClockIntegrityGuaranteed())
+		{
 			Logln("[ERROR]:Clock integrity is not guaranteed; oscillator has stopped or has been interrupted");
+			return;
+		}
+
+		// Read the current time from the RTC
+		Logln("Clock integrity is guaranteed; oscillator has not been interrupted");
+		RTC_DateTime datetime = _rtc.getDateTime();
+
+		// If the RTC is not set, we will set it to a default value
+		if (datetime.getYear() < 1)
+		{
+			Logln("[ERROR]: RTC is not set, setting to default time");
+			return;
+		}
+
+		struct tm info = datetime.toUnixTime();
+		time_t epochTime = mktime(&info); // Convert to time_t
+		struct timeval tv;
+		tv.tv_sec = epochTime; // seconds since Jan 1, 1970
+		tv.tv_usec = 0;		   // microseconds
+		settimeofday(&tv, nullptr);
+
+		// Check we set the time OK
+		if (!getLocalTime(&info))
+		{
+			Logln("[ERROR]: Failed to set local time");
+			return;
+		}
+		_timeSyncEnabled = true;
+		_lastSyncTime = millis(); // Set the last sync time to now
+		_rtcInitialized = true;	  // RTC has been initialized successfully
+		Logf("Time set to %s", LongString().c_str());
 	}
 
-	void EnableTimeSync(std::string tzMinutes)
+	///////////////////////////////////////////////////////////////////////////
+	// Invalidate RTC to it doesn't get used after reboot
+	void ResetRtc()
+	{
+		if (!_rtcWorking)
+			return;
+		_rtc.setDateTime(0, 1, 1, 0, 0, 0);
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+	// Enable time synchronization with NTP server
+	// tzMinutes is the timezone offset in minutes, e.g., "60" for GMT
+	void LoadTimezoneOffset(std::string tzMinutes)
 	{
 		if (!tzMinutes.empty())
 		{
@@ -62,7 +113,6 @@ public:
 				Logf("Timezone minutes out of range: %s", tzMinutes.c_str());
 			}
 		}
-		_timeSyncEnabled = true;
 	}
 
 	////////////////////////////////////////////////////////////////////////////
@@ -76,7 +126,7 @@ public:
 		if (millis() - _lastSyncTime > _syncInterval)
 		{
 			Logln("Sync NTP time", false);
-			configTime(_gmtOffset_sec, _daylightOffset_sec, _ntpServer);
+			configTime(_gmtOffset_sec, _daylightOffset_sec, "pool.ntp.org", "time.nist.gov", "time.google.com");
 			_lastSyncTime = millis();
 
 			// Try to get the local time
@@ -111,7 +161,7 @@ public:
 	// Update the page title with the current date and time
 	void UpdatePageTitle(lv_obj_t *plabel)
 	{
-		if (!_rtcWorking || !plabel)
+		if (!plabel)
 			return;
 
 		struct tm timeinfo;

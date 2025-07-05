@@ -230,6 +230,7 @@ public:
 			auto name = std::string(_wifiManager.server->arg(TZ_ID).c_str());
 
 			_myFiles.WriteFile(TIMEZONE_MINUTES, name.c_str());
+			_handyTime.ResetRtc(); // Reset the RTC to apply the new timezone
 			_client.printf("<div class='alert alert-success' role='alert'>Resetting device to set timezone %s minutes</div>", name.c_str());
 			RestartDevice(_client, "/settings");
 			return;

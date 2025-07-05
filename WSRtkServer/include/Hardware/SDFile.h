@@ -6,9 +6,6 @@
 #include "HandyLog.h"
 #include "LogFileSummary.h"
 
-//#define LOG_FILE_PREFIX "/logs/"
-#define LOG_FILE_PREFIX "/"
-
 ///////////////////////////////////////////////////////////////////////////////
 // Panel containing a label and a value
 class SDFile
@@ -23,6 +20,8 @@ private:
 	SemaphoreHandle_t _mutexLog; // Thread safe access to writing logs
 
 public:
+	bool LogStarted() { return _logLength > 0; } // True if log file is started
+
 	///////////////////////////////////////////////////////////////////////////
 	// Setup SD_MMC card
 	// This function initializes the SD_MMC card and prints its type and size.
@@ -62,7 +61,6 @@ public:
 		}
 		_isMounted = true;
 
-		Serial.print("SD_MMC Card Type: ");
 		if (cardType == CARD_MMC)
 			_cardType = "MMC";
 		else if (cardType == CARD_SD)
@@ -101,21 +99,8 @@ public:
 	{
 		const char *logPath = _fsLog ? _fsLog.path() : "";
 		std::vector<LogFileSummary> files;
-		auto root = SD_MMC.open("/");
-		auto file = root.openNextFile();
-		while (file)
-		{
-			// Note. If a file is modified during this stage, it will be duplicated in the list
 
-			auto it = std::find_if(files.begin(), files.end(),
-								   [&](const LogFileSummary &log)
-								   { return strcmp(log.Path.c_str(), file.path()) == 0; });
-			if (it == files.end()) // Only add if not already in the list
-			{
-				files.push_back(LogFileSummary(file, strcmp(file.path(), logPath) == 0));
-			}
-			file = root.openNextFile();
-		}
+		listAllFiles(SD_MMC, "/", files, logPath);
 
 		// Sort the list of files by their path
 		std::sort(files.begin(), files.end(), [](const LogFileSummary &a, const LogFileSummary &b)
@@ -123,6 +108,48 @@ public:
 		return files;
 	}
 
+	///////////////////////////////////////////////////////////////////////////
+	// Recursively list all files
+	void listAllFiles(fs::FS &fs, const char *dirName, std::vector<LogFileSummary> &files, const char *logPath)
+	{
+		File root = fs.open(dirName);
+		if (!root || !root.isDirectory())
+		{
+			Serial.printf("Failed to open directory: %s\n", dirName);
+			return;
+		}
+
+		File file = root.openNextFile();
+		while (file)
+		{
+			if (file.isDirectory())
+			{
+				// Skip system folders
+				if (strcmp(file.path(), "/System Volume Information") != 0)
+				{
+					// Recurse into subdirectory
+					listAllFiles(fs, file.path(), files, logPath);
+				}
+			}
+			else
+			{
+				// Avoid duplicates
+				auto it = std::find_if(files.begin(), files.end(),
+									   [&](const LogFileSummary &log)
+									   {
+										   return strcmp(log.Path.c_str(), file.path()) == 0;
+									   });
+
+				// If not found, add to the list
+				if (it == files.end())
+					files.push_back(LogFileSummary(file, strcmp(file.path(), logPath) == 0));
+			}
+			file = root.openNextFile();
+		}
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+	// Get the card type or error state
 	std::string GetState()
 	{
 		if (!_isMounted)
@@ -132,6 +159,8 @@ public:
 		return _cardType;
 	}
 
+	///////////////////////////////////////////////////////////////////////////
+	// Get the card size in MB
 	std::string GetDriveSpace()
 	{
 		if (!_isMounted)

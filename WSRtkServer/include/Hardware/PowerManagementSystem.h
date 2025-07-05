@@ -54,43 +54,43 @@ public:
 		// Get the VSYS shutdown voltage
 		uint16_t vol = _power.getSysPowerDownVoltage();
 		Logln("SysPowerDownVoltage");
-		Logf("-> Before :%u", vol);
+		Logf("\t-> Before :%u", vol);
 
 		// Set VSY off voltage as 2600mV , Adjustment range 2600mV ~ 3300mV
 		_power.setSysPowerDownVoltage(2600);
 
 		vol = _power.getSysPowerDownVoltage();
-		Logf("-> After  :%u", vol);
+		Logf("\t-> After  :%u", vol);
 
 		// DC1 IMAX=2A
 		// 1500~3400mV,100mV/step,20steps
 		_power.setDC1Voltage(3300);
-		Logf("DC1  : %s   Voltage:%u mV ", _power.isEnableDC1() ? "+" : "-", _power.getDC1Voltage());
+		Logf("\tDC1  : %s   Voltage:%u mV ", _power.isEnableDC1() ? "+" : "-", _power.getDC1Voltage());
 
 		// DC2 IMAX=2A
 		// 500~1200mV  10mV/step,71steps
 		// 1220~1540mV 20mV/step,17steps
 		_power.setDC2Voltage(1000);
-		Logf("DC2  : %s   Voltage:%u mV ", _power.isEnableDC2() ? "+" : "-", _power.getDC2Voltage());
+		Logf("\tDC2  : %s   Voltage:%u mV ", _power.isEnableDC2() ? "+" : "-", _power.getDC2Voltage());
 
 		// DC3 IMAX = 2A
 		// 500~1200mV,10mV/step,71steps
 		// 1220~1540mV,20mV/step,17steps
 		// 1600~3400mV,100mV/step,19steps
 		_power.setDC3Voltage(3300);
-		Logf("DC3  : %s   Voltage:%u mV ", _power.isEnableDC3() ? "+" : "-", _power.getDC3Voltage());
+		Logf("\tDC3  : %s   Voltage:%u mV ", _power.isEnableDC3() ? "+" : "-", _power.getDC3Voltage());
 
 		// DCDC4 IMAX=1.5A
 		// 500~1200mV,10mV/step,71steps
 		// 1220~1840mV,20mV/step,32steps
 		_power.setDC4Voltage(1000);
-		Logf("DC4  : %s   Voltage:%u mV ", _power.isEnableDC4() ? "+" : "-", _power.getDC4Voltage());
+		Logf("\tDC4  : %s   Voltage:%u mV ", _power.isEnableDC4() ? "+" : "-", _power.getDC4Voltage());
 
 		// DC5 IMAX=2A
 		// 1200mV
 		// 1400~3700mV,100mV/step,24steps
 		_power.setDC5Voltage(3300);
-		Logf("DC5  : %s   Voltage:%u mV ", _power.isEnableDC5() ? "+" : "-", _power.getDC5Voltage());
+		Logf("\tDC5  : %s   Voltage:%u mV ", _power.isEnableDC5() ? "+" : "-", _power.getDC5Voltage());
 
 		// ALDO1 IMAX=300mA
 		// 500~3500mV, 100mV/step,31steps
@@ -144,24 +144,24 @@ public:
 		_power.enableDLDO2();
 
 		Logln("DCDC=======================================================================");
-		Logf("DC1  : %s   Voltage:%u mV ", _power.isEnableDC1() ? "+" : "-", _power.getDC1Voltage());
-		Logf("DC2  : %s   Voltage:%u mV ", _power.isEnableDC2() ? "+" : "-", _power.getDC2Voltage());
-		Logf("DC3  : %s   Voltage:%u mV ", _power.isEnableDC3() ? "+" : "-", _power.getDC3Voltage());
-		Logf("DC4  : %s   Voltage:%u mV ", _power.isEnableDC4() ? "+" : "-", _power.getDC4Voltage());
-		Logf("DC5  : %s   Voltage:%u mV ", _power.isEnableDC5() ? "+" : "-", _power.getDC5Voltage());
+		Logf("\tDC1  : %s   Voltage:%u mV ", _power.isEnableDC1() ? "+" : "-", _power.getDC1Voltage());
+		Logf("\tDC2  : %s   Voltage:%u mV ", _power.isEnableDC2() ? "+" : "-", _power.getDC2Voltage());
+		Logf("\tDC3  : %s   Voltage:%u mV ", _power.isEnableDC3() ? "+" : "-", _power.getDC3Voltage());
+		Logf("\tDC4  : %s   Voltage:%u mV ", _power.isEnableDC4() ? "+" : "-", _power.getDC4Voltage());
+		Logf("\tDC5  : %s   Voltage:%u mV ", _power.isEnableDC5() ? "+" : "-", _power.getDC5Voltage());
 		Logln("ALDO=======================================================================");
-		Logf("ALDO1: %s   Voltage:%u mV", _power.isEnableALDO1() ? "+" : "-", _power.getALDO1Voltage());
-		Logf("ALDO2: %s   Voltage:%u mV", _power.isEnableALDO2() ? "+" : "-", _power.getALDO2Voltage());
-		Logf("ALDO3: %s   Voltage:%u mV", _power.isEnableALDO3() ? "+" : "-", _power.getALDO3Voltage());
-		Logf("ALDO4: %s   Voltage:%u mV", _power.isEnableALDO4() ? "+" : "-", _power.getALDO4Voltage());
+		Logf("\tALDO1: %s   Voltage:%u mV", _power.isEnableALDO1() ? "+" : "-", _power.getALDO1Voltage());
+		Logf("\tALDO2: %s   Voltage:%u mV", _power.isEnableALDO2() ? "+" : "-", _power.getALDO2Voltage());
+		Logf("\tALDO3: %s   Voltage:%u mV", _power.isEnableALDO3() ? "+" : "-", _power.getALDO3Voltage());
+		Logf("\tALDO4: %s   Voltage:%u mV", _power.isEnableALDO4() ? "+" : "-", _power.getALDO4Voltage());
 		Logln("BLDO=======================================================================");
-		Logf("BLDO1: %s   Voltage:%u mV", _power.isEnableBLDO1() ? "+" : "-", _power.getBLDO1Voltage());
-		Logf("BLDO2: %s   Voltage:%u mV", _power.isEnableBLDO2() ? "+" : "-", _power.getBLDO2Voltage());
+		Logf("\tBLDO1: %s   Voltage:%u mV", _power.isEnableBLDO1() ? "+" : "-", _power.getBLDO1Voltage());
+		Logf("\tBLDO2: %s   Voltage:%u mV", _power.isEnableBLDO2() ? "+" : "-", _power.getBLDO2Voltage());
 		Logln("CPUSLDO====================================================================");
-		Logf("CPUSLDO: %s Voltage:%u mV", _power.isEnableCPUSLDO() ? "+" : "-", _power.getCPUSLDOVoltage());
+		Logf("\tCPUSLDO: %s Voltage:%u mV", _power.isEnableCPUSLDO() ? "+" : "-", _power.getCPUSLDOVoltage());
 		Logln("DLDO=======================================================================");
-		Logf("DLDO1: %s   Voltage:%u mV", _power.isEnableDLDO1() ? "+" : "-", _power.getDLDO1Voltage());
-		Logf("DLDO2: %s   Voltage:%u mV", _power.isEnableDLDO2() ? "+" : "-", _power.getDLDO2Voltage());
+		Logf("\tDLDO1: %s   Voltage:%u mV", _power.isEnableDLDO1() ? "+" : "-", _power.getDLDO1Voltage());
+		Logf("\tDLDO2: %s   Voltage:%u mV", _power.isEnableDLDO2() ? "+" : "-", _power.getDLDO2Voltage());
 		Logln("===========================================================================");
 
 		// Set the time of pressing the button to turn off
@@ -186,7 +186,7 @@ public:
 			optStr = "Unknown " + std::to_string(opt);
 			break;
 		}
-		Logf("PowerKeyPressOffTime:%s", optStr.c_str());
+		Logf("\tPowerKeyPressOffTime:%s", optStr.c_str());
 
 		// Set the button power-on press time
 		_power.setPowerKeyPressOnTime(XPOWERS_POWERON_128MS);
@@ -209,29 +209,29 @@ public:
 			optStr = "Unknown " + std::to_string(opt);
 			break;
 		}
-		Logf("PowerKeyPressOnTime:%s", optStr.c_str());
+		Logf("\tPowerKeyPressOnTime:%s", optStr.c_str());
 
 		Logln("===========================================================================");
 
 		bool en;
 
 		// DCDC 120%(130%) high voltage turn off PMIC function
-		Logf("DCHighVoltagePowerDownEn:%s ", _power.getDCHighVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
+		Logf("\tDCHighVoltagePowerDownEn:%s ", _power.getDCHighVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
 
 		// DCDC1 85% low voltage turn off PMIC function
-		Logf("DC1LowVoltagePowerDownEn:%s ", _power.getDC1LowVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
+		Logf("\tDC1LowVoltagePowerDownEn:%s ", _power.getDC1LowVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
 
 		// DCDC2 85% low voltage turn off PMIC function
-		Logf("DC2LowVoltagePowerDownEn:%s ", _power.getDC2LowVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
+		Logf("\tDC2LowVoltagePowerDownEn:%s ", _power.getDC2LowVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
 
 		// DCDC3 85% low voltage turn off PMIC function
-		Logf("DC3LowVoltagePowerDownEn:%s ", _power.getDC3LowVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
+		Logf("\tDC3LowVoltagePowerDownEn:%s ", _power.getDC3LowVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
 
 		// DCDC4 85% low voltage turn off PMIC function
-		Logf("DC4LowVoltagePowerDownEn:%s ", _power.getDC4LowVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
+		Logf("\tDC4LowVoltagePowerDownEn:%s ", _power.getDC4LowVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
 
 		// DCDC5 85% low voltage turn off PMIC function
-		Logf("DC5LowVoltagePowerDownEn:%s ", _power.getDC5LowVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
+		Logf("\tDC5LowVoltagePowerDownEn:%s ", _power.getDC5LowVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
 
 		// _power.setDCHighVoltagePowerDown(true);
 		// _power.setDC1LowVoltagePowerDown(true);
@@ -306,22 +306,23 @@ public:
 	// Record the current state to log
 	void PrintPMU()
 	{
-		Logf("isCharging:%s ", _power.isCharging() ? "YES" : "NO");
-		Logf("isDischarge:%s ", _power.isDischarge() ? "YES" : "NO");
-		Logf("isStandby:%s ", _power.isStandby() ? "YES" : "NO");		
-		Logf("isVbusIn:%s ", _power.isVbusIn() ? "YES" : "NO");
-		Logf("isVbusGood:%s ", _power.isVbusGood() ? "YES" : "NO");
-		Logf("ChargerStatus:%s", GetChargeStatus().c_str());
+		Logln("===========================================================================");
+		Logf("\tisCharging:%s ", _power.isCharging() ? "YES" : "NO");
+		Logf("\tisDischarge:%s ", _power.isDischarge() ? "YES" : "NO");
+		Logf("\tisStandby:%s ", _power.isStandby() ? "YES" : "NO");		
+		Logf("\tisVbusIn:%s ", _power.isVbusIn() ? "YES" : "NO");
+		Logf("\tisVbusGood:%s ", _power.isVbusGood() ? "YES" : "NO");
+		Logf("\tChargerStatus:%s", GetChargeStatus().c_str());
 
-		Logf("BattVoltage:%d mV ", _power.getBattVoltage());
-		Logf("VbusVoltage:%d mV ", _power.getVbusVoltage());
-		Logf("SystemVoltage:%d mV ", _power.getSystemVoltage());
+		Logf("\tBattVoltage:%d mV ", _power.getBattVoltage());
+		Logf("\tVbusVoltage:%d mV ", _power.getVbusVoltage());
+		Logf("\tSystemVoltage:%d mV ", _power.getSystemVoltage());
 
 		// The battery percentage may be inaccurate at first use, the PMU will automatically
 		// learn the battery curve and will automatically calibrate the battery percentage
 		// after a charge and discharge cycle
 		if (_power.isBatteryConnect())
-			Logf("BatteryPercent:%d%%", _power.getBatteryPercent());
+			Logf("\tBatteryPercent:%d%%", _power.getBatteryPercent());
 	}
 
 	// void EnterPmuSleep(void)

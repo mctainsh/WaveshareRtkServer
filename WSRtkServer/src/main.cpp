@@ -87,6 +87,14 @@ void setup()
 	// Setup the SD Card
 	_sdFile.Setup();
 
+	// If we have time, start the logging
+	if (_handyTime.IsTimeSet())
+	{
+		Logln("Start logging early");
+		auto logCopy = CopyMainLog();
+		_sdFile.StartLogFile(&logCopy);
+	}
+
 	// Verify file IO (This can take up tpo 60s is SPIFFs not initialised)
 	Logln("Setup SPIFFS");
 	// tft.println("This can take up to 60 seconds ...");
@@ -95,6 +103,7 @@ void setup()
 	else
 		Logln("E100 - File IO failed");
 	_myFiles.LoadString(_baseLocation, BASE_LOCATION_FILENAME);
+	_handyTime.LoadTimezoneOffset(_myFiles.LoadString(TIMEZONE_MINUTES));
 
 	// Load the NTRIP server settings
 	Logln("Setup NTRIP Connections");
@@ -105,17 +114,6 @@ void setup()
 
 	// Setup host name to have RTK_ prefix
 	WiFi.setHostname(MakeHostName().c_str());
-
-	// Initialize the QMI8658 IMU sensor
-	// Try to initialize the RTC module using I2C with specified SDA and SCL pins
-	// if (!_rtc.begin(Wire, I2C_SDA, I2C_SCL))
-	//	Serial.println("Failed to find PCF85063 'Clock' - check your wiring!");
-
-	// Set the defined date and time on the RTC
-	//   rtc.setDateTime(year, month, day, hour, minute, second);
-
-	// if (!_rtc.isClockIntegrityGuaranteed())
-	//	Serial.println("[ERROR]:Clock integrity is not guaranteed; oscillator has stopped or has been interrupted");
 
 	// Initialize LVGL and the display
 	_lvCore.Setup();

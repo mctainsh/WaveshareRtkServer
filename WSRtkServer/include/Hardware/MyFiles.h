@@ -10,10 +10,6 @@
    https://github.com/me-no-dev/arduino-esp32fs-plugin */
 #define FORMAT_SPIFFS_IF_FAILED true
 
-#define BOOT_LOG_FILENAME "/bootlog.txt"
-#define BOOT_LOG_MAX_LENGTH 100
-#define LOG_FILE_PREFIX "/logs/"
-
 ///////////////////////////////////////////////////////////////////////////////
 // File access routines
 class MyFiles

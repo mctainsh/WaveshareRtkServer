@@ -3,7 +3,7 @@
 #define I2C_SDA 8
 #define I2C_SCL 7
 
-#define APP_VERSION "3.108.1068"
+#define APP_VERSION "3.108.1078"
 
 // Disables logging to serial
 #define SERIAL_LOG
@@ -23,6 +23,11 @@
 #define RTK_SERVERS 3
 
 #define GPS_BUFFER_SIZE (16*1024)
+
+// File system definitions
+#define BOOT_LOG_FILENAME "/bootlog.txt"
+#define BOOT_LOG_MAX_LENGTH 100
+#define LOG_FILE_PREFIX "/logs/"
 
 // WiFi access point password
 #define AP_PASSWORD "John123456"

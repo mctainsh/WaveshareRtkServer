@@ -49,7 +49,6 @@ private:
 public:
 	/// @brief Startup the portal
 	void Setup()
-
 	{
 		if (_busyConnecting)
 			return;
@@ -109,11 +108,14 @@ public:
 	/// Process thee WiFi stuff for the first time
 	void FirstWiFiConnectionPostProcess()
 	{
-		_handyTime.EnableTimeSync(_myFiles.LoadString(TIMEZONE_MINUTES));
-		Logln("Time sync enabled");
-
-		auto logCopy = CopyMainLog();
-		_sdFile.StartLogFile(&logCopy);
+		_handyTime.WiFiReady(); // Indicate we have WiFi connection
+		
+		// Start the log if not already started
+		if (!_sdFile.LogStarted())
+		{
+			auto logCopy = CopyMainLog();
+			_sdFile.StartLogFile(&logCopy);
+		}
 
 		// Setup the MDNS responder
 		// .. This will allow us to access the server using http://RtkServer.local
@@ -523,7 +525,7 @@ void WebPortal::ShowStatusHtml()
 
 	p.TableRow(1, "Free PSRAM", ESP.getFreePsram());
 	p.TableRow(1, "Total PSRAM", ESP.getPsramSize());
-//#ifdef T_DISPLAY_S3
+	// #ifdef T_DISPLAY_S3
 	p.TableRow(1, "spiram size", esp_spiram_get_size());
 
 	p.TableRow(1, "Free", "");
@@ -539,7 +541,7 @@ void WebPortal::ShowStatusHtml()
 			   heap_caps_get_free_size(MALLOC_CAP_DEFAULT));
 	p.TableRow(
 		2, "IRAM (MALLOC_CAP_EXEC)", heap_caps_get_free_size(MALLOC_CAP_EXEC));
-//#endif
+	// #endif
 
 	client.println("</table>");
 	p.AddPageFooter();
