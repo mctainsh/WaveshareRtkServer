@@ -3,7 +3,6 @@
 #include <WiFi.h>
 #include "HandyLog.h"
 
-String MakeHostName();
 
 const char *_lastEvent = nullptr; // Pointer to store the last event message
 int _duplicateEventCount = 0;	  // Counter for duplicate events
@@ -193,9 +192,9 @@ void SetupWiFiEvents()
 
 ///////////////////////////////////////////////////////////////////////////////
 /// @brief Maker a unique host name based on the MAC address with Rtk prefix
-String MakeHostName()
+std::string MakeHostName()
 {
 	auto mac = WiFi.macAddress();
 	mac.replace(":", "");
-	return "Rtk_" + mac;
+	return std::string("Rtk_") + mac.c_str();
 }

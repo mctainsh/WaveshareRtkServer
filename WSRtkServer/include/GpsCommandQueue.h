@@ -218,7 +218,7 @@ public:
 
 		if (_strings.empty())
 		{
-			Logf("GPS Startup Commands Complete");
+			Logln("GPS UM98x Startup Commands Complete");
 		}
 
 		// Send next command
@@ -389,7 +389,7 @@ public:
 		_strings.erase(_strings.begin());
 
 		if (_strings.empty())
-			Logln("GPS Startup Commands Complete");
+			Logln("GPS LC290H Startup Commands Complete");
 
 		SendTopCommand();
 		return true;

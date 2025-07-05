@@ -21,9 +21,6 @@
 #define LCD_QSPI_D2 3
 #define LCD_QSPI_D3 4
 
-#define I2C_SDA 8
-#define I2C_SCL 7
-
 #define W 320
 #define H 480
 

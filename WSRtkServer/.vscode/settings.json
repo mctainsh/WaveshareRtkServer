@@ -76,6 +76,7 @@
 		"thread": "cpp",
 		"cinttypes": "cpp",
 		"typeinfo": "cpp",
-		"*.tpp": "cpp"
+		"*.tpp": "cpp",
+		"iostream": "cpp"
 	}
 }

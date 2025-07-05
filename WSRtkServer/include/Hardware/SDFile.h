@@ -2,29 +2,25 @@
 
 #include "FS.h"
 #include "SD_MMC.h"
+#include "HandyString.h"
+#include "HandyLog.h"
+#include "LogFileSummary.h"
 
-#ifdef CONFIG_IDF_TARGET_ESP32S3
-// Default pins for ESP-S3
-// Warning: ESP32-S3-WROOM-2 is using most of the default GPIOs (33-37) to interface with on-board OPI flash.
-//   If the SD_MMC is initialized with default pins it will result in rebooting loop - please
-//   reassign the pins elsewhere using the mentioned command `setPins`.
-// Note: ESP32-S3-WROOM-1 does not have GPIO 33 and 34 broken out.
-// Note: if it's ok to use default pins, you do not need to call the setPins
-int clk = 11;
-int cmd = 10;
-int d0 = 9;
-
-#endif
+//#define LOG_FILE_PREFIX "/logs/"
+#define LOG_FILE_PREFIX "/"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Panel containing a label and a value
 class SDFile
 {
 private:
-	bool _isMounted = false;
-	std::string _error;
-	std::string _cardType;
-	uint64_t _cardSize = 0;
+	bool _isMounted = false;	 // True if mounted
+	std::string _error;			 // Error state of the SD_MMC card
+	std::string _cardType;		 // Type of SD card
+	uint64_t _cardSize = 0;		 // Size of the SD_MMC card in bytes
+	int _logLength = -1;		 // Log Length of the log file
+	fs::File _fsLog;			 // Log file
+	SemaphoreHandle_t _mutexLog; // Thread safe access to writing logs
 
 public:
 	///////////////////////////////////////////////////////////////////////////
@@ -32,17 +28,28 @@ public:
 	// This function initializes the SD_MMC card and prints its type and size.
 	void Setup()
 	{
-		if (!SD_MMC.setPins(clk, cmd, d0))
+		// Default pins for ESP-S3
+		// Warning: ESP32-S3-WROOM-2 is using most of the default GPIOs (33-37) to interface with on-board OPI flash.
+		//   If the SD_MMC is initialized with default pins it will result in rebooting loop - please
+		//   reassign the pins elsewhere using the mentioned command `setPins`.
+		// Note: ESP32-S3-WROOM-1 does not have GPIO 33 and 34 broken out.
+		// Note: if it's ok to use default pins, you do not need to call the setPins
+		int SD_MMC_CLK = 11;
+		int SD_MMC_CMD = 10;
+		int SD_MMC_D0 = 9;
+
+		_mutexLog = xSemaphoreCreateMutex();
+		if (!SD_MMC.setPins(SD_MMC_CLK, SD_MMC_CMD, SD_MMC_D0))
 		{
 			_error = "Failed to set SD_MMC pins";
-			Serial.println(_error.c_str());
+			Logln(_error.c_str());
 			return;
 		}
 
 		if (!SD_MMC.begin("/sdcard", true))
 		{
 			_error = "SD_MMC Mount Failed";
-			Serial.println(_error.c_str());
+			Logln(_error.c_str());
 			return;
 		}
 		uint8_t cardType = SD_MMC.cardType();
@@ -50,7 +57,7 @@ public:
 		if (cardType == CARD_NONE)
 		{
 			_error = "No SD_MMC card attached";
-			Serial.println(_error.c_str());
+			Logln(_error.c_str());
 			return;
 		}
 		_isMounted = true;
@@ -64,56 +71,57 @@ public:
 			_cardType = "SDHC";
 		else
 			_cardType = std::to_string(cardType);
-		Serial.printf(("SD_MMC Card Type:" + _cardType).c_str());
+		Logf("SD_MMC Card Type:%s", _cardType.c_str());
 
 		_cardSize = SD_MMC.cardSize();
-		Serial.printf("SD_MMC Card Size: %lluMB\n", _cardSize / (1024 * 1024));
+		Logf("SD_MMC Card Size: %lluMB", _cardSize / (1024 * 1024));
 
-		ListDir(SD_MMC, "/", 0);
-		CreateDir(SD_MMC, "/mydir");
-		ListDir(SD_MMC, "/", 0);
-		RemoveDir(SD_MMC, "/mydir");
-		ListDir(SD_MMC, "/", 2);
-		WriteFile(SD_MMC, "/hello.txt", "Hello ");
-		AppendFile(SD_MMC, "/hello.txt", "World!\n");
-		ReadFile(SD_MMC, "/hello.txt");
-		DeleteFile(SD_MMC, "/foo.txt");
-		RenameFile(SD_MMC, "/hello.txt", "/foo.txt");
-		ReadFile(SD_MMC, "/foo.txt");
+		CreateDir(SD_MMC, "/logs");
+		// ListDir(SD_MMC, "/", 0);
+		// CreateDir(SD_MMC, "/mydir");
+		// ListDir(SD_MMC, "/", 0);
+		// RemoveDir(SD_MMC, "/mydir");
+		// ListDir(SD_MMC, "/", 2);
+		// WriteFile(SD_MMC, "/hello.txt", "Hello ");
+		// AppendFile(SD_MMC, "/hello.txt", "World!");
+		// ReadFile(SD_MMC, "/hello.txt");
+		// DeleteFile(SD_MMC, "/foo.txt");
+		// RenameFile(SD_MMC, "/hello.txt", "/foo.txt");
+		// ReadFile(SD_MMC, "/foo.txt");
 
 		TestFileIO(SD_MMC, "/test.txt");
-		Serial.printf("Total space: %lluMB\n", SD_MMC.totalBytes() / (1024 * 1024));
-		Serial.printf("Used space: %lluMB\n", SD_MMC.usedBytes() / (1024 * 1024));
+		Logf("Total space: %lluMB", SD_MMC.totalBytes() / (1024 * 1024));
+		Logf("Used space: %lluMB", SD_MMC.usedBytes() / (1024 * 1024));
 	}
 
 	// ////////////////////////////////////////////////////////////////////////////////
-	// /// @brief Get a sorted list of all files in the SPIFFS file system.
+	// /// @brief Get a sorted list of all files in the SD_MMC file system.
 	// /// @return A vector of fs::File objects sorted by their path.
-	// std::vector<LogFileSummary> GetAllFilesSorted()
-	// {
-	// 	const char *logPath = _fsLog ? _fsLog.path() : "";
-	// 	std::vector<LogFileSummary> files;
-	// 	auto root = SPIFFS.open("/");
-	// 	auto file = root.openNextFile();
-	// 	while (file)
-	// 	{
-	// 		// Note. If a file is modified during this stage, it will be duplicated in the list
+	std::vector<LogFileSummary> GetAllFilesSorted()
+	{
+		const char *logPath = _fsLog ? _fsLog.path() : "";
+		std::vector<LogFileSummary> files;
+		auto root = SD_MMC.open("/");
+		auto file = root.openNextFile();
+		while (file)
+		{
+			// Note. If a file is modified during this stage, it will be duplicated in the list
 
-	// 		auto it = std::find_if(files.begin(), files.end(),
-	// 							   [&](const LogFileSummary &log)
-	// 							   { return strcmp(log.Path.c_str(), file.path()) == 0; });
-	// 		if (it == files.end()) // Only add if not already in the list
-	// 		{
-	// 			files.push_back(LogFileSummary(file, strcmp(file.path(), logPath) == 0));
-	// 		}
-	// 		file = root.openNextFile();
-	// 	}
+			auto it = std::find_if(files.begin(), files.end(),
+								   [&](const LogFileSummary &log)
+								   { return strcmp(log.Path.c_str(), file.path()) == 0; });
+			if (it == files.end()) // Only add if not already in the list
+			{
+				files.push_back(LogFileSummary(file, strcmp(file.path(), logPath) == 0));
+			}
+			file = root.openNextFile();
+		}
 
-	// 	// Sort the list of files by their path
-	// 	std::sort(files.begin(), files.end(), [](const LogFileSummary &a, const LogFileSummary &b)
-	// 			  { return strcmp(a.Path.c_str(), b.Path.c_str()) < 0; });
-	// 	return files;
-	// }
+		// Sort the list of files by their path
+		std::sort(files.begin(), files.end(), [](const LogFileSummary &a, const LogFileSummary &b)
+				  { return strcmp(a.Path.c_str(), b.Path.c_str()) < 0; });
+		return files;
+	}
 
 	std::string GetState()
 	{
@@ -128,7 +136,7 @@ public:
 	{
 		if (!_isMounted)
 			return "N/A";
-		return SwipePageBase::MakeKbPercent(SD_MMC.usedBytes(), SD_MMC.totalBytes(), SwipePageBase::MB);
+		return MakeKbPercent(SD_MMC.usedBytes(), SD_MMC.totalBytes(), MEGAB);
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -136,22 +144,22 @@ public:
 	// This function lists the contents of a directory up to a specified number of levels deep.
 	void ListDir(fs::FS &fs, const char *dirname, uint8_t levels)
 	{
-		Serial.printf("Listing directory: %s\n", dirname);
+		Logf("Listing directory: %s", dirname);
 		if (!_isMounted)
 		{
-			Serial.println("SD_MMC not mounted");
+			Logln("SD_MMC not mounted");
 			return;
 		}
 
 		File root = fs.open(dirname);
 		if (!root)
 		{
-			Serial.println("Failed to open directory");
+			Logln("Failed to open directory");
 			return;
 		}
 		if (!root.isDirectory())
 		{
-			Serial.println("Not a directory");
+			Logln("Not a directory");
 			return;
 		}
 
@@ -161,7 +169,7 @@ public:
 			if (file.isDirectory())
 			{
 				Serial.print("  DIR : ");
-				Serial.println(file.name());
+				Logln(file.name());
 				if (levels)
 				{
 					ListDir(fs, file.path(), levels - 1);
@@ -169,10 +177,7 @@ public:
 			}
 			else
 			{
-				Serial.print("  FILE: ");
-				Serial.print(file.name());
-				Serial.print("  SIZE: ");
-				Serial.println(file.size());
+				Logf("  FILE: %s  SIZE: %lu", file.name(), file.size());
 			}
 			file = root.openNextFile();
 		}
@@ -183,14 +188,14 @@ public:
 	// This function creates a directory at the specified path.
 	void CreateDir(fs::FS &fs, const char *path)
 	{
-		Serial.printf("Creating Dir: %s\n", path);
+		Logf("Creating Dir: %s", path);
 		if (!_isMounted)
 		{
-			Serial.println("SD_MMC not mounted");
+			Logln("SD_MMC not mounted");
 			return;
 		}
 		if (!fs.mkdir(path))
-			Serial.println("mkdir failed");
+			Logln("mkdir failed");
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -198,14 +203,14 @@ public:
 	// This function removes a directory at the specified path.
 	void RemoveDir(fs::FS &fs, const char *path)
 	{
-		Serial.printf("Removing Dir: %s\n", path);
+		Logf("Removing Dir: %s", path);
 		if (!_isMounted)
 		{
-			Serial.println("SD_MMC not mounted");
+			Logln("SD_MMC not mounted");
 			return;
 		}
 		if (!fs.rmdir(path))
-			Serial.println("rmdir failed");
+			Logln("rmdir failed");
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -213,16 +218,16 @@ public:
 	// This function reads the contents of a file and prints it to the serial console.
 	void ReadFile(fs::FS &fs, const char *path)
 	{
-		Serial.printf("Reading file: %s\n", path);
+		Logf("Reading file: %s", path);
 		if (!_isMounted)
 		{
-			Serial.println("SD_MMC not mounted");
+			Logln("SD_MMC not mounted");
 			return;
 		}
 		File file = fs.open(path);
 		if (!file)
 		{
-			Serial.println("Failed to open file for reading");
+			Logln("Failed to open file for reading");
 			return;
 		}
 
@@ -238,25 +243,25 @@ public:
 	// This function writes a message to a file at the specified path.
 	void WriteFile(fs::FS &fs, const char *path, const char *message)
 	{
-		Serial.printf("Writing file: %s\n", path);
+		Logf("Writing file: %s", path);
 		if (!_isMounted)
 		{
-			Serial.println("SD_MMC not mounted");
+			Logln("SD_MMC not mounted");
 			return;
 		}
 		File file = fs.open(path, FILE_WRITE);
 		if (!file)
 		{
-			Serial.println("Failed to open file for writing");
+			Logln("Failed to open file for writing");
 			return;
 		}
 		if (file.print(message))
 		{
-			Serial.println("File written");
+			Logln("File written");
 		}
 		else
 		{
-			Serial.println("Write failed");
+			Logln("Write failed");
 		}
 	}
 
@@ -265,21 +270,21 @@ public:
 	// This function appends a message to a file at the specified path.
 	void AppendFile(fs::FS &fs, const char *path, const char *message)
 	{
-		Serial.printf("Appending to file: %s\n", path);
+		Logf("Appending to file: %s", path);
 		if (!_isMounted)
 		{
-			Serial.println("SD_MMC not mounted");
+			Logln("SD_MMC not mounted");
 			return;
 		}
 
 		File file = fs.open(path, FILE_APPEND);
 		if (!file)
 		{
-			Serial.println("Failed to open file for appending");
+			Logln("Failed to open file for appending");
 			return;
 		}
 		if (!file.print(message))
-			Serial.println("Append failed");
+			Logln("Append failed");
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -287,14 +292,14 @@ public:
 	// This function renames a file from path1 to path2.
 	void RenameFile(fs::FS &fs, const char *path1, const char *path2)
 	{
-		Serial.printf("Renaming file %s to %s\n", path1, path2);
+		Logf("Renaming file %s to %s", path1, path2);
 		if (!_isMounted)
 		{
-			Serial.println("SD_MMC not mounted");
+			Logln("SD_MMC not mounted");
 			return;
 		}
 		if (!fs.rename(path1, path2))
-			Serial.println("Rename failed");
+			Logln("Rename failed");
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -302,14 +307,14 @@ public:
 	// This function deletes a file at the specified path.
 	void DeleteFile(fs::FS &fs, const char *path)
 	{
-		Serial.printf("Deleting file: %s\n", path);
+		Logf("Deleting file: %s", path);
 		if (!_isMounted)
 		{
-			Serial.println("SD_MMC not mounted");
+			Logln("SD_MMC not mounted");
 			return;
 		}
 		if (!fs.remove(path))
-			Serial.println("Delete failed");
+			Logln("Delete failed");
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -336,18 +341,18 @@ public:
 				len -= toRead;
 			}
 			end = millis() - start;
-			Serial.printf("%u bytes read for %lu ms\n", flen, end);
+			Logf("%u bytes read for %lu ms", flen, end);
 			file.close();
 		}
 		else
 		{
-			Serial.println("Failed to open file for reading");
+			Logln("Failed to open file for reading");
 		}
 
 		file = fs.open(path, FILE_WRITE);
 		if (!file)
 		{
-			Serial.println("Failed to open file for writing");
+			Logln("Failed to open file for writing");
 			return;
 		}
 
@@ -358,7 +363,110 @@ public:
 			file.write(buf, 512);
 		}
 		end = millis() - start;
-		Serial.printf("%u bytes written for %lu ms\n", 2048 * 512, end);
+		Logf("%u bytes written for %lu ms", 2048 * 512, end);
 		file.close();
+	}
+
+	////////////////////////////////////////////////////////////////////////////////
+	/// @brief Start a new logging file or open the existing one
+	void StartLogFile(std::vector<std::string> *pMainLog)
+	{
+		if (!xSemaphoreTake(_mutexLog, portMAX_DELAY))
+			return;
+
+		_logLength = -1; // Reset the log length
+		// Open the current file if already exists
+		if (_fsLog)
+		{
+			_fsLog.println("**** CLOSING EXISTING FILE FOR ROLLOVER ****");
+			_fsLog.close(); // Close the existing log file
+		}
+
+		// Remove old log files if too much drive is used
+		Serial.print("DUMP SD Files\n");
+		auto files = GetAllFilesSorted();
+
+		// Remove non-log files from the list
+		for (int i = files.size() - 1; i >= 0; i--)
+			if (files[i].Path.find(LOG_FILE_PREFIX) != 0 || files[i].IsCurrentLog)
+				files.erase(files.begin() + i);
+
+		// Starting at the first item, remove files until we have less than 250kb available
+		size_t totalFree = SD_MMC.totalBytes() - SD_MMC.usedBytes();
+		for (const auto &file : files)
+		{
+			if (totalFree > 1024 * 1024)
+				break;
+
+			totalFree += file.Size;
+			SD_MMC.remove(file.Path.c_str());
+		}
+
+		// Display the file we are working with
+		for (const auto &file : files)
+			Serial.printf("Log file: %s (%d bytes)\r\n", file.Path.c_str(), file.Size);
+
+		// Open existing or create a new log file
+		auto filename = LOG_FILE_PREFIX + _handyTime.FileSafe() + ".txt";
+		Serial.printf("Log open file: %s\n", filename.c_str());
+		if (SD_MMC.exists(filename.c_str()))
+		{
+			Serial.println("\tAPPENDING");
+			_fsLog = SD_MMC.open(filename.c_str(), FILE_APPEND);
+			_fsLog.println("**** APPENDING EXISTING FILE ****");
+			_logLength = _fsLog.size(); // Get the size of the existing log file
+		}
+		if (!_fsLog)
+		{
+			Serial.println("\tCREATING");
+			_fsLog = SD_MMC.open(filename.c_str(), FILE_WRITE);
+			if (_fsLog)
+				_logLength = 0;
+			else
+				Serial.println("\t*** ERROR : Failed to create Log.");
+		}
+		xSemaphoreGive(_mutexLog);
+
+		// Copy the main log into the log file
+		if (pMainLog != NULL)
+			for (const auto &line : *pMainLog)
+				AppendLog(line.c_str());
+	}
+
+	////////////////////////////////////////////////////////////////////////////////
+	/// @brief Save the string to the file system.
+	void AppendLog(const char *message)
+	{
+		if (_logLength < 0)
+			return;
+
+		_logLength += strlen(message);
+
+		if (_logLength > 100000)
+		{
+			std::vector<std::string> logHeader;
+			logHeader.push_back(StringPrintf("***** Rolling over from log file, length %s", _fsLog.path()));
+			StartLogFile(&logHeader);
+		}
+
+		if (!xSemaphoreTake(_mutexLog, portMAX_DELAY))
+			return;
+		if (_fsLog)
+		{
+			_fsLog.println(message);
+			_fsLog.flush();
+		}
+		xSemaphoreGive(_mutexLog);
+	}
+
+	////////////////////////////////////////////////////////////////////////////////
+	/// @brief Close the log file if it is open.
+	void CloseLogFile()
+	{
+		if (_fsLog)
+		{
+			_fsLog.close();
+			_logLength = -1; // Reset the log length
+		}
 	}
 };

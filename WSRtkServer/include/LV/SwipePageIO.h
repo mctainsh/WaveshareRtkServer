@@ -33,17 +33,19 @@ public:
 		AppendRowTitle("Flash", TblFormat::Highlight);
 		AppendRowTitle("Sketch", TblFormat::Right);
 		AppendRowTitle("Size", TblFormat::Right);
-		AppendRowTitle("SPIFFS");
+		AppendRowTitle("SPIFFS", TblFormat::Right);
 
 		// PSRAM
-		AppendRowTitle("PSRAM");
+		AppendRowTitle("PSRAM", TblFormat::Right);
 
 		// WiFi
 		AppendRowTitle("WiFi", TblFormat::Highlight);
+		AppendRowTitle("Status");
 		AppendRowTitle("Strength");
 		AppendRowTitle("A/P Name");
 		AppendRowTitle("IP Address");
 		AppendRowTitle("Host Name");
+		AppendRowTitle("Type");
 	}
 
 	void RefreshData()
@@ -59,9 +61,11 @@ public:
 		SetTableValue(6, MakeKbPercent(SPIFFS.usedBytes(), SPIFFS.totalBytes()).c_str());
 
 		// PSRAM
-		SetTableValue(7, MakeKbPercent(ESP.getFreePsram(), ESP.getPsramSize()).c_str());
+		SetTableValue(7, MakeKbPercent(ESP.getPsramSize()-ESP.getFreePsram(), ESP.getPsramSize()).c_str());
 
-		// WiFi
+// WiFi
+auto status = WiFi.status();
+		SetTableString(9, WifiStatus(status));	
 		auto strength = WiFi.RSSI();
 		std::string strengthTitle = "Unusable";
 		if (strength > -30)
@@ -73,13 +77,13 @@ public:
 		else if (strength > -80)
 			strengthTitle = "Not Good";
 		if (strength == 0)
-			SetTableValue(9, "Not Connected");
+			SetTableValue(10, "Not Connected");
 		else
-			SetTableValue(9, (std::to_string(strength) + "dBm " + strengthTitle).c_str());
-		SetTableValue(10, WiFi.getHostname());
-		SetTableValue(11, WiFi.localIP().toString().c_str());
-		SetTableValue(12, (_mdnsHostName + ".local").c_str());
-		SetTableValue(13,
+			SetTableValue(10, (std::to_string(strength) + "dBm " + strengthTitle).c_str());
+		SetTableValue(11, WiFi.getHostname());
+		SetTableValue(12, status == WL_CONNECTED ? WiFi.localIP().toString().c_str() : "192.168.4.1");
+		SetTableValue(13, (_mdnsHostName + ".local").c_str());
+		SetTableValue(14,
 			WiFi.getMode() == WIFI_MODE_NULL
 				? "N/A"
 				: (WiFi.getMode() == WIFI_STA

@@ -86,7 +86,8 @@ public:
 			AddMenuBarItem(currentUrl, "Caster 3", "/caster3log");
 		AddMenuBarItem(currentUrl, "Caster Graph", "/castergraph");
 		AddMenuBarItem(currentUrl, "<i class='bi bi-thermometer-sun'></i>", "/tempGraph");
-		AddMenuBarItem(currentUrl, "<i class='bi bi-folder'></i>", "/files");
+		AddMenuBarItem(currentUrl, "<i class='bi bi-folder'></i>", "/flash_files");
+		AddMenuBarItem(currentUrl, "<i class='bi bi-sd-card'></i>", "/sd_files");
 		AddMenuBarItem(currentUrl, "<i class='bi bi-gear'></i>", "/settings");
 		_client.println("</ul></div>");
 
@@ -216,6 +217,7 @@ public:
 		client.flush();
 		Logln("*** RESTART DEVICE ***");
 		_myFiles.CloseLogFile(); 
+		_sdFile.CloseLogFile(); 
 		delay(1000);
 
 		ESP.restart();

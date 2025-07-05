@@ -1,9 +1,13 @@
 #pragma once
 
+#include <SPI.h> // Needed for time
+#include <SensorPCF85063.hpp>
+
 #include <WiFi.h>
 #include "time.h"
 #include "HandyLog.h"
-
+#include "Global.h"
+#include <lvgl.h> // Add this include for lv_label_set_text
 
 ///////////////////////////////////////////////////////////////////////////////
 // Time functions
@@ -19,27 +23,44 @@ private:
 	unsigned long _lastSyncTime = 0; // Last time we synced the time
 	unsigned long _syncInterval = 0; // Default sync interval of 1 hour
 
-
+	SensorPCF85063 _rtc;	  // Create an instance of the PCF85063 RTC
+	bool _rtcWorking = false; // Time setup failed, so we will not try to read the time
 public:
+	void Setup()
+	{
+		// Initialize the RTC module using I2C with specified SDA and SCL pins
+		if (!_rtc.begin(Wire, I2C_SDA, I2C_SCL))
+		{
+			Logln("Failed to find PCF85063 'Clock' - check your wiring!");
+			_rtcWorking = false; // RTC initialization failed
+			return;				 // Do not continue if RTC initialization fails
+		}
+		Logln("PCF85063 RTC initialized successfully");
+		_rtcWorking = true; // RTC initialized successfully
+
+		if (!_rtc.isClockIntegrityGuaranteed())
+			Logln("[ERROR]:Clock integrity is not guaranteed; oscillator has stopped or has been interrupted");
+	}
+
 	void EnableTimeSync(std::string tzMinutes)
 	{
 		if (!tzMinutes.empty())
 		{
-			 try 
-			 {
-        		 float minutes = std::stof(tzMinutes);
-				 _gmtOffset_sec = static_cast<long>(minutes * 60); // Convert minutes to seconds
-				 _daylightOffset_sec = 0; // Default to no daylight saving time
-				 Logf("Timezone set to %s minutes (%ld seconds)", tzMinutes.c_str(), _gmtOffset_sec);
-    		} 
-			catch (const std::invalid_argument& e) 
+			try
+			{
+				float minutes = std::stof(tzMinutes);
+				_gmtOffset_sec = static_cast<long>(minutes * 60); // Convert minutes to seconds
+				_daylightOffset_sec = 0;						  // Default to no daylight saving time
+				Logf("Timezone set to %s minutes (%ld seconds)", tzMinutes.c_str(), _gmtOffset_sec);
+			}
+			catch (const std::invalid_argument &e)
 			{
 				Logf("Invalid timezone minutes: %s", tzMinutes.c_str());
-    		} 
-			catch (const std::out_of_range& e) 
+			}
+			catch (const std::out_of_range &e)
 			{
 				Logf("Timezone minutes out of range: %s", tzMinutes.c_str());
-    		}
+			}
 		}
 		_timeSyncEnabled = true;
 	}
@@ -63,6 +84,9 @@ public:
 			{
 				Logln("NTP time synced", false);
 				_syncInterval = 60 * 60 * 1000; // Set sync interval to 1 hour
+				if (_rtcWorking)
+					_rtc.setDateTime(info->tm_year + 1900, info->tm_mon + 1, info->tm_mday,
+									 info->tm_hour, info->tm_min, info->tm_sec);
 				return true;
 			}
 			else
@@ -75,7 +99,7 @@ public:
 
 		// Try to get the local time
 		if (getLocalTime(info))
-			return true; 
+			return true;
 
 		// If we failed to get the local time, try again after a short delay
 		// .. program runs real slow here
@@ -84,8 +108,28 @@ public:
 	}
 
 	///////////////////////////////////////////////////////////////////////////
+	// Update the page title with the current date and time
+	void UpdatePageTitle(lv_obj_t *plabel)
+	{
+		if (!_rtcWorking || !plabel)
+			return;
+
+		struct tm timeinfo;
+		if (!ReadTime(&timeinfo))
+			return; // Failed to read time
+
+		// Format the date and time
+		char buf[64];
+		size_t written = strftime(buf, sizeof(buf), "%A, %B %d %Y %H:%M:%S", &timeinfo);
+		if (written < 1)
+			return; // Failed to format time
+
+		lv_label_set_text(plabel, buf);
+	}
+
+	///////////////////////////////////////////////////////////////////////////
 	// Get a formatted time
-	std::string	LongString()
+	std::string LongString()
 	{
 		struct tm timeinfo;
 		if (!ReadTime(&timeinfo))
@@ -101,7 +145,7 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////
 	// Get a compressed format like 2025-06-22 435544
-	std::string	FileSafe()
+	std::string FileSafe()
 	{
 		struct tm timeinfo;
 		if (!ReadTime(&timeinfo))

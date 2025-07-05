@@ -66,9 +66,14 @@ public:
 			_wifiConnectingCountDown--;
 			xSemaphoreGive(_xMutex);
 
+				// Let the LVGL library handle its tasks
+	//lv_task_handler();
+
 //			auto message = StringPrintf("%s -> Retry %ds", APP_VERSION, _wifiConnectingCountDown);
 //			auto message = StringPrintf("%s -> Retry %ds", _wifiManager.getWiFiSSID(), _wifiConnectingCountDown);
 			auto message = StringPrintf("[R:%d] %s", _wifiConnectingCountDown, WifiStatus(WiFi.status()));
+
+
 
 			Serial.println(message.c_str());
 			_display.SetCell(message, DISPLAY_PAGE, DISPLAY_ROW);

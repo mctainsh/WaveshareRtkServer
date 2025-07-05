@@ -8,9 +8,6 @@
 #include "Hardware/SdFile.h"
 #include <LV/SwipePageSettings.h>
 
-#include <SPI.h> // Needed for time
-#include <SensorPCF85063.hpp>
-
 #include "Hardware/PowerManagementSystem.h"
 
 #include <WiFiManager.h> //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
@@ -36,10 +33,8 @@ History _history;					 // Temperature history
 
 WebPortal _webPortal;
 
-uint8_t _button1Current = HIGH; // Top button on left
-uint8_t _button2Current = HIGH; // Bottom button when
-
-MyFiles _myFiles;
+MyFiles _myFiles; // Flash files
+SDFile _sdFile;	  // SD Card files
 MyDisplay _display;
 GpsParser _gpsParser(_display);
 NTRIPServer _ntripServer0(0);
@@ -55,19 +50,14 @@ PowerManagementSystem _powerManagementSystem; // Power management system
 // unsigned long _wifiFullResetTime = 0;
 wl_status_t _lastWifiStatus = wl_status_t::WL_NO_SHIELD;
 
-// bool IsButtonReleased(uint8_t button, uint8_t *pCurrent);
-// bool IsWifiConnected();
-
-SensorPCF85063 _rtc; // Create an instance of the PCF85063 RTC
-
-SDFile _sdFile; // Create an instance of SDFile
+bool IsWifiConnected();
 LVCore _lvCore;
 
 // Pages
 SwipePageGps _systemPageGps;
 SwipePageGps _swipePageGps;
 SwipePageIO _swipePageIO;
-//SwipePagePower _swipePagePower;
+// SwipePagePower _swipePagePower;
 SwipePageSettings _swipePageSettings;
 
 extern PagePower *_pagePower;
@@ -78,47 +68,69 @@ extern PagePower *_pagePower;
 void setup()
 {
 	Serial.begin(115200); // Initialize serial communication for debugging
-	while (!Serial)
-		;		// Wait for serial port to connect (uncomment if needed)
-	delay(100); // Wait for a short time to ensure the serial connection is established
+	delay(100);			  // Wait for a short time to ensure the serial connection is established
 	Serial.setDebugOutput(true);
 	Serial.println("Waveshare RTK Server " APP_VERSION); // while(!Serial);
 
-	_sdFile.Setup(); // Setup the SD card
+	SetupLog(); // Call this before any logging
+	Logf("Starting %s. Cores:%d", APP_VERSION, configNUM_CORES);
+
+	// Setup the serial buffer for the GPS port
+	Logf("GPS Buffer size %d", Serial2.setRxBufferSize(GPS_BUFFER_SIZE));
+
+	Logln("Enable WIFI");
+	SetupWiFiEvents();
+
+	// Check if the internal time chip is working
+	_handyTime.Setup(); // Setup the time functions
+
+	// Setup the SD Card
+	_sdFile.Setup();
+
+	// Verify file IO (This can take up tpo 60s is SPIFFs not initialised)
+	Logln("Setup SPIFFS");
+	// tft.println("This can take up to 60 seconds ...");
+	if (_myFiles.Setup())
+		Logln("Test file IO");
+	else
+		Logln("E100 - File IO failed");
+	_myFiles.LoadString(_baseLocation, BASE_LOCATION_FILENAME);
+
+	// Load the NTRIP server settings
+	Logln("Setup NTRIP Connections");
+	_ntripServer0.LoadSettings();
+	_ntripServer1.LoadSettings();
+	_ntripServer2.LoadSettings();
+	_gpsParser.Setup(&_ntripServer0, &_ntripServer1, &_ntripServer2);
+
+	// Setup host name to have RTK_ prefix
+	WiFi.setHostname(MakeHostName().c_str());
 
 	// Initialize the QMI8658 IMU sensor
 	// Try to initialize the RTC module using I2C with specified SDA and SCL pins
-	if (!_rtc.begin(Wire, I2C_SDA, I2C_SCL))
-	{
-		Serial.println("Failed to find PCF85063 'Clock' - check your wiring!");
-	// 	// Enter an infinite loop to halt the program
-	// 	while (1)
-	// 	{
-	// 		Serial.println("Failed to find PCF85063 - check your wiring!");
-	// 	}
-	}
+	// if (!_rtc.begin(Wire, I2C_SDA, I2C_SCL))
+	//	Serial.println("Failed to find PCF85063 'Clock' - check your wiring!");
 
 	// Set the defined date and time on the RTC
 	//   rtc.setDateTime(year, month, day, hour, minute, second);
 
-	if (!_rtc.isClockIntegrityGuaranteed())
-	{
-	 	Serial.println("[ERROR]:Clock integrity is not guaranteed; oscillator has stopped or has been interrupted");
-	}
+	// if (!_rtc.isClockIntegrityGuaranteed())
+	//	Serial.println("[ERROR]:Clock integrity is not guaranteed; oscillator has stopped or has been interrupted");
 
-	_lvCore.Setup(); // Initialize LVGL and the display
+	// Initialize LVGL and the display
+	_lvCore.Setup();
 
 	// Create the main screen (Use lv_scr_act())
 	ui_MainScreen_screen_init();
 
 	// Create the GPS status page
+	_systemPageGps.Create(UIPageGroupPanel);	 // Create the GPS status page and add
 	_swipePageIO.Create(UIPageGroupPanel);		 // Create the GPS status page and add
 	_swipePageSettings.Create(UIPageGroupPanel); // Create the settings page and add
-	//_swipePagePower.Create(UIPageGroupPanel); 
-	_systemPageGps.Create(UIPageGroupPanel);	 // Create the GPS status page and add
+	//_swipePagePower.Create(UIPageGroupPanel);
 
 	// Fix the startup scroll offset error
-	lv_obj_scroll_to_view(_swipePageSettings.GetPanel(), LV_ANIM_OFF);
+	lv_obj_scroll_to_view(_swipePageIO.GetPanel(), LV_ANIM_OFF);
 
 	_swipePageIO.RefreshData();
 
@@ -127,49 +139,92 @@ void setup()
 	Serial.println(" ========================== Setup done ========================== ");
 }
 
-u32_t _tick;
-
 ///////////////////////////////////////////////////////////////////////////////
 // This function is called repeatedly in a loop
 // It handles the LVGL tasks and allows the GUI to update
 void loop()
 {
-	lv_task_handler(); // Let the GUI do its work
+	// Let the LVGL library handle its tasks
+	lv_task_handler();
 
-	if (millis() - _tick < 1000) // Update every second
-		return;
-	_tick = millis(); // Update the tick time
-
-	// Check power management system
-	_powerManagementSystem.PowerLoop();
-	if( _pagePower != nullptr )
+	// Trigger something 1 every seconds
+	int t = millis();
+	_loopPersSecondCount++;
+	if ((t - _fastLoopWaitTime) > 1000)
 	{
-		// Refresh the power page if it is open
-		//_pagePower->RefreshData();
-		_powerManagementSystem.RefreshData(_pagePower);
+		// Refresh RTK Display
+		for (int i = 0; i < RTK_SERVERS; i++)
+			_display.RefreshRtk(i);
+		_fastLoopWaitTime = t;
+		_loopPersSecondCount = 0;
+		_display.DisplayTime(t);
+
+		// Check power management system
+		_powerManagementSystem.PowerLoop();
+		if (_pagePower != nullptr)
+		{
+			// Refresh the power page if it is open
+			//_pagePower->RefreshData();
+			_powerManagementSystem.RefreshData(_pagePower);
+		}
+
+		// If WiFI disconnected refresh the WiFi status
+		if (WiFi.status() != WL_CONNECTED)
+			_swipePageIO.RefreshData();
+
+		_handyTime.UpdatePageTitle(_lvCore._label);
 	}
-//	_powerManagementSystem.RefreshData(_swipePagePower);
-	//_swipePagePower.RefreshData(_powerManagementSystem.Get());
 
+	// Run every 10 seconds
+	if ((t - _slowLoopWaitTime) > 10000)
+	{
+		_swipePageIO.RefreshData();
 
+		// Check memory pressure
+		auto free = ESP.getFreeHeap();
+		auto total = ESP.getHeapSize();
 
-	 char buf[64];
+		auto temperature = _history.CheckTemperatureLoop();
 
-	struct tm timeinfo;
-	// // Get the time C library structure
-	 _rtc.getDateTime(&timeinfo);
+		// Update the loop performance counter
+		Serial.printf("%s Loop %d G:%ld Heap:%d%% %.1f°C %s\n",
+					  _handyTime.LongString().c_str(),
+					  _loopPersSecondCount,
+					  _gpsParser.GetGpsBytesRec(),
+					  (int)(100.0 * free / total),
+					  temperature,
+					  WiFi.localIP().toString().c_str());
 
-	size_t written = strftime(buf, 64, "%A, %B %d %Y %H:%M:%S", &timeinfo);
+		// Disable Access point mode
+		if (WiFi.getMode() != WIFI_STA && WiFi.status() == WL_CONNECTED)
+		{
+			Logln("W105 - WiFi mode is not WIFI_STA, resetting");
+			WiFi.softAPdisconnect(false);
+			//_wifiManager.setConfigPortalTimeout(60);
+			Logln("Set WIFI_STA mode");
+			WiFi.mode(WIFI_STA);
+			_swipePageIO.RefreshData();
+		}
 
-	if (written != 0)
-	 {
-	 	Serial.println(buf);
-	 lv_label_set_text(_lvCore._label, buf);
-	 }
+		// Performance text
+		std::string perfText = StringPrintf("%d%% %.0fC %ddBm",
+											(int)(100.0 * free / total),
+											temperature,
+											WiFi.RSSI());
+		_display.SetPerformance(perfText);
+		_slowLoopWaitTime = t;
+	}
 
-	// written = strftime(buf, 64, "%b %d %Y %H:%M:%S", &timeinfo);
-	// if (written != 0)
-	//	Serial.println(buf);
+	// // Check for new data GPS serial data
+	if (IsWifiConnected())
+	{
+		_display.SetGpsConnected(_gpsParser.ReadDataFromSerial(Serial2));
+		_webPortal.Loop();
+	}
+	else
+	{
+		_display.SetGpsConnected(false);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -178,4 +233,78 @@ void SaveBaseLocation(std::string newBaseLocation)
 {
 	_baseLocation = newBaseLocation;
 	_myFiles.WriteFile(BASE_LOCATION_FILENAME, newBaseLocation.c_str());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Check Wifi and reconnect
+bool IsWifiConnected()
+{
+	// Is the WIFI connected?
+	wl_status_t status = WiFi.status();
+	if (_lastWifiStatus != status)
+	{
+		_lastWifiStatus = status;
+		Logf("Wifi Status %d %s", status, WifiStatus(status));
+		//	_display.SetWebStatus(status);
+		_display.RefreshWiFiState();
+		//_wifiFullResetTime = millis();
+
+		// Reconnected
+		if (status == WL_CONNECTED)
+		{
+			Logf("IP:%s Host:%s", WiFi.localIP().toString().c_str(), _mdnsHostName.c_str());
+			// Setup the access point to prevend device getting stuck on a nearby network
+			// auto res = _wifiManager.startConfigPortal(WiFi.getHostname(), AP_PASSWORD);
+			// if (!res)
+			//	Logln("Failed to start config Portal (Maybe cos non-blocked)");
+			// else
+			//	Logln("Config portal started");
+
+			// Start the web portal
+			//_wifiManager.startWebPortal();
+
+			// TODO : Set the mDNS host name
+			// TODO : Get latest time from the RTC
+			// TODO : Save the SSID name
+		}
+
+		_swipePageIO.RefreshData();
+	}
+
+	if (status == WL_CONNECTED)
+		return true;
+
+	//	if (status != WL_DISCONNECTED)
+	//		return false;
+
+	// Block here until we are connected again
+	_webPortal.Setup();
+	return false;
+
+	// // Reset the WIFI if Disconnected (This seems to be unrecoverable)
+	// auto delay = millis() - _wifiFullResetTime;
+	// auto message = StringPrintf("[X:%d] FORCE RECONNECT", delay / 1000);
+	// Serial.println(message.c_str());
+	// _display.SetCell(message, DISPLAY_PAGE, DISPLAY_ROW);
+
+	// // Start the connection process
+	// // Logln("E310 - No WIFI");
+	// unsigned long t = millis();
+	// if (delay < WIFI_STARTUP_TIMEOUT)
+	// 	return false;
+
+	// //_wifiManager.resetSettings();
+
+	// Logln("E107 - Try resetting WIfi");
+	// _wifiFullResetTime = t;
+
+	// // We will not block here until the WIFI is connected
+	// _wifiManager.setConfigPortalBlocking(false);
+	// _wifiManager.startConfigPortal(WiFi.getHostname(), AP_PASSWORD);
+	// // WiFi.mode(WIFI_STA);
+	// // wl_status_t beginState = WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+	// // Logf("WiFi Connecting %d %s\r\n", beginState, WifiStatus(beginState));
+	// _display.RefreshWiFiState();
+
+	return false;
 }

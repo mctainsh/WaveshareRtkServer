@@ -1,13 +1,7 @@
 #pragma once
 
 #include "Global.h"
-#ifdef T_DISPLAY_S3
 #include "driver/temp_sensor.h"
-#endif
-#ifdef T_DISPLAY_S2
-// #include "C:\Users\john\.platformio\packages\framework-arduinoespressif32\tools\sdk\esp32s2\include\driver\esp32s2\include\driver\temp_sensor.h"
-// #include "driver/temperature_sensor.h"
-#endif
 
 #define TEMP_HISTORY_SIZE (24 * 60)	 // 1 day of history at 60 second intervals
 #define TEMP_INTERVAL_MS (60 * 1000) // 1 minute interval
@@ -61,7 +55,6 @@ public:
 		_timeOfLastTemperature = millis();
 		float tsens_out = 0.0;
 
-#ifdef T_DISPLAY_S3
 		// Enable temperature sensor (Will fail first time called. Probably cos already on?)
 		if ((temp_sensor_start()) != ESP_OK)
 			Logln("E100 - Failed to start temperature sensor");
@@ -76,7 +69,7 @@ public:
 		// Disable the temperature sensor if it is not needed and save the power
 		if (temp_sensor_stop())
 			Logln("E102 - Failed to stop temperature sensor");
-#endif
+
 
 		// Shuffle everything down then array
 		for (size_t i = 0; i < TEMP_HISTORY_SIZE - 1; i++)

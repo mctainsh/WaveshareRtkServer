@@ -5,15 +5,22 @@
 #include "Hardware/MyFiles.h"
 
 extern MyFiles _myFiles;
+extern SDFile _sdFile;	
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fancy HTML pages for the web portal
 class WebPageFileManager : public WebPageWrapper
 {
 private:
+bool _sdCard = false; // True if the SD card is used, false for SPIFFS
 public:
-	WebPageFileManager(WiFiClient &c) : WebPageWrapper(c)
+	WebPageFileManager(WiFiClient &c, bool sdCard) : WebPageWrapper(c)
 	{
+		_sdCard = sdCard;
+		if (_sdCard)
+			Logln("WebPageFileManager: SD Card");
+		else
+			Logln("WebPageFileManager: SPIFFS");
 	}
 
 	///////////////////////////////////////////////////////////////////////////////
@@ -37,7 +44,7 @@ public:
 		_client.printf("<h3 class='mt-4'>File Manager</h3>"
 					   "<pre style='font-family:Courier New, Courier, monospace; border:none;'>");
 
-		auto files = _myFiles.GetAllFilesSorted();
+		auto files = _sdCard ? _sdFile.GetAllFilesSorted() : _myFiles.GetAllFilesSorted();
 		for (const auto &file : files)
 		{
 			const int PADDED_SIZE = 30;
@@ -67,7 +74,12 @@ public:
 
 		auto filePath = _wifiManager.server->arg("RequestUrl");
 		Logf("RequestUrl %s", filePath.c_str());
-		fs::File file = SPIFFS.open(filePath.c_str());
+
+		fs::File file;
+		if( _sdCard )
+			file = SD_MMC.open(filePath.c_str());
+		else
+			file = SPIFFS.open(filePath.c_str());
 		if (file)
 		{
 			// Optional: send HTTP headers if needed
@@ -103,7 +115,12 @@ public:
 		{
 			auto filePath = _wifiManager.server->arg("delete");
 			Logf("Deleting file %s", filePath.c_str());
-			if (SPIFFS.remove(filePath.c_str()))
+			bool deleted;
+			if (_sdCard)
+				deleted = SD_MMC.remove(filePath.c_str());
+			else
+				deleted = SPIFFS.remove(filePath.c_str());
+			if ( deleted)
 				Logln("File deleted");
 			else
 				Logln("Failed to delete file");

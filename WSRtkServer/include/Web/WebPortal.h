@@ -12,6 +12,8 @@
 #include "WifiBusyTask.h"
 #include "WiFiEvents.h"
 
+extern std::string MakeHostName();
+
 extern WiFiManager _wifiManager;
 extern NTRIPServer _ntripServer0;
 extern NTRIPServer _ntripServer1;
@@ -20,7 +22,9 @@ extern GpsParser _gpsParser;
 extern MyDisplay _display;
 extern std::string _baseLocation;
 extern History _history;
+extern SDFile _sdFile; // SD card file system
 
+///////////////////////////////////////////////////////////////////////////////
 /// @brief Class manages the web pages displayed in the device.
 class WebPortal
 {
@@ -28,6 +32,8 @@ public:
 	void Loop();
 
 private:
+	const int WIFI_TIMEOUT_S = 120;
+
 	void OnBindServerCallback();
 	void ShowStatusHtml();
 	void GraphHtml() const;
@@ -36,24 +42,23 @@ private:
 	void GraphArray(WiFiClient &client, std::string divId, std::string title, const char *pBytes, int length) const;
 	void HtmlLog(const char *title, const std::vector<std::string> &log) const;
 
-	int _loops = 0;
-	bool _busyConnecting = false; // Used to prevent multiple connections at the same time
+	bool _busyConnecting = false; // Are we currently connecting to WiFi?
+	int _connnectCount = 0;		  // Number of time we have connected
+	int _loops = 0;				  // Use to prevent the PortalProcessing to take up too much processing time
 
 public:
 	/// @brief Startup the portal
 	void Setup()
+
 	{
 		if (_busyConnecting)
-		{
-			Logln("WebPortal already setting up, skipping");
 			return;
-		}
 		_busyConnecting = true;
+		// Make access point name
+		std::string apName = MakeHostName();
+		Logf("Start listening on %s", apName.c_str());
 
-		// Display the AP name
-
-		// Block here till we have WiFi credentials (good or bad)
-		Logf("Start listening on %s", MakeHostName().c_str());
+		// Loop here until we are in AP_STA mode
 		while (WiFi.getMode() != WIFI_AP_STA)
 		{
 			Logln("Waiting for WiFi mode to be set to AP_STA");
@@ -62,26 +67,22 @@ public:
 		}
 		Logln("Mode set to AP_STA");
 
-		const int WIFI_TIMEOUT_MS = 120;
-		WifiBusyTask wifiBusy(_display);
-		delay(100);
-		_wifiManager.setConfigPortalTimeout(WIFI_TIMEOUT_MS);
-		delay(100);
-		_wifiManager.setConfigPortalBlocking(true);
-
 		// Wait for WiFi to be ready
-		while( WiFi.status() == WL_NO_SHIELD )
+		while (WiFi.status() == WL_NO_SHIELD)
 		{
 			Logln("Waiting for WiFi to be ready");
 			delay(100);
 		}
 
+		delay(100);
+		_wifiManager.setConfigPortalTimeout(WIFI_TIMEOUT_S);
+		delay(100);
+
+		_wifiManager.setConfigPortalBlocking(true);
 		while (WiFi.status() != WL_CONNECTED)
 		{
-			Logf("Try WIFI Connection on %s", MakeHostName().c_str());
-			wifiBusy.StartCountDown(WIFI_TIMEOUT_MS);
+			Logf("Try WIFI Connection on %s", apName.c_str());
 			_wifiManager.autoConnect(WiFi.getHostname(), AP_PASSWORD);
-			_display.RefreshScreen();
 		}
 
 		// Setup callbacks
@@ -89,23 +90,47 @@ public:
 		_wifiManager.setConfigPortalTimeout(0);
 		_wifiManager.setConfigPortalBlocking(false);
 
-		// Make access point name
-		std::string apName = "RtkSvr-";
-		auto macAddress = WiFi.macAddress();
-		macAddress.replace(":", "");
-		apName += macAddress.c_str();
+		// auto macAddress = WiFi.macAddress();
+		// macAddress.replace(":", "");
+		// apName += macAddress.c_str();
 
 		// First parameter is name of access point, second is the password
-		// Don't know why this is called again
-		//_wifiManager.resetSettings();
 		Logf("Start AP %s", apName.c_str());
 		_wifiManager.autoConnect(apName.c_str(), AP_PASSWORD);
 
-		//
-		//_wifiManager.startWebPortal();
-		_display.RefreshScreen();
-		Logln("WebPortal setup complete");
+		// If we are connected, process the WiFi stuff
+		if (_connnectCount == 0)
+			FirstWiFiConnectionPostProcess();
+		_connnectCount++;
 		_busyConnecting = false;
+	}
+
+	///////////////////////////////////////////////////////////////////////////////
+	/// Process thee WiFi stuff for the first time
+	void FirstWiFiConnectionPostProcess()
+	{
+		_handyTime.EnableTimeSync(_myFiles.LoadString(TIMEZONE_MINUTES));
+		Logln("Time sync enabled");
+
+		auto logCopy = CopyMainLog();
+		_sdFile.StartLogFile(&logCopy);
+
+		// Setup the MDNS responder
+		// .. This will allow us to access the server using http://RtkServer.local
+		Logln("MDNS Read");
+		_myFiles.LoadString(_mdnsHostName, MDNS_HOST_FILENAME);
+		if (_mdnsHostName.empty())
+			_mdnsHostName = "RtkServer"; // Default hostname for mDNS
+
+		Logf("MDNS Setup %s", _mdnsHostName.c_str());
+		mdns_init();
+		mdns_hostname_set(_mdnsHostName.c_str());
+		mdns_instance_name_set(_mdnsHostName.c_str());
+		Serial.printf("MDNS responder started at http://%s.local\n", _mdnsHostName.c_str());
+		_display.RefreshScreen();
+
+		// Dump the file structure
+		_myFiles.StartupComplete();
 	}
 
 	///////////////////////////////////////////////////////////////////////////////
@@ -128,11 +153,20 @@ public:
 	}
 
 	///////////////////////////////////////////////////////////////////////////////
-	/// @brief Show the setting page
+	/// @brief Show File Manager for flash drive
 	void FileManagerHtml()
 	{
 		WiFiClient client = _wifiManager.server->client();
-		auto p = WebPageFileManager(client);
+		auto p = WebPageFileManager(client, false);
+		p.ShowHtml();
+	}
+
+	///////////////////////////////////////////////////////////////////////////////
+	/// @brief Show File Manager for SD card
+	void SdCardManagerHtml()
+	{
+		WiFiClient client = _wifiManager.server->client();
+		auto p = WebPageFileManager(client, true);
 		p.ShowHtml();
 	}
 };
@@ -167,7 +201,8 @@ void WebPortal::OnBindServerCallback()
 	_wifiManager.server->on(
 		"/tempGraph", std::bind(&WebPortal::GraphTemperature, this));
 
-	_wifiManager.server->on("/files", HTTP_GET, std::bind(&WebPortal::FileManagerHtml, this));
+	_wifiManager.server->on("/flash_files", HTTP_GET, std::bind(&WebPortal::FileManagerHtml, this));
+	_wifiManager.server->on("/sd_files", HTTP_GET, std::bind(&WebPortal::SdCardManagerHtml, this));
 	_wifiManager.server->on("/settings", HTTP_GET, std::bind(&WebPortal::SettingsHtml, this));
 
 	_wifiManager.server->on("/RESET_WIFI", HTTP_GET,
@@ -390,15 +425,7 @@ void WebPortal::ShowStatusHtml()
 	client.print("<table class='table table-striped w-auto'>");
 	p.TableRow(0, "General", "");
 	p.TableRow(1, "Version", APP_VERSION);
-#if USER_SETUP_ID == 25
-	p.TableRow(1, "Device", "TTGO T-Display");
-#else
-#if USER_SETUP_ID == 206
-	p.TableRow(1, "Device", "TTGO T-Display-S3");
-#else
-	p.TableRow(1, "Device", "Generic ESP32");
-#endif
-#endif
+	p.TableRow(1, "Device", "Waveshare ESP32 S3");
 	p.TableRow(1, "Uptime", Uptime(millis()));
 	p.TableRow(1, "Time", _handyTime.LongString());
 
@@ -415,8 +442,7 @@ void WebPortal::ShowStatusHtml()
 	else if (WiFi.RSSI() > -80)
 		strengthTitle = "Not Good";
 
-	p.TableRow(
-		1, "WIFI Signal", std::to_string(strength) + "dBm " + strengthTitle);
+	p.TableRow(1, "WIFI Signal", std::to_string(strength) + "dBm " + strengthTitle);
 	p.TableRow(1, "Mac Address", WiFi.macAddress().c_str());
 	p.TableRow(1, "A/P name", WiFi.getHostname());
 	p.TableRow(1, "IP Address", WiFi.localIP().toString().c_str());
@@ -495,9 +521,9 @@ void WebPortal::ShowStatusHtml()
 	p.TableRow(2, "Free (Max)", ESP.getMaxAllocHeap());
 	p.TableRow(2, "Total", total);
 
-	p.TableRow(1, "Total PSRAM", ESP.getPsramSize());
 	p.TableRow(1, "Free PSRAM", ESP.getFreePsram());
-#ifdef T_DISPLAY_S3
+	p.TableRow(1, "Total PSRAM", ESP.getPsramSize());
+//#ifdef T_DISPLAY_S3
 	p.TableRow(1, "spiram size", esp_spiram_get_size());
 
 	p.TableRow(1, "Free", "");
@@ -513,11 +539,7 @@ void WebPortal::ShowStatusHtml()
 			   heap_caps_get_free_size(MALLOC_CAP_DEFAULT));
 	p.TableRow(
 		2, "IRAM (MALLOC_CAP_EXEC)", heap_caps_get_free_size(MALLOC_CAP_EXEC));
-#endif
-
-	// p.TableRow( 1, "himem free", esp_himem_get_free_size());
-	// p.TableRow( 1, "himem phys", esp_himem_get_phys_size());
-	// p.TableRow( 1, "himem reserved", esp_himem_reserved_area_size());
+//#endif
 
 	client.println("</table>");
 	p.AddPageFooter();

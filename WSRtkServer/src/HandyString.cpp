@@ -33,7 +33,7 @@ bool StartsWith(const char *szA, const char *szB)
 /// @brief Format a the int with thousand separators
 /// @param number
 /// @return 1,234,567
-std::string ToThousands(int number)
+std::string ToThousands(int64_t number)
 {
 	std::string value = std::to_string(number);
 	int len = value.length();
@@ -255,9 +255,19 @@ std::string Trim(const std::string &str)
 // Make the string lowercase
 std::string ToLower(const std::string &str)
 {
-    std::string result = str;
-    std::transform(result.begin(), result.end(), result.begin(), 
-                   [](unsigned char c) { return std::tolower(c); });
-    return result;
+	std::string result = str;
+	std::transform(result.begin(), result.end(), result.begin(),
+				   [](unsigned char c)
+				   { return std::tolower(c); });
+	return result;
+}
 
+/////////////////////////////////////////////////////////////////////////////////
+// Make a string with the used and total bytes in KB or MB
+std::string MakeKbPercent(u64_t usedBytes, u64_t totalBytes, u64_t divisor)
+{
+	std::string unit = divisor == MEGAB ? " MB " : " kb ";
+	if (totalBytes == 0)
+		return "N/A";
+	return (ToThousands(usedBytes / divisor) + " / " + ToThousands(totalBytes / divisor) + unit + std::to_string((int)(100.0 * usedBytes / totalBytes)) + "%");
 }

@@ -24,10 +24,6 @@ protected:
 	lv_obj_t *_table;		// Table if we have one
 	u32_t _rowCount = 0;	// Number of rows in the table
 
-public:
-	static const u64_t KB = 1024;
-	static const u64_t MB = 1024*1024;
-
 protected:
 	///////////////////////////////////////////////////////////////////////////
 	// Create the panel all items are added to
@@ -76,18 +72,22 @@ protected:
 		lv_obj_set_align(_table, LV_ALIGN_TOP_MID);
 
 		// Table padding and border
-		lv_obj_set_style_pad_top(_table, 2, LV_PART_ITEMS | LV_STATE_DEFAULT);
-		lv_obj_set_style_pad_bottom(_table, 2, LV_PART_ITEMS | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_top(_table, 3, LV_PART_ITEMS | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_bottom(_table, 3, LV_PART_ITEMS | LV_STATE_DEFAULT);
 		lv_obj_set_style_pad_left(_table, 2, LV_PART_ITEMS | LV_STATE_DEFAULT);
 		lv_obj_set_style_pad_right(_table, 2, LV_PART_ITEMS | LV_STATE_DEFAULT);
 
 		// Setup right alignment for the second column
-		lv_table_set_col_width(_table, 0, 100); // Set the width
-		lv_table_set_col_width(_table, 1, 212); // Set the width
+		lv_table_set_col_width(_table, 0, 110); // Set the width
+		lv_table_set_col_width(_table, 1, 202); // Set the width
 
-		// Setup daw event callback for the table
+		// Setup draw event callback for the table
 		lv_obj_add_event_cb(_table, OnTableDrawEvent, LV_EVENT_DRAW_TASK_ADDED, NULL);
 		lv_obj_add_flag(_table, LV_OBJ_FLAG_SEND_DRAW_TASK_EVENTS);
+
+		// Disable table highlighting
+		lv_obj_clear_flag(_table, LV_OBJ_FLAG_CLICKABLE);  // Optional: disables click
+		lv_obj_clear_state(_table, LV_STATE_FOCUSED);      // Remove focus state
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -167,28 +167,6 @@ public:
 	}
 
 	lv_obj_t *GetPanel() { return _uiPanelPage; }
-
-	static std::string MakeKbPercent(u64_t usedBytes, u64_t totalBytes, u64_t divisor = KB)
-	{
-		std::string unit = divisor == MB ? " MB " : " kb ";
-		if (totalBytes == 0)
-			return "N/A";
-		return (ToThousands(usedBytes / divisor) + " / " + ToThousands(totalBytes / divisor) + unit + std::to_string((int)(100.0 * usedBytes / totalBytes)) + "%");
-	}
-
-	///////////////////////////////////////////////////////////////////////////
-	// Convert an integer to a string with thousands separators
-	static std::string ToThousands(int32_t value)
-	{
-		std::string num = std::to_string(value);
-		int insertPosition = static_cast<int>(num.length()) - 3;
-		while (insertPosition > 0)
-		{
-			num.insert(insertPosition, ",");
-			insertPosition -= 3;
-		}
-		return num;
-	}
 };
 
 ///////////////////////////////////////////////////////////////////////////////

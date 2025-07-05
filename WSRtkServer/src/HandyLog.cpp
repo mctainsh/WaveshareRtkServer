@@ -1,7 +1,7 @@
 #include "HandyLog.h"
 #include <HandyString.h>
 #include <Global.h>
-#include "Hardware/MyFiles.h"
+#include "Hardware/SDFile.h"
 // #include "freertos/semphr.h"
 
 std::string AddToLog(const char *msg, bool timePrefix = true);
@@ -9,7 +9,7 @@ std::string AddToLog(const char *msg, bool timePrefix = true);
 std::vector<std::string> _mainLog;
 
 static SemaphoreHandle_t _serialMutex;
-extern MyFiles _myFiles;
+extern SDFile _sdFile;
 
 //////////////////////////////////////////////////////////////////////////
 // Setup the logging stuff
@@ -60,7 +60,7 @@ std::string Logln(const char *msg, bool timePrefix)
 	Serial.print(s.c_str());
 	Serial.print("\r\n");
 #endif
-	_myFiles.AppendLog(s.c_str());
+	_sdFile.AppendLog(s.c_str());
 	return s;
 }
 

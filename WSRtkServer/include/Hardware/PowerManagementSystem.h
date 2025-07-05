@@ -37,11 +37,11 @@ public:
 
 		if (result == false)
 		{
-			Serial.println("power is not online...");
+			Logln("power is not online...");
 			return;
 		}
 		_isMounted = true;
-		Serial.printf("getID:0x%x\n", _power.getChipID());
+		Logf("ID:0x%x", _power.getChipID());
 
 		// Set the minimum common working voltage of the PMU VBUS input,
 		// below this value will turn off the PMU
@@ -53,44 +53,44 @@ public:
 
 		// Get the VSYS shutdown voltage
 		uint16_t vol = _power.getSysPowerDownVoltage();
-		Serial.println("SysPowerDownVoltage");
-		Serial.printf("-> Before :%u\n", vol);
+		Logln("SysPowerDownVoltage");
+		Logf("-> Before :%u", vol);
 
 		// Set VSY off voltage as 2600mV , Adjustment range 2600mV ~ 3300mV
 		_power.setSysPowerDownVoltage(2600);
 
 		vol = _power.getSysPowerDownVoltage();
-		Serial.printf("-> After  :%u\n", vol);
+		Logf("-> After  :%u", vol);
 
 		// DC1 IMAX=2A
 		// 1500~3400mV,100mV/step,20steps
 		_power.setDC1Voltage(3300);
-		Serial.printf("DC1  : %s   Voltage:%u mV \n", _power.isEnableDC1() ? "+" : "-", _power.getDC1Voltage());
+		Logf("DC1  : %s   Voltage:%u mV ", _power.isEnableDC1() ? "+" : "-", _power.getDC1Voltage());
 
 		// DC2 IMAX=2A
 		// 500~1200mV  10mV/step,71steps
 		// 1220~1540mV 20mV/step,17steps
 		_power.setDC2Voltage(1000);
-		Serial.printf("DC2  : %s   Voltage:%u mV \n", _power.isEnableDC2() ? "+" : "-", _power.getDC2Voltage());
+		Logf("DC2  : %s   Voltage:%u mV ", _power.isEnableDC2() ? "+" : "-", _power.getDC2Voltage());
 
 		// DC3 IMAX = 2A
 		// 500~1200mV,10mV/step,71steps
 		// 1220~1540mV,20mV/step,17steps
 		// 1600~3400mV,100mV/step,19steps
 		_power.setDC3Voltage(3300);
-		Serial.printf("DC3  : %s   Voltage:%u mV \n", _power.isEnableDC3() ? "+" : "-", _power.getDC3Voltage());
+		Logf("DC3  : %s   Voltage:%u mV ", _power.isEnableDC3() ? "+" : "-", _power.getDC3Voltage());
 
 		// DCDC4 IMAX=1.5A
 		// 500~1200mV,10mV/step,71steps
 		// 1220~1840mV,20mV/step,32steps
 		_power.setDC4Voltage(1000);
-		Serial.printf("DC4  : %s   Voltage:%u mV \n", _power.isEnableDC4() ? "+" : "-", _power.getDC4Voltage());
+		Logf("DC4  : %s   Voltage:%u mV ", _power.isEnableDC4() ? "+" : "-", _power.getDC4Voltage());
 
 		// DC5 IMAX=2A
 		// 1200mV
 		// 1400~3700mV,100mV/step,24steps
 		_power.setDC5Voltage(3300);
-		Serial.printf("DC5  : %s   Voltage:%u mV \n", _power.isEnableDC5() ? "+" : "-", _power.getDC5Voltage());
+		Logf("DC5  : %s   Voltage:%u mV ", _power.isEnableDC5() ? "+" : "-", _power.getDC5Voltage());
 
 		// ALDO1 IMAX=300mA
 		// 500~3500mV, 100mV/step,31steps
@@ -143,98 +143,95 @@ public:
 		_power.enableDLDO1();
 		_power.enableDLDO2();
 
-		Serial.println("DCDC=======================================================================");
-		Serial.printf("DC1  : %s   Voltage:%u mV \n", _power.isEnableDC1() ? "+" : "-", _power.getDC1Voltage());
-		Serial.printf("DC2  : %s   Voltage:%u mV \n", _power.isEnableDC2() ? "+" : "-", _power.getDC2Voltage());
-		Serial.printf("DC3  : %s   Voltage:%u mV \n", _power.isEnableDC3() ? "+" : "-", _power.getDC3Voltage());
-		Serial.printf("DC4  : %s   Voltage:%u mV \n", _power.isEnableDC4() ? "+" : "-", _power.getDC4Voltage());
-		Serial.printf("DC5  : %s   Voltage:%u mV \n", _power.isEnableDC5() ? "+" : "-", _power.getDC5Voltage());
-		Serial.println("ALDO=======================================================================");
-		Serial.printf("ALDO1: %s   Voltage:%u mV\n", _power.isEnableALDO1() ? "+" : "-", _power.getALDO1Voltage());
-		Serial.printf("ALDO2: %s   Voltage:%u mV\n", _power.isEnableALDO2() ? "+" : "-", _power.getALDO2Voltage());
-		Serial.printf("ALDO3: %s   Voltage:%u mV\n", _power.isEnableALDO3() ? "+" : "-", _power.getALDO3Voltage());
-		Serial.printf("ALDO4: %s   Voltage:%u mV\n", _power.isEnableALDO4() ? "+" : "-", _power.getALDO4Voltage());
-		Serial.println("BLDO=======================================================================");
-		Serial.printf("BLDO1: %s   Voltage:%u mV\n", _power.isEnableBLDO1() ? "+" : "-", _power.getBLDO1Voltage());
-		Serial.printf("BLDO2: %s   Voltage:%u mV\n", _power.isEnableBLDO2() ? "+" : "-", _power.getBLDO2Voltage());
-		Serial.println("CPUSLDO====================================================================");
-		Serial.printf("CPUSLDO: %s Voltage:%u mV\n", _power.isEnableCPUSLDO() ? "+" : "-", _power.getCPUSLDOVoltage());
-		Serial.println("DLDO=======================================================================");
-		Serial.printf("DLDO1: %s   Voltage:%u mV\n", _power.isEnableDLDO1() ? "+" : "-", _power.getDLDO1Voltage());
-		Serial.printf("DLDO2: %s   Voltage:%u mV\n", _power.isEnableDLDO2() ? "+" : "-", _power.getDLDO2Voltage());
-		Serial.println("===========================================================================");
+		Logln("DCDC=======================================================================");
+		Logf("DC1  : %s   Voltage:%u mV ", _power.isEnableDC1() ? "+" : "-", _power.getDC1Voltage());
+		Logf("DC2  : %s   Voltage:%u mV ", _power.isEnableDC2() ? "+" : "-", _power.getDC2Voltage());
+		Logf("DC3  : %s   Voltage:%u mV ", _power.isEnableDC3() ? "+" : "-", _power.getDC3Voltage());
+		Logf("DC4  : %s   Voltage:%u mV ", _power.isEnableDC4() ? "+" : "-", _power.getDC4Voltage());
+		Logf("DC5  : %s   Voltage:%u mV ", _power.isEnableDC5() ? "+" : "-", _power.getDC5Voltage());
+		Logln("ALDO=======================================================================");
+		Logf("ALDO1: %s   Voltage:%u mV", _power.isEnableALDO1() ? "+" : "-", _power.getALDO1Voltage());
+		Logf("ALDO2: %s   Voltage:%u mV", _power.isEnableALDO2() ? "+" : "-", _power.getALDO2Voltage());
+		Logf("ALDO3: %s   Voltage:%u mV", _power.isEnableALDO3() ? "+" : "-", _power.getALDO3Voltage());
+		Logf("ALDO4: %s   Voltage:%u mV", _power.isEnableALDO4() ? "+" : "-", _power.getALDO4Voltage());
+		Logln("BLDO=======================================================================");
+		Logf("BLDO1: %s   Voltage:%u mV", _power.isEnableBLDO1() ? "+" : "-", _power.getBLDO1Voltage());
+		Logf("BLDO2: %s   Voltage:%u mV", _power.isEnableBLDO2() ? "+" : "-", _power.getBLDO2Voltage());
+		Logln("CPUSLDO====================================================================");
+		Logf("CPUSLDO: %s Voltage:%u mV", _power.isEnableCPUSLDO() ? "+" : "-", _power.getCPUSLDOVoltage());
+		Logln("DLDO=======================================================================");
+		Logf("DLDO1: %s   Voltage:%u mV", _power.isEnableDLDO1() ? "+" : "-", _power.getDLDO1Voltage());
+		Logf("DLDO2: %s   Voltage:%u mV", _power.isEnableDLDO2() ? "+" : "-", _power.getDLDO2Voltage());
+		Logln("===========================================================================");
 
 		// Set the time of pressing the button to turn off
 		_power.setPowerKeyPressOffTime(XPOWERS_POWEROFF_4S);
 		uint8_t opt = _power.getPowerKeyPressOffTime();
-		Serial.print("PowerKeyPressOffTime:");
+		std::string optStr;
 		switch (opt)
 		{
 		case XPOWERS_POWEROFF_4S:
-			Serial.println("4 Second");
+			optStr = "4 Second";
 			break;
 		case XPOWERS_POWEROFF_6S:
-			Serial.println("6 Second");
+			optStr = "6 Second";
 			break;
 		case XPOWERS_POWEROFF_8S:
-			Serial.println("8 Second");
+			optStr = "8 Second";
 			break;
 		case XPOWERS_POWEROFF_10S:
-			Serial.println("10 Second");
+			optStr = "10 Second";
 			break;
 		default:
+			optStr = "Unknown " + std::to_string(opt);
 			break;
 		}
+		Logf("PowerKeyPressOffTime:%s", optStr.c_str());
+
 		// Set the button power-on press time
 		_power.setPowerKeyPressOnTime(XPOWERS_POWERON_128MS);
 		opt = _power.getPowerKeyPressOnTime();
-		Serial.print("PowerKeyPressOnTime:");
 		switch (opt)
 		{
 		case XPOWERS_POWERON_128MS:
-			Serial.println("128 Ms");
+			optStr = "128 Ms";
 			break;
 		case XPOWERS_POWERON_512MS:
-			Serial.println("512 Ms");
+			optStr = "512 Ms";
 			break;
 		case XPOWERS_POWERON_1S:
-			Serial.println("1 Second");
+			optStr = "1 Second";
 			break;
 		case XPOWERS_POWERON_2S:
-			Serial.println("2 Second");
+			optStr = "2 Second";
 			break;
 		default:
+			optStr = "Unknown " + std::to_string(opt);
 			break;
 		}
+		Logf("PowerKeyPressOnTime:%s", optStr.c_str());
 
-		Serial.println("===========================================================================");
+		Logln("===========================================================================");
 
 		bool en;
 
 		// DCDC 120%(130%) high voltage turn off PMIC function
-		en = _power.getDCHighVoltagePowerDownEn();
-		Serial.print("getDCHighVoltagePowerDownEn:");
-		Serial.println(en ? "ENABLE" : "DISABLE");
+		Logf("DCHighVoltagePowerDownEn:%s ", _power.getDCHighVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
+
 		// DCDC1 85% low voltage turn off PMIC function
-		en = _power.getDC1LowVoltagePowerDownEn();
-		Serial.print("getDC1LowVoltagePowerDownEn:");
-		Serial.println(en ? "ENABLE" : "DISABLE");
+		Logf("DC1LowVoltagePowerDownEn:%s ", _power.getDC1LowVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
+
 		// DCDC2 85% low voltage turn off PMIC function
-		en = _power.getDC2LowVoltagePowerDownEn();
-		Serial.print("getDC2LowVoltagePowerDownEn:");
-		Serial.println(en ? "ENABLE" : "DISABLE");
+		Logf("DC2LowVoltagePowerDownEn:%s ", _power.getDC2LowVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
+
 		// DCDC3 85% low voltage turn off PMIC function
-		en = _power.getDC3LowVoltagePowerDownEn();
-		Serial.print("getDC3LowVoltagePowerDownEn:");
-		Serial.println(en ? "ENABLE" : "DISABLE");
+		Logf("DC3LowVoltagePowerDownEn:%s ", _power.getDC3LowVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
+
 		// DCDC4 85% low voltage turn off PMIC function
-		en = _power.getDC4LowVoltagePowerDownEn();
-		Serial.print("getDC4LowVoltagePowerDownEn:");
-		Serial.println(en ? "ENABLE" : "DISABLE");
+		Logf("DC4LowVoltagePowerDownEn:%s ", _power.getDC4LowVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
+
 		// DCDC5 85% low voltage turn off PMIC function
-		en = _power.getDC5LowVoltagePowerDownEn();
-		Serial.print("getDC5LowVoltagePowerDownEn:");
-		Serial.println(en ? "ENABLE" : "DISABLE");
+		Logf("DC5LowVoltagePowerDownEn:%s ", _power.getDC5LowVoltagePowerDownEn() ? "ENABLE" : "DISABLE");
 
 		// _power.setDCHighVoltagePowerDown(true);
 		// _power.setDC1LowVoltagePowerDown(true);
@@ -291,9 +288,9 @@ public:
 		_power.setWatchdogConfig(XPOWERS_AXP2101_WDT_IRQ_TO_PIN);
 
 		// Set watchdog timeout
-		_power.setWatchdogTimeout(XPOWERS_AXP2101_WDT_TIMEOUT_4S);
-		_power.enableWatchdog();
-		//_power.disableWatchdog();
+		_power.setWatchdogTimeout(XPOWERS_AXP2101_WDT_TIMEOUT_32S);
+		//_power.enableWatchdog();
+		_power.disableWatchdog();
 
 		// Enable Button Battery charge
 		_power.enableButtonBatteryCharge();
@@ -309,64 +306,22 @@ public:
 	// Record the current state to log
 	void PrintPMU()
 	{
-		Serial.print("isCharging:");
-		Serial.println(_power.isCharging() ? "YES" : "NO");
-		Serial.print("isDischarge:");
-		Serial.println(_power.isDischarge() ? "YES" : "NO");
-		Serial.print("isStandby:");
-		Serial.println(_power.isStandby() ? "YES" : "NO");
-		Serial.print("isVbusIn:");
-		Serial.println(_power.isVbusIn() ? "YES" : "NO");
-		Serial.print("isVbusGood:");
-		Serial.println(_power.isVbusGood() ? "YES" : "NO");
-		Serial.print("getChargerStatus:");
-		uint8_t charge_status = _power.getChargerStatus();
-		if (charge_status == XPOWERS_AXP2101_CHG_TRI_STATE)
-		{
-			Serial.println("tri_charge");
-		}
-		else if (charge_status == XPOWERS_AXP2101_CHG_PRE_STATE)
-		{
-			Serial.println("pre_charge");
-		}
-		else if (charge_status == XPOWERS_AXP2101_CHG_CC_STATE)
-		{
-			Serial.println("constant charge");
-		}
-		else if (charge_status == XPOWERS_AXP2101_CHG_CV_STATE)
-		{
-			Serial.println("constant voltage");
-		}
-		else if (charge_status == XPOWERS_AXP2101_CHG_DONE_STATE)
-		{
-			Serial.println("charge done");
-		}
-		else if (charge_status == XPOWERS_AXP2101_CHG_STOP_STATE)
-		{
-			Serial.println("not charge");
-		}
+		Logf("isCharging:%s ", _power.isCharging() ? "YES" : "NO");
+		Logf("isDischarge:%s ", _power.isDischarge() ? "YES" : "NO");
+		Logf("isStandby:%s ", _power.isStandby() ? "YES" : "NO");		
+		Logf("isVbusIn:%s ", _power.isVbusIn() ? "YES" : "NO");
+		Logf("isVbusGood:%s ", _power.isVbusGood() ? "YES" : "NO");
+		Logf("ChargerStatus:%s", GetChargeStatus().c_str());
 
-		Serial.print("getBattVoltage:");
-		Serial.print(_power.getBattVoltage());
-		Serial.println("mV");
-		Serial.print("getVbusVoltage:");
-		Serial.print(_power.getVbusVoltage());
-		Serial.println("mV");
-		Serial.print("getSystemVoltage:");
-		Serial.print(_power.getSystemVoltage());
-		Serial.println("mV");
+		Logf("BattVoltage:%d mV ", _power.getBattVoltage());
+		Logf("VbusVoltage:%d mV ", _power.getVbusVoltage());
+		Logf("SystemVoltage:%d mV ", _power.getSystemVoltage());
 
 		// The battery percentage may be inaccurate at first use, the PMU will automatically
 		// learn the battery curve and will automatically calibrate the battery percentage
 		// after a charge and discharge cycle
 		if (_power.isBatteryConnect())
-		{
-			Serial.print("getBatteryPercent:");
-			Serial.print(_power.getBatteryPercent());
-			Serial.println("%");
-		}
-
-		Serial.println();
+			Logf("BatteryPercent:%d%%", _power.getBatteryPercent());
 	}
 
 	// void EnterPmuSleep(void)
@@ -416,121 +371,117 @@ public:
 		if (status == 0)
 			return;
 
-		Serial.print("STATUS => HEX:");
-		Serial.print(status, HEX);
-		Serial.print(" BIN:");
-		Serial.println(status, BIN);
+		Logf("STATUS => HEX:%04x ", status);
 
 		if (_power.isDropWarningLevel2Irq())
 		{
-			Serial.println("isDropWarningLevel2");
+			Logln("isDropWarningLevel2");
 		}
 		if (_power.isDropWarningLevel1Irq())
 		{
-			Serial.println("isDropWarningLevel1");
+			Logln("isDropWarningLevel1");
 		}
 		if (_power.isGaugeWdtTimeoutIrq())
 		{
-			Serial.println("isWdtTimeout");
+			Logln("isWdtTimeout");
 		}
 		if (_power.isBatChargerOverTemperatureIrq())
 		{
-			Serial.println("isBatChargeOverTemperature");
+			Logln("isBatChargeOverTemperature");
 		}
 		if (_power.isBatWorkOverTemperatureIrq())
 		{
-			Serial.println("isBatWorkOverTemperature");
+			Logln("isBatWorkOverTemperature");
 		}
 		if (_power.isBatWorkUnderTemperatureIrq())
 		{
-			Serial.println("isBatWorkUnderTemperature");
+			Logln("isBatWorkUnderTemperature");
 		}
 		if (_power.isVbusInsertIrq())
 		{
-			Serial.println("isVbusInsert");
+			Logln("isVbusInsert");
 		}
 		if (_power.isVbusRemoveIrq())
 		{
-			Serial.println("isVbusRemove");
+			Logln("isVbusRemove");
 		}
 		if (_power.isBatInsertIrq())
 		{
-			Serial.println("isBatInsert");
+			Logln("isBatInsert");
 		}
 		if (_power.isBatRemoveIrq())
 		{
-			Serial.println("isBatRemove");
+			Logln("isBatRemove");
 		}
 
 		if (_power.isPekeyShortPressIrq())
 		{
-			Serial.println("isPekeyShortPress");
+			Logln("isPekeyShortPress");
 			// enterPmuSleep();
-
-			Serial.print("Read pmu data buffer .");
+			std::string buff;
 			uint8_t data[4] = {0};
 			_power.readDataBuffer(data, XPOWERS_AXP2101_DATA_BUFFER_SIZE);
 			for (int i = 0; i < 4; ++i)
 			{
-				Serial.print(data[i]);
-				Serial.print(",");
+				buff += std::to_string(data[i]);
+				buff += ",";
 			}
-			Serial.println();
+			Logf("Read pmu data buffer .%s", buff.c_str());
 		}
 
 		if (_power.isPekeyLongPressIrq())
 		{
-			Serial.println("isPekeyLongPress");
-			Serial.println("write pmu data buffer .");
+			Logln("isPekeyLongPress");
+			Logln("write pmu data buffer .");
 			uint8_t data[4] = {1, 2, 3, 4};
 			_power.writeDataBuffer(data, XPOWERS_AXP2101_DATA_BUFFER_SIZE);
 		}
 
 		if (_power.isPekeyNegativeIrq())
 		{
-			Serial.println("isPekeyNegative");
+			Logln("isPekeyNegative");
 		}
 		if (_power.isPekeyPositiveIrq())
 		{
-			Serial.println("isPekeyPositive");
+			Logln("isPekeyPositive");
 		}
 		if (_power.isWdtExpireIrq())
 		{
-			Serial.println("isWdtExpire");
+			Logln("isWdtExpire");
 			PrintPMU();
 		}
 		if (_power.isLdoOverCurrentIrq())
 		{
-			Serial.println("isLdoOverCurrentIrq");
+			Logln("isLdoOverCurrentIrq");
 		}
 		if (_power.isBatfetOverCurrentIrq())
 		{
-			Serial.println("isBatfetOverCurrentIrq");
+			Logln("isBatfetOverCurrentIrq");
 		}
 		if (_power.isBatChargeDoneIrq())
 		{
-			Serial.println("isBatChargeDone");
+			Logln("isBatChargeDone");
 		}
 		if (_power.isBatChargeStartIrq())
 		{
-			Serial.println("isBatChargeStart");
+			Logln("isBatChargeStart");
 		}
 		if (_power.isBatDieOverTemperatureIrq())
 		{
-			Serial.println("isBatDieOverTemperature");
+			Logln("isBatDieOverTemperature");
 		}
 		if (_power.isChargeOverTimeoutIrq())
 		{
-			Serial.println("isChargeOverTimeout");
+			Logln("isChargeOverTimeout");
 		}
 		if (_power.isBatOverVoltageIrq())
 		{
-			Serial.println("isBatOverVoltage");
+			Logln("isBatOverVoltage");
 		}
 
 		// Clear PMU Interrupt Status Register
 		_power.clearIrqStatus();
-		Serial.printf("PowerLoop took %lu ms\n", millis() - _checkStartTime);
+		Logf("PowerLoop took %lu ms", millis() - _checkStartTime);
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -541,41 +492,37 @@ public:
 		pPage->SetTableValue(2, _power.isDischarge() ? "Yes" : "No");
 		pPage->SetTableValue(3, _power.isStandby() ? "Yes" : "No");
 
-		uint8_t chargeStatusInt = _power.getChargerStatus();
-		std::string chargeStatus;
-		switch (chargeStatusInt)
-		{
-		case XPOWERS_AXP2101_CHG_TRI_STATE:
-			chargeStatus = "Tri Charge";
-			break;
-		case XPOWERS_AXP2101_CHG_PRE_STATE:
-			chargeStatus = "Pre Charge";
-			break;
-		case XPOWERS_AXP2101_CHG_CC_STATE:
-			chargeStatus = "Constant Charge";
-			break;
-		case XPOWERS_AXP2101_CHG_CV_STATE:
-			chargeStatus = "Constant Voltage";
-			break;
-		case XPOWERS_AXP2101_CHG_DONE_STATE:
-			chargeStatus = "Charge Done";
-			break;
-		case XPOWERS_AXP2101_CHG_STOP_STATE:
-			chargeStatus = "Not Charging";
-			break;
-		default:
-			chargeStatus = std::to_string(chargeStatusInt);
-			break;
-		}
-		pPage->SetTableString(4, chargeStatus);
+
+		pPage->SetTableString(4, GetChargeStatus());
 		pPage->SetTableString(5, _power.isBatteryConnect() ? (std::to_string(_power.getBatteryPercent()) + "%") : "No Battery");
 
 		pPage->SetTableValue(7, _power.isVbusIn() ? "Yes" : "No");
 		pPage->SetTableValue(8, _power.isVbusGood() ? "Yes" : "No");
 
-
 		pPage->SetTableString(10, std::to_string(_power.getVbusVoltage()) + " mV");
 		pPage->SetTableString(11, std::to_string(_power.getBattVoltage()) + " mV");
 		pPage->SetTableString(12, std::to_string(_power.getSystemVoltage()) + " mV");
+	}
+
+	std::string GetChargeStatus()
+	{
+		uint8_t cs = _power.getChargerStatus();
+		switch (cs)
+		{
+		case XPOWERS_AXP2101_CHG_TRI_STATE:
+			return "Tri Charge";
+		case XPOWERS_AXP2101_CHG_PRE_STATE:
+			return "Pre Charge";
+		case XPOWERS_AXP2101_CHG_CC_STATE:
+			return "Constant Charge";
+		case XPOWERS_AXP2101_CHG_CV_STATE:
+			return "Constant Voltage";
+		case XPOWERS_AXP2101_CHG_DONE_STATE:
+			return "Charge Done";
+		case XPOWERS_AXP2101_CHG_STOP_STATE:
+			return "Not Charging";
+		default:
+			return std::to_string(cs);
+		}
 	}
 };
