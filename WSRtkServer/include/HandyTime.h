@@ -9,7 +9,6 @@
 #include "Global.h"
 #include <lvgl.h> // Add this include for lv_label_set_text
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // Time functions
 // WARNING : This class is called by logger so do not log yourself
@@ -190,6 +189,18 @@ public:
 		char time[len];
 		if (strftime(time, len, "%Y-%02m-%02d %H:%M:%S", &timeinfo) == 0)
 			return std::string("Error formatting time");
+		return std::string(time);
+	}
+	std::string Format(const char *format)
+	{
+		struct tm timeinfo;
+		if (!ReadTime(&timeinfo))
+			return Uptime(millis());
+
+		const int len = 64; // Adjust size as needed
+		char time[len];
+		if (strftime(time, len, format, &timeinfo) == 0)
+			return std::string(format);
 		return std::string(time);
 	}
 

@@ -41,7 +41,7 @@ public:
 			return;
 		}
 		_isMounted = true;
-		Logf("ID:0x%x", _power.getChipID());
+		Logf("AXP2101 ID:0x%x", _power.getChipID());
 
 		// Set the minimum common working voltage of the PMU VBUS input,
 		// below this value will turn off the PMU
@@ -303,13 +303,29 @@ public:
 	}
 
 	///////////////////////////////////////////////////////////////////////////
+	// Get the current charge status
+	// The battery percentage may be inaccurate at first use, the PMU will automatically
+	// learn the battery curve and will automatically calibrate the battery percentage
+	// after a charge and discharge cycle
+	std::string GetBatteryPercent()
+	{
+		if (!_isMounted)
+			return "?";
+
+		if (_power.isBatteryConnect())
+			return std::to_string(_power.getBatteryPercent()) + "%";
+		else
+			return "No batt";
+	}
+
+	///////////////////////////////////////////////////////////////////////////
 	// Record the current state to log
 	void PrintPMU()
 	{
 		Logln("===========================================================================");
 		Logf("\tisCharging:%s ", _power.isCharging() ? "YES" : "NO");
 		Logf("\tisDischarge:%s ", _power.isDischarge() ? "YES" : "NO");
-		Logf("\tisStandby:%s ", _power.isStandby() ? "YES" : "NO");		
+		Logf("\tisStandby:%s ", _power.isStandby() ? "YES" : "NO");
 		Logf("\tisVbusIn:%s ", _power.isVbusIn() ? "YES" : "NO");
 		Logf("\tisVbusGood:%s ", _power.isVbusGood() ? "YES" : "NO");
 		Logf("\tChargerStatus:%s", GetChargeStatus().c_str());
@@ -492,7 +508,6 @@ public:
 		pPage->SetTableValue(1, _power.isCharging() ? "Yes" : "No");
 		pPage->SetTableValue(2, _power.isDischarge() ? "Yes" : "No");
 		pPage->SetTableValue(3, _power.isStandby() ? "Yes" : "No");
-
 
 		pPage->SetTableString(4, GetChargeStatus());
 		pPage->SetTableString(5, _power.isBatteryConnect() ? (std::to_string(_power.getBatteryPercent()) + "%") : "No Battery");

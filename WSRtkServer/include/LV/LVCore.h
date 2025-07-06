@@ -63,9 +63,9 @@ private:
 	lv_display_t *_disp = nullptr;		   // Primary display
 	lv_color_t *_disp_draw_buf1 = nullptr; // Memory buffer for display
 	lv_color_t *_disp_draw_buf2 = nullptr; // ..
-
-	lv_obj_t *_homeScreen = nullptr; // Home screen object
-
+	lv_obj_t *_homeScreen = nullptr;	   // Home screen object
+	lv_obj_t *_labelBattery = nullptr;	   // Label Battery percentage
+	lv_obj_t *_labelTime = nullptr;		   // Label for the time in top row
 public:
 	Arduino_GFX *GetGfx() { return _gfx; }
 	lv_obj_t *GetHomeScreen() { return _homeScreen; }
@@ -97,15 +97,14 @@ public:
 		delay(200);
 		bsp_touch_init(&Wire, -1, 0, W, H);
 
-		Serial.printf("LVGL:%d.%d.%d\r\n", lv_version_major(), +lv_version_minor(), lv_version_patch());
+		Logf("LVGL:%d.%d.%d", lv_version_major(), lv_version_minor(), lv_version_patch());
 
 		// Init Display
 		if (!_gfx->begin())
-		{
-			Serial.println("gfx->begin() failed!");
-		}
+			Logf("\t*** ERROR : gfx->begin() failed!");
 		_gfx->fillScreen(RGB565_BLUE);
 
+		Logln("\tSetup backlight");
 #ifdef GFX_BL
 		pinMode(GFX_BL, OUTPUT);
 		digitalWrite(GFX_BL, HIGH);
@@ -128,6 +127,8 @@ public:
 		_srcW = _gfx->width();
 		_srcH = _gfx->height();
 
+		Logln("\tBuffers");
+
 #ifdef DIRECT_RENDER_MODE
 		uint32_t bufSize = _srcW * _srcH;
 		_disp_draw_buf1 = (lv_color_t *)heap_caps_malloc(bufSize * 2, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
@@ -143,6 +144,7 @@ public:
 			return false;
 		}
 
+		Logf("\tDisplay %dx%d", _srcW, _srcH);
 		_disp = lv_display_create(_srcW, _srcH);
 		lv_display_set_flush_cb(_disp, my_disp_flush);
 #ifdef DIRECT_RENDER_MODE
@@ -151,9 +153,11 @@ public:
 		lv_display_set_buffers(_disp, _disp_draw_buf1, _disp_draw_buf2, bufSize * 2, LV_DISPLAY_RENDER_MODE_PARTIAL);
 #endif
 
+		Logln("\tMake button style");
 		MakeButtonStyle();
 
 		// Initialize the (dummy) input device driver
+		Logln("\tEnable touch");
 		lv_indev_t *indev = lv_indev_create();
 		lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER); // Touchpad should have POINTER type
 		lv_indev_set_read_cb(indev, my_touchpad_read);
@@ -166,9 +170,19 @@ public:
 		/* Option 1: Create a simple label
 		 * ---------------------
 		 */
+		_labelBattery = lv_label_create(lv_scr_act());
+		lv_label_set_text(_labelBattery, "Battery");
+		lv_obj_align(_labelBattery, LV_ALIGN_TOP_LEFT, 0, 0);
+		lv_obj_set_style_text_color(_labelBattery, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+
+		_labelTime = lv_label_create(lv_scr_act());
+		lv_label_set_text(_labelTime, "Time");
+		lv_obj_align(_labelTime, LV_ALIGN_TOP_LEFT, 60, 0);
+		lv_obj_set_style_text_color(_labelTime, lv_color_hex(0xFFFF00), LV_PART_MAIN | LV_STATE_DEFAULT);
+
 		_label = lv_label_create(lv_scr_act());
 		lv_label_set_text(_label, "JRM 1.6 LVGL(V" GFX_STR(LVGL_VERSION_MAJOR) "." GFX_STR(LVGL_VERSION_MINOR) "." GFX_STR(LVGL_VERSION_PATCH) ")");
-		lv_obj_align(_label, LV_ALIGN_TOP_LEFT, 0, 0);
+		lv_obj_align(_label, LV_ALIGN_TOP_LEFT, 0, 30);
 
 		// Blue text
 		lv_obj_set_style_text_color(_label, lv_color_hex(0xA0A0FF), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -178,8 +192,25 @@ public:
 		lv_obj_align(sw, LV_ALIGN_TOP_RIGHT, 0, 0);
 		lv_obj_add_state(sw, LV_STATE_CHECKED);
 		lv_obj_add_event_cb(sw, sw_event_cbX, LV_EVENT_VALUE_CHANGED, _label);
-
+		Logln("\tComplete");
 		return true;
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+	// Set the title time label
+	void SetTitleTime(const std::string &time)
+	{
+		if (_labelTime)
+			lv_label_set_text(_labelTime, time.c_str());
+		// lv_obj_invalidate(_labelTime);
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+	// Set the battery percentage label
+	void SetBatteryPercent(std::string s)
+	{
+		if (_labelBattery)
+			lv_label_set_text(_labelBattery, s.c_str());
 	}
 
 	///////////////////////////////////////////////////////////////////////////

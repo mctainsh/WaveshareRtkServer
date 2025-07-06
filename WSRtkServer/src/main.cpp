@@ -25,11 +25,14 @@
 
 WiFiManager _wifiManager;
 
-unsigned long _slowLoopWaitTime = 0; // Time of last 10 second
-unsigned long _fastLoopWaitTime = 0; // Time of last second
-int _loopPersSecondCount = 0;		 // Number of times the main loops runs in a second
-unsigned long _lastButtonPress = 0;	 // Time of last button press to turn off display on T-Display-S3
-History _history;					 // Temperature history
+#define SLOW_TIMER 10000 // 10 seconds
+#define FAST_TIMER 1000	 // 1 second
+
+unsigned long _slowLoopWaitTime = SLOW_TIMER; // Time of last 10 second
+unsigned long _fastLoopWaitTime = 0;		  // Time of last second
+int _loopPersSecondCount = 0;				  // Number of times the main loops runs in a second
+unsigned long _lastButtonPress = 0;			  // Time of last button press to turn off display on T-Display-S3
+History _history;							  // Temperature history
 
 WebPortal _webPortal;
 
@@ -56,8 +59,8 @@ LVCore _lvCore;
 // Pages
 SwipePageGps _systemPageGps;
 SwipePageGps _swipePageGps;
-SwipePageIO _swipePageIO;
-// SwipePagePower _swipePagePower;
+ SwipePageIO _swipePageIO;
+//  SwipePagePower _swipePagePower;
 SwipePageSettings _swipePageSettings;
 
 extern PagePower *_pagePower;
@@ -67,6 +70,8 @@ extern PagePower *_pagePower;
 // It initializes the display, touch, and LVGL library
 void setup()
 {
+	//_wifiManager.resetSettings();
+
 	Serial.begin(115200); // Initialize serial communication for debugging
 	delay(100);			  // Wait for a short time to ensure the serial connection is established
 	Serial.setDebugOutput(true);
@@ -98,10 +103,7 @@ void setup()
 	// Verify file IO (This can take up tpo 60s is SPIFFs not initialised)
 	Logln("Setup SPIFFS");
 	// tft.println("This can take up to 60 seconds ...");
-	if (_myFiles.Setup())
-		Logln("Test file IO");
-	else
-		Logln("E100 - File IO failed");
+	_myFiles.Setup();
 	_myFiles.LoadString(_baseLocation, BASE_LOCATION_FILENAME);
 	_handyTime.LoadTimezoneOffset(_myFiles.LoadString(TIMEZONE_MINUTES));
 
@@ -123,18 +125,18 @@ void setup()
 
 	// Create the GPS status page
 	_systemPageGps.Create(UIPageGroupPanel);	 // Create the GPS status page and add
-	_swipePageIO.Create(UIPageGroupPanel);		 // Create the GPS status page and add
+												 	_swipePageIO.Create(UIPageGroupPanel);		 // Create the GPS status page and add
 	_swipePageSettings.Create(UIPageGroupPanel); // Create the settings page and add
-	//_swipePagePower.Create(UIPageGroupPanel);
 
 	// Fix the startup scroll offset error
-	lv_obj_scroll_to_view(_swipePageIO.GetPanel(), LV_ANIM_OFF);
+		lv_obj_scroll_to_view(_swipePageIO.GetPanel(), LV_ANIM_OFF);
 
 	_swipePageIO.RefreshData();
 
 	_powerManagementSystem.Setup(); // Setup the power management system
 
 	Serial.println(" ========================== Setup done ========================== ");
+	_webPortal.Setup();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -155,26 +157,22 @@ void loop()
 			_display.RefreshRtk(i);
 		_fastLoopWaitTime = t;
 		_loopPersSecondCount = 0;
-		_display.DisplayTime(t);
+		_lvCore.SetTitleTime( _handyTime.Format("%a %H:%M:%S"));
 
 		// Check power management system
 		_powerManagementSystem.PowerLoop();
 		if (_pagePower != nullptr)
-		{
-			// Refresh the power page if it is open
-			//_pagePower->RefreshData();
 			_powerManagementSystem.RefreshData(_pagePower);
-		}
 
 		// If WiFI disconnected refresh the WiFi status
-		if (WiFi.status() != WL_CONNECTED)
-			_swipePageIO.RefreshData();
+		// if (WiFi.status() != WL_CONNECTED)
+		//	_swipePageGps.RefreshData();
 
 		_handyTime.UpdatePageTitle(_lvCore._label);
 	}
 
 	// Run every 10 seconds
-	if ((t - _slowLoopWaitTime) > 10000)
+	if ((t - _slowLoopWaitTime) > SLOW_TIMER)
 	{
 		_swipePageIO.RefreshData();
 
@@ -204,6 +202,9 @@ void loop()
 			_swipePageIO.RefreshData();
 		}
 
+		// Update display battery
+		_lvCore.SetBatteryPercent(_powerManagementSystem.GetBatteryPercent());
+
 		// Performance text
 		std::string perfText = StringPrintf("%d%% %.0fC %ddBm",
 											(int)(100.0 * free / total),
@@ -213,16 +214,14 @@ void loop()
 		_slowLoopWaitTime = t;
 	}
 
-	// // Check for new data GPS serial data
+	// Check for new data GPS serial data
+	bool gpsEnable = false;
 	if (IsWifiConnected())
-	{
-		_display.SetGpsConnected(_gpsParser.ReadDataFromSerial(Serial2));
-		_webPortal.Loop();
-	}
-	else
-	{
-		_display.SetGpsConnected(false);
-	}
+		gpsEnable = _gpsParser.ReadDataFromSerial(Serial2);
+	_display.SetGpsConnected(gpsEnable);
+
+	// Check the web portal
+	_webPortal.Loop();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -264,19 +263,20 @@ bool IsWifiConnected()
 			// TODO : Set the mDNS host name
 			// TODO : Get latest time from the RTC
 			// TODO : Save the SSID name
+			_webPortal.OnConnected();
 		}
 
-		_swipePageIO.RefreshData();
+				_swipePageIO.RefreshData();
 	}
 
 	if (status == WL_CONNECTED)
 		return true;
 
-	//	if (status != WL_DISCONNECTED)
-	//		return false;
+	if (status != WL_DISCONNECTED && _webPortal.GetConnectCount() > 0)
+		return false;
 
 	// Block here until we are connected again
-	_webPortal.Setup();
+	//	_webPortal.Setup();
 	return false;
 
 	// // Reset the WIFI if Disconnected (This seems to be unrecoverable)

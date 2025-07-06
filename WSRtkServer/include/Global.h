@@ -9,20 +9,20 @@
 #define SERIAL_LOG
 
 // Enables the LC29HDA code (Comment out for UM980 and UM982)
-//#define IS_LC29HDA
+// #define IS_LC29HDA
 
-#define SERIAL_RX 17
-#define SERIAL_TX 18
+#define SERIAL_RX 18 // TX on UM980/982
+#define SERIAL_TX 17 // RX on UM980/982
 
-#define BACKLIGHT_CHANNEL 0 // Use channel 0 for backlight control
+#define BACKLIGHT_CHANNEL 0 // Use channel 0 for backlight dimmer control
 
 #define MAX_LOG_LENGTH (512)
 #define MAX_LOG_SIZE (MAX_LOG_LENGTH * 80)
-#define MAX_LOG_ROW_LENGTH (128 +24)
+#define MAX_LOG_ROW_LENGTH (128 + 24)
 
 #define RTK_SERVERS 3
 
-#define GPS_BUFFER_SIZE (16*1024)
+#define GPS_BUFFER_SIZE (16 * 1024)
 
 // File system definitions
 #define BOOT_LOG_FILENAME "/bootlog.txt"

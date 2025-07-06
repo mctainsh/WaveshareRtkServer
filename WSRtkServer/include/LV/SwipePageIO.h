@@ -15,7 +15,6 @@ extern std::string _mdnsHostName;
 class SwipePageIO : public SwipePageBase
 {
 private:
-
 public:
 	void Create(lv_obj_t *parentGroupPanel)
 	{
@@ -46,6 +45,7 @@ public:
 		AppendRowTitle("IP Address");
 		AppendRowTitle("Host Name");
 		AppendRowTitle("Type");
+		AppendRowTitle("Reconnects");
 	}
 
 	void RefreshData()
@@ -55,17 +55,17 @@ public:
 		SetTableValue(2, _sdFile.GetDriveSpace().c_str());
 
 		// Flash details
-		SetTableValue(4, MakeKbPercent( ESP.getSketchSize(), ESP.getFreeSketchSpace()).c_str());
+		SetTableValue(4, MakeKbPercent(ESP.getSketchSize(), ESP.getFreeSketchSpace()).c_str());
 
-		SetTableValue(5, (ToThousands(ESP.getFlashChipSize()/KB)+ " kb").c_str());
+		SetTableValue(5, (ToThousands(ESP.getFlashChipSize() / KB) + " kb").c_str());
 		SetTableValue(6, MakeKbPercent(SPIFFS.usedBytes(), SPIFFS.totalBytes()).c_str());
 
 		// PSRAM
-		SetTableValue(7, MakeKbPercent(ESP.getPsramSize()-ESP.getFreePsram(), ESP.getPsramSize()).c_str());
+		SetTableValue(7, MakeKbPercent(ESP.getPsramSize() - ESP.getFreePsram(), ESP.getPsramSize()).c_str());
 
-// WiFi
-auto status = WiFi.status();
-		SetTableString(9, WifiStatus(status));	
+		// WiFi
+		auto status = WiFi.status();
+		SetTableString(9, WifiStatus(status));
 		auto strength = WiFi.RSSI();
 		std::string strengthTitle = "Unusable";
 		if (strength > -30)
@@ -81,16 +81,17 @@ auto status = WiFi.status();
 		else
 			SetTableValue(10, (std::to_string(strength) + "dBm " + strengthTitle).c_str());
 		SetTableValue(11, WiFi.getHostname());
-		SetTableValue(12, status == WL_CONNECTED ? WiFi.localIP().toString().c_str() : "192.168.4.1");
-		SetTableValue(13, (_mdnsHostName + ".local").c_str());
-		SetTableValue(14,
-			WiFi.getMode() == WIFI_MODE_NULL
-				? "N/A"
-				: (WiFi.getMode() == WIFI_STA
-					   ? "Station"
-					   : (WiFi.getMode() == WIFI_AP
-							  ? "Access Point"
-							  : (WiFi.getMode() == WIFI_AP_STA ? "Access Point + Station"
-															   : "Unknown"))));
+		if (status == WL_CONNECTED)
+		{
+			SetTableValue(12, WiFi.localIP().toString().c_str());
+			SetTableValue(13, (_mdnsHostName + ".local").c_str());
+		}
+		else
+		{
+			SetTableValue(12, "X -> 192.168.4.1");
+			SetTableValue(13, "");
+		}
+		SetTableValue(14, WiFiModeText(WiFi.getMode()));
+		//SetTableValue(15, _webPortal.GetReconnectCount().c_str());
 	}
 };

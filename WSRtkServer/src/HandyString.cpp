@@ -197,6 +197,23 @@ const char *WifiStatus(wl_status_t status)
 	return "Unknown";
 }
 
+const char *WiFiModeText(wifi_mode_t mode)
+{
+	switch (mode)
+	{
+	case WIFI_MODE_NULL:
+		return "Null";
+	case WIFI_MODE_STA:
+		return "Station";
+	case WIFI_MODE_AP:
+		return "Access Point";
+	case WIFI_MODE_APSTA:
+		return "Access Point + Station";
+	default:
+		return "Unknown";
+	}
+}
+
 std::string ReplaceNewlineWithTab(const std::string &input)
 {
 	std::string output;

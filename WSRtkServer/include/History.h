@@ -56,8 +56,9 @@ public:
 		float tsens_out = 0.0;
 
 		// Enable temperature sensor (Will fail first time called. Probably cos already on?)
-		if ((temp_sensor_start()) != ESP_OK)
-			Logln("E100 - Failed to start temperature sensor");
+		auto err = temp_sensor_start();
+		if (err != ESP_OK)
+			Logf("E100 - Failed to start temperature sensor %d", err);
 
 		// Get converted sensor data
 		if (temp_sensor_read_celsius(&tsens_out))

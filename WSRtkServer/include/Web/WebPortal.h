@@ -42,17 +42,21 @@ private:
 	void GraphArray(WiFiClient &client, std::string divId, std::string title, const char *pBytes, int length) const;
 	void HtmlLog(const char *title, const std::vector<std::string> &log) const;
 
-	bool _busyConnecting = false; // Are we currently connecting to WiFi?
-	int _connnectCount = 0;		  // Number of time we have connected
-	int _loops = 0;				  // Use to prevent the PortalProcessing to take up too much processing time
+	//	bool _busyConnecting = false; // Are we currently connecting to WiFi?
+	int _connectCount = 0; // Number of time we have connected
+	int _loops = 0;		   // Use to prevent the PortalProcessing to take up too much processing time
 
 public:
+	int GetConnectCount() const { return _connectCount; } // Get the number of times we have connected
+
+	///////////////////////////////////////////////////////////////////////////
 	/// @brief Startup the portal
 	void Setup()
 	{
-		if (_busyConnecting)
-			return;
-		_busyConnecting = true;
+		//		if (_busyConnecting)
+		//			return;
+		//		_busyConnecting = true;
+
 		// Make access point name
 		std::string apName = MakeHostName();
 		Logf("Start listening on %s", apName.c_str());
@@ -73,43 +77,53 @@ public:
 			delay(100);
 		}
 
-		delay(100);
-		_wifiManager.setConfigPortalTimeout(WIFI_TIMEOUT_S);
-		delay(100);
+		// delay(100);
+		//_wifiManager.setConfigPortalTimeout(WIFI_TIMEOUT_S*100);
+		// delay(100);
 
-		_wifiManager.setConfigPortalBlocking(true);
-		while (WiFi.status() != WL_CONNECTED)
-		{
-			Logf("Try WIFI Connection on %s", apName.c_str());
-			_wifiManager.autoConnect(WiFi.getHostname(), AP_PASSWORD);
-		}
+		// _wifiManager.setConfigPortalBlocking(true);
+		// while (WiFi.status() != WL_CONNECTED)
+		// {
+		// 	Logf("Try WIFI Connection on %s", apName.c_str());
+		// 	_wifiManager.autoConnect(WiFi.getHostname(), AP_PASSWORD);
+		// }
 
 		// Setup callbacks
 		_wifiManager.setWebServerCallback(std::bind(&WebPortal::OnBindServerCallback, this));
 		_wifiManager.setConfigPortalTimeout(0);
 		_wifiManager.setConfigPortalBlocking(false);
 
-		// auto macAddress = WiFi.macAddress();
-		// macAddress.replace(":", "");
-		// apName += macAddress.c_str();
-
 		// First parameter is name of access point, second is the password
 		Logf("Start AP %s", apName.c_str());
 		_wifiManager.autoConnect(apName.c_str(), AP_PASSWORD);
 
 		// If we are connected, process the WiFi stuff
-		if (_connnectCount == 0)
-			FirstWiFiConnectionPostProcess();
-		_connnectCount++;
-		_busyConnecting = false;
+		//	if (_connectCount == 0)
+		//		FirstWiFiConnectionPostProcess();
+		//	_connectCount++;
+		//_busyConnecting = false;
 	}
 
 	///////////////////////////////////////////////////////////////////////////////
 	/// Process thee WiFi stuff for the first time
-	void FirstWiFiConnectionPostProcess()
+	void OnConnected()
 	{
+		_connectCount++;
+
+		// If we are connected, process the WiFi stuff
+		if (_connectCount != 1)
+			return;
+
 		_handyTime.WiFiReady(); // Indicate we have WiFi connection
-		
+
+		// Disable AP_STA mode
+		// while (WiFi.getMode() != WIFI_STA)
+		// {
+		// 	Logln("Waiting for WiFi mode to be set to Access Point");
+		// 	WiFi.mode(WIFI_STA);
+		// 	delay(250);
+		// }
+
 		// Start the log if not already started
 		if (!_sdFile.LogStarted())
 		{
@@ -130,9 +144,6 @@ public:
 		mdns_instance_name_set(_mdnsHostName.c_str());
 		Serial.printf("MDNS responder started at http://%s.local\n", _mdnsHostName.c_str());
 		_display.RefreshScreen();
-
-		// Dump the file structure
-		_myFiles.StartupComplete();
 	}
 
 	///////////////////////////////////////////////////////////////////////////////
@@ -449,13 +460,7 @@ void WebPortal::ShowStatusHtml()
 	p.TableRow(1, "A/P name", WiFi.getHostname());
 	p.TableRow(1, "IP Address", WiFi.localIP().toString().c_str());
 	p.TableRow(1, "Host name", StringPrintf("%s.local", _mdnsHostName.c_str()).c_str());
-	p.TableRow(1, "WiFi Mode",
-			   WiFi.getMode() == WIFI_STA
-				   ? "Station"
-				   : (WiFi.getMode() == WIFI_AP
-						  ? "Access Point"
-						  : (WiFi.getMode() == WIFI_AP_STA ? "Access Point + Station"
-														   : "Unknown")));
+	p.TableRow(1, "WiFi Mode", WiFiModeText(WiFi.getMode()));
 
 	// p.TableRow( 1, "Free Heap", ESP.getFreeHeap());
 	p.TableRow(0, "GPS", "");
