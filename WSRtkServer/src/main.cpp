@@ -11,7 +11,6 @@
 #include "Hardware/PowerManagementSystem.h"
 
 #include <WiFiManager.h> //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
-#include <mDNS.h>		 // Setup *.local domain name
 
 #include "HandyLog.h"
 #include "HandyString.h"
@@ -19,7 +18,7 @@
 #include "GpsParser.h"
 #include "NTRIPServer.h"
 #include "Hardware/MyFiles.h"
-#include <Web/WebPortal.h>
+#include <Web/WebPortal.hpp>
 #include "WiFiEvents.h"
 #include "History.h"
 

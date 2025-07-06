@@ -6,9 +6,11 @@
 #include "Hardware/SdFile.h"
 #include <WiFi.h>
 #include <SPIFFS.h>
+#include "Web/WebPortal.hpp"
 
 extern SDFile _sdFile;
 extern std::string _mdnsHostName;
+extern WebPortal _webPortal;
 
 ///////////////////////////////////////////////////////////////////////////////
 // This is a page with information about drives and memory
@@ -18,7 +20,7 @@ private:
 public:
 	void Create(lv_obj_t *parentGroupPanel)
 	{
-		CreatePanel(parentGroupPanel,  LV_SYMBOL_DIRECTORY " Disk & Memory", 0xA4CCD9);
+		CreatePanel(parentGroupPanel, LV_SYMBOL_DIRECTORY " Disk & Memory", 0xA4CCD9);
 
 		// Table
 		CreateTable(_uiPanelPage, LV_SIZE_CONTENT); // Create a table with a height of 200 pixels
@@ -38,7 +40,7 @@ public:
 		AppendRowTitle("PSRAM", TblFormat::Right);
 
 		// WiFi
-		AppendRowTitle( LV_SYMBOL_WIFI " WiFi", TblFormat::Highlight);
+		AppendRowTitle(LV_SYMBOL_WIFI " WiFi", TblFormat::Highlight);
 		AppendRowTitle("Status");
 		AppendRowTitle("Strength");
 		AppendRowTitle("A/P Name");
@@ -92,6 +94,6 @@ public:
 			SetTableValue(13, "");
 		}
 		SetTableValue(14, WiFiModeText(WiFi.getMode()));
-		//SetTableValue(15, _webPortal.GetReconnectCount().c_str());
+		SetTableValue(15, std::to_string(_webPortal.GetConnectCount() - 1).c_str());
 	}
 };

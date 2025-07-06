@@ -4,12 +4,14 @@
 #include <WiFiManager.h>
 #include <NTRIPServer.h>
 #include "Hardware/MyFiles.h"
+#include "Hardware/SDFile.h"
 
 extern WiFiManager _wifiManager;
 extern NTRIPServer _ntripServer0;
 extern NTRIPServer _ntripServer1;
 extern NTRIPServer _ntripServer2;
 extern MyFiles _myFiles;
+extern SDFile _sdFile; // SD card file system
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fancy HTML pages for the web portal

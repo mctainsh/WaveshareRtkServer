@@ -3,6 +3,7 @@
 #include "Web\WebPageWrapper.h"
 #include "HandyLog.h"
 #include "Hardware/MyFiles.h"
+#include "Hardware/SDFile.h"
 
 extern MyFiles _myFiles;
 extern SDFile _sdFile;

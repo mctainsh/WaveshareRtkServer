@@ -65,6 +65,7 @@ public:
 		int32_t v = lv_slider_get_value(slider);
 		// lv_label_set_text_fmt(_lblBright, "%" LV_PRId32, v);
 		// lv_obj_align_to(_lblBright, slider, LV_ALIGN_OUT_TOP_MID, v, -55);
+		// TODO : Make it more aggressive around 100%
 		ledcWrite(BACKLIGHT_CHANNEL, std::max(1, (int)(v * 255 / 100)));
 	}
 
