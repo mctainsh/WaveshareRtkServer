@@ -22,7 +22,7 @@ private:
 public:
 	void Create(lv_obj_t *parentGroupPanel)
 	{
-		CreatePanel(parentGroupPanel, "Settings", 0xbae1ff);
+		CreatePanel(parentGroupPanel, LV_SYMBOL_SETTINGS " Settings", 0xbae1ff);
 
 		_panelVersion.Create(_uiPanelPage, "Firmware", APP_VERSION); // Create a panel with label and value
 
@@ -45,7 +45,7 @@ public:
 		lv_obj_add_event_cb(slider, SwipePageSettings::OnSlider, LV_EVENT_VALUE_CHANGED, NULL); /*Assign an event function*/
 
 		// Add button for testing
-		CreateFancyButton("Power", _uiPanelPage, SwipePageSettings::OnButton, lv_pct(100));
+		CreateFancyButton(LV_SYMBOL_BATTERY_2 " Power", _uiPanelPage, SwipePageSettings::OnButton, lv_pct(100));
 	}
 
 	void RefreshData()

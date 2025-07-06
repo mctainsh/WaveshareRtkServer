@@ -33,6 +33,8 @@ public:
 	// Setup power management system
 	void Setup()
 	{
+		return;
+
 		bool result = _power.begin(Wire, AXP2101_SLAVE_ADDRESS, I2C_SDA, I2C_SCL);
 
 		if (result == false)
@@ -40,6 +42,10 @@ public:
 			Logln("power is not online...");
 			return;
 		}
+
+EnterPmuSleep();
+return;
+
 		_isMounted = true;
 		Logf("AXP2101 ID:0x%x", _power.getChipID());
 
@@ -322,6 +328,12 @@ public:
 	// Record the current state to log
 	void PrintPMU()
 	{
+		if( !_isMounted )
+		{
+			Logln("PMU is not mounted, cannot print status.");
+			return;
+		}
+
 		Logln("===========================================================================");
 		Logf("\tisCharging:%s ", _power.isCharging() ? "YES" : "NO");
 		Logf("\tisDischarge:%s ", _power.isDischarge() ? "YES" : "NO");
@@ -341,34 +353,36 @@ public:
 			Logf("\tBatteryPercent:%d%%", _power.getBatteryPercent());
 	}
 
-	// void EnterPmuSleep(void)
-	// {
-	// 	// Set the wake-up source to PWRKEY
-	// 	_power.wakeupControl(XPOWERS_AXP2101_WAKEUP_IRQ_PIN_TO_LOW, true);
+	///////////////////////////////////////////////////////////////////////////
+	// Turn off the PMU
+	void EnterPmuSleep(void)
+	{
+		// Set the wake-up source to PWRKEY
+		_power.wakeupControl(XPOWERS_AXP2101_WAKEUP_IRQ_PIN_TO_LOW, true);
 
-	// 	// Set sleep flag
-	// 	_power.enableSleep();
+		// Set sleep flag
+		_power.enableSleep();
 
-	// 	_power.disableDC2();
-	// 	_power.disableDC3();
-	// 	_power.disableDC4();
-	// 	_power.disableDC5();
+		_power.disableDC2();
+		_power.disableDC3();
+		_power.disableDC4();
+		_power.disableDC5();
 
-	// 	_power.disableALDO1();
-	// 	_power.disableALDO2();
-	// 	_power.disableALDO3();
-	// 	_power.disableALDO4();
+		_power.disableALDO1();
+		_power.disableALDO2();
+		_power.disableALDO3();
+		_power.disableALDO4();
 
-	// 	_power.disableBLDO1();
-	// 	_power.disableBLDO2();
+		_power.disableBLDO1();
+		_power.disableBLDO2();
 
-	// 	_power.disableCPUSLDO();
-	// 	_power.disableDLDO1();
-	// 	_power.disableDLDO2();
+		_power.disableCPUSLDO();
+		_power.disableDLDO1();
+		_power.disableDLDO2();
 
-	// 	// Finally, turn off the power of the control chip
-	// 	_power.disableDC1();
-	// }
+		// Finally, turn off the power of the control chip
+		_power.disableDC1();
+	}
 
 	///////////////////////////////////////////////////////////////////////////
 	// Loop to check PMU status and handle interrupts
@@ -505,6 +519,12 @@ public:
 	/// Refresh the data in the table
 	void RefreshData(SwipePageBase *pPage)
 	{
+		if( !_isMounted )
+		{
+			pPage->SetTableValue(0, "PMU not mounted");
+			return;
+		}
+
 		pPage->SetTableValue(1, _power.isCharging() ? "Yes" : "No");
 		pPage->SetTableValue(2, _power.isDischarge() ? "Yes" : "No");
 		pPage->SetTableValue(3, _power.isStandby() ? "Yes" : "No");

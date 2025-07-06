@@ -150,7 +150,6 @@ protected:
 		lv_obj_t *btnLabel = lv_label_create(btn);
 		lv_label_set_text(btnLabel, title);
 		lv_obj_center(btnLabel);
-
 		return wrap;
 	}
 

@@ -3,7 +3,7 @@
 #define I2C_SDA 8
 #define I2C_SCL 7
 
-#define APP_VERSION "3.108.1078"
+#define APP_VERSION "3.108.1080"
 
 // Disables logging to serial
 #define SERIAL_LOG

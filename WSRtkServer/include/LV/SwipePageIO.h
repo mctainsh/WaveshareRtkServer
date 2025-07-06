@@ -18,18 +18,18 @@ private:
 public:
 	void Create(lv_obj_t *parentGroupPanel)
 	{
-		CreatePanel(parentGroupPanel, "Disk & Memory", 0x0000FF);
+		CreatePanel(parentGroupPanel,  LV_SYMBOL_DIRECTORY " Disk & Memory", 0xA4CCD9);
 
 		// Table
 		CreateTable(_uiPanelPage, LV_SIZE_CONTENT); // Create a table with a height of 200 pixels
 
 		// SD Card
-		AppendRowTitle("SD Card", TblFormat::Highlight);
+		AppendRowTitle(LV_SYMBOL_SD_CARD " SD Card", TblFormat::Highlight);
 		AppendRowTitle("State");
 		AppendRowTitle("Space");
 
 		// Flash memory
-		AppendRowTitle("Flash", TblFormat::Highlight);
+		AppendRowTitle(LV_SYMBOL_DRIVE " Flash", TblFormat::Highlight);
 		AppendRowTitle("Sketch", TblFormat::Right);
 		AppendRowTitle("Size", TblFormat::Right);
 		AppendRowTitle("SPIFFS", TblFormat::Right);
@@ -38,7 +38,7 @@ public:
 		AppendRowTitle("PSRAM", TblFormat::Right);
 
 		// WiFi
-		AppendRowTitle("WiFi", TblFormat::Highlight);
+		AppendRowTitle( LV_SYMBOL_WIFI " WiFi", TblFormat::Highlight);
 		AppendRowTitle("Status");
 		AppendRowTitle("Strength");
 		AppendRowTitle("A/P Name");
