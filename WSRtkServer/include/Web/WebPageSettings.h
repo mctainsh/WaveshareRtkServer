@@ -34,8 +34,11 @@ public:
 
 		AddPageHeader(_wifiManager.server->uri().c_str());
 
-		_client.println("<style>.flex-row { display: flex;flex-wrap: wrap;gap: 1rem;}.flex-item "
-						"{flex: 1 1 300px; min-width: 300px;background-color: #0001;box-sizing: border-box;}</style>");
+		_client.println("<style>"
+						".flex-row { display: flex;flex-wrap: wrap;gap: 1rem;}"
+						".flex-item {flex: 1 1 300px; min-width: 300px;background-color: #0001;box-sizing: border-box;}"
+						".fieldS3{margin-bottom: 1rem !important; max-width: 500px;}"
+						"</style>");
 
 		// Add the form for the caster 1
 		_client.print("<h3 class='mt-4'>NTRIP Caster Settings</h3>"
@@ -45,18 +48,18 @@ public:
 		AddCasterForm(_ntripServer2);
 		_client.println("</div>");
 
-		// Add Station location form
-		AddStationLocationForm();
-
-		// Add the form to set the station location
+		// Add the form to set the server local network domain name
 		AddMultiCastDNSForm();
 
 		// Add Timezone offset
 		AddTimezoneOffset();
 
+		// Add Station location form
+		AddStationLocationForm();
+
 		// Reset section
 		_client.println(R"rawliteral(
-<div class="accordion accordion-flush card" id="acd2">
+<div class="accordion accordion-flush card" id="acd2" style="max-width: 500px;">
 	<div class="accordion-item">
 		<h2 class="accordion-header">
 			<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
@@ -67,7 +70,7 @@ public:
 		<div class="accordion-body">
 			<strong>This will reboot the ESP32 but will not restart the GPS.</strong>
 			<p>Are you sure you want to reboot the device?</p>
-			<a href="/RESTART_ESP32" class="btn btn-warning btn-lg">Confirm reboot</a>	  
+			<a href="/RESTART_ESP32" class="btn btn-warning btn-lg w-100">Confirm reboot</a>	  
 		</div>
 		</div>
 	</div>
@@ -82,7 +85,7 @@ public:
       <div class="accordion-body">
         <strong>This erase all GPS settings.</strong>
 		<p>Are you sure erase GPS settings. This will force a average location of GPS to be also lost. Are you sure?</p>
-		<a href="/FRESET_GPS_CONFIRMED" class="btn btn-warning btn-lg">Confirm GPS Reset</a>	 
+		<a href="/FRESET_GPS_CONFIRMED" class="btn btn-warning btn-lg w-100">Confirm GPS Reset</a>	 
 	  </div>
     </div>
   </div>
@@ -97,7 +100,7 @@ public:
       <div class="accordion-body">
         <strong>This will erase all Wi-Fi setting. You will need to re enter the Wi-Fi credentials</strong> <p>Once reset, follow the Wi-Fi connection instructions to connect to the device again.</p>
 		<p>Are you sure you want to reset the Wi-Fi settings?</p>
-		<a href="/RESET_WIFI" class="btn btn-danger btn-lg">Confirm Wi-Fi & Settings Reset</a>
+		<a href="/RESET_WIFI" class="btn btn-danger btn-lg w-100">Confirm Wi-Fi & Settings Reset</a>
     </div>
   </div>
 </div>
@@ -111,7 +114,7 @@ public:
 	void AddStationLocationForm()
 	{
 		// Title and help button
-		_client.printf("<h3 class='mt-4'>Station calibrated location %s</h3>",
+		_client.printf("<div class='card flex-item fieldS3'><div class='card-header'>Station calibrated location %s</div><div class='card-body p-1'>",
 					   MakeHelpButton("Help",
 									  "The precise location of the base station in the format (ie -27.57012345 153.09912345 35.258). "
 									  "Leave blank for the station to auto calibrate. If provided, tt is critical this is accurate.")
@@ -128,14 +131,14 @@ public:
 
 		// Main input form for the base location with update button
 		_client.printf(R"rawliteral(
-			<form method='get' class='container py-4 m-0 p-0'>
-			<div class="input-group mb-3">
+			<form method='get' class='container p-1 m-0 p-0'>
+			<div class="input-group">
 				<div class="form-floating">
 					<input type="text" class="form-control" name="%s" id="%s" value="%s">
 					<label for="%s" class="form-label">Latitude(&deg;) Longitude(&deg;) Height(m)</label>
 				</div>
 				<button class="btn btn-primary" type='submit' id="button-addon2">Apply</button>
-			</div></form>	)rawliteral",
+			</div></form></div></div>	)rawliteral",
 					   BASE_LCN, BASE_LCN, _baseLocation.c_str(), BASE_LCN);
 	}
 
@@ -144,7 +147,7 @@ public:
 	void AddMultiCastDNSForm()
 	{
 		// Title and help button
-		_client.printf("<h3 class='mt-4'>Multicast DNS (Bonjour name) %s</h3>",
+		_client.printf("<div class='card flex-item fieldS3 mt-3'><div class='card-header'>Multicast DNS (Bonjour name) %s</div><div class='card-body p-1'>",
 					   MakeHelpButton("Help",
 									  "mDNS is the host name you can use to connect to your device rather tan an IP Address which may change")
 						   .c_str());
@@ -202,14 +205,14 @@ public:
 
 		// Main input form
 		_client.printf(R"rawliteral(
-			<form method='get' class='container py-4 m-0 p-0'>
-			<div class="input-group mb-3">
+			<form method='get' class='container p-1 m-0 p-0'>
+			<div class="input-group">
 				<div class="form-floating">
 					<input type="text" class="form-control" name="%s" id="%s" value="%s.local">
 					<label for="%s" class="form-label">Name (Use numbers, letters and hyphens)</label>
 				</div>
 				<button class="btn btn-primary" type='submit' id="button-addon2">Apply</button>
-			</div></form>	)rawliteral",
+			</div></form></div></div>	)rawliteral",
 					   BASE_LCN, BASE_LCN, _mdnsHostName.c_str(), BASE_LCN);
 	}
 
@@ -217,8 +220,7 @@ public:
 	/// @brief Add the form to set DNS for the ESP32
 	void AddTimezoneOffset()
 	{
-		// Title and help button
-		_client.printf("<h3 class='mt-4'>Timezone offset %s</h3>",
+		_client.printf("<div class='card flex-item fieldS3'><div class='card-header'>Timezone offset %s</div><div class='card-body p-1'>",
 					   MakeHelpButton("Help",
 									  "Timezone is applied to logs. Dealing with daylight savings is just too hard. Deal with it!")
 						   .c_str());
@@ -238,8 +240,8 @@ public:
 
 		// Main input form
 		_client.printf(R"rawliteral(
-<form method='get' class='container py-4 m-0 p-0'>
-<div class="input-group mb-3">
+<form method='get' class='container p-1 m-0 p-0'>
+<div class="input-group">
 	<div class="form-floating">
 		<select class="form-control" id="%s" name="%s">
 		<option value="-720">(UTC-12:00) Baker</option>
@@ -285,8 +287,7 @@ public:
 		<label for="%s" class="form-label">Timezone</label>
 	</div>
 	<button class="btn btn-primary" type='submit' id="button-addon2">Apply</button>
-</div></form>
-
+</div></form></div></div>
 <script>
 	document.getElementById('%s').value = '%s';
 </script>
@@ -349,7 +350,7 @@ public:
 
 		// Add the form
 		{
-			_client.println("<form method='get' class='container py-4 m-0 p-0'>");
+			_client.println("<form method='get' class='container p-1 m-0 p-0'>");
 
 			AddInput("text", sa, "Server Address", server.GetAddress().c_str());
 			AddInput("number", pr, "Port (0 to disable)", std::to_string(server.GetPort()).c_str());

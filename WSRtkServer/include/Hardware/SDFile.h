@@ -420,13 +420,27 @@ public:
 			if (files[i].Path.find(LOG_FILE_PREFIX) != 0 || files[i].IsCurrentLog)
 				files.erase(files.begin() + i);
 
+		// If we have more than MAX_LOG_FILES, remove the oldest ones
+		const int MAX_LOG_FILES = 10; // Maximum number of log files to keep
+		int filesToRemove = files.size() - MAX_LOG_FILES;
+
 		// Starting at the first item, remove files until we have less than 250kb available
 		size_t totalFree = SD_MMC.totalBytes() - SD_MMC.usedBytes();
 		for (const auto &file : files)
 		{
-			if (totalFree > 1024 * 1024)
-				break;
+			if( filesToRemove > 0)
+			{
+				filesToRemove--;
+				
+			}
+			else 
+			{
+				if (totalFree > 1024 * 1024) // Keep at least 1MB free
+					break;
+			}
 
+			// Remove the file
+			Serial.printf("Removing old log file: %s (%d bytes)\n", file.Path.c_str(), file.Size);
 			totalFree += file.Size;
 			SD_MMC.remove(file.Path.c_str());
 		}
