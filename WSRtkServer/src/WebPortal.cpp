@@ -48,22 +48,12 @@ void WebPortal::Setup()
 	Logln("Mode set to AP_STA");
 
 	// Wait for WiFi to be ready
-	while (WiFi.status() == WL_NO_SHIELD)
-	{
-		Logln("Waiting for WiFi to be ready");
-		delay(100);
-	}
+//	while (WiFi.status() == WL_NO_SHIELD)
+//	{
+//		Logln("Waiting for WiFi to be ready");
+//		delay(100);
+//	}
 
-	// delay(100);
-	//_wifiManager.setConfigPortalTimeout(WIFI_TIMEOUT_S*100);
-	// delay(100);
-
-	// _wifiManager.setConfigPortalBlocking(true);
-	// while (WiFi.status() != WL_CONNECTED)
-	// {
-	// 	Logf("Try WIFI Connection on %s", apName.c_str());
-	// 	_wifiManager.autoConnect(WiFi.getHostname(), AP_PASSWORD);
-	// }
 
 	// Setup callbacks
 	_wifiManager.setWebServerCallback(std::bind(&WebPortal::OnBindServerCallback, this));

@@ -103,35 +103,12 @@ protected:
 		_rowCount++;
 	}
 
-	///////////////////////////////////////////////////////////////////////////
-	// Create a clear panel for wrapping to add padding
-	static lv_obj_t* ClearPanel(lv_obj_t* parent, int32_t l, int32_t r, int32_t t, int32_t b)
-	{
-		// Add a transparent panel around the button to give it padding
-		lv_obj_t* wrap = lv_obj_create(parent);
-		lv_obj_set_height(wrap, LV_SIZE_CONTENT);
-		lv_obj_set_width(wrap, lv_pct(100));
-		lv_obj_remove_flag(wrap, LV_OBJ_FLAG_SCROLLABLE);
-		//lv_obj_set_flex_flow(wrap, LV_FLEX_FLOW_COLUMN);
-
-		// No background or border
-		lv_obj_set_style_bg_opa(wrap, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-		lv_obj_set_style_border_opa(wrap, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-
-		// Padding
-		lv_obj_set_style_pad_left(wrap, l, LV_PART_MAIN | LV_STATE_DEFAULT);
-		lv_obj_set_style_pad_right(wrap, r, LV_PART_MAIN | LV_STATE_DEFAULT);
-		lv_obj_set_style_pad_top(wrap, t, LV_PART_MAIN | LV_STATE_DEFAULT);
-		lv_obj_set_style_pad_bottom(wrap, b, LV_PART_MAIN | LV_STATE_DEFAULT);
-
-		return wrap;
-	}
-
+public:
 	///////////////////////////////////////////////////////////////////////////
 	// This function is called when the close button is clicked
 	static lv_obj_t* CreateFancyButton( const char *title, lv_obj_t* parent, lv_event_cb_t event_cb,  int32_t width, int32_t height = 60)
 	{
-		lv_obj_t *wrap = ClearPanel(parent, 6, 6, 6, 6);
+		lv_obj_t *wrap = LVCore::ClearPanel(parent, 6, 6, 6, 6);
 		lv_obj_set_height(wrap, height);
 		lv_obj_set_width(wrap, width);
 
@@ -153,7 +130,6 @@ protected:
 		return wrap;
 	}
 
-public:
 	///////////////////////////////////////////////////////////////////////////
 	// Set value in the table
 	void SetTableValue(uint32_t row, const char *value)

@@ -16,7 +16,7 @@ void ui_MainScreen_screen_init(void)
 	// Main page panel group
 	UIPageGroupPanel = lv_obj_create(UIMainScreen);
 	lv_obj_set_width(UIPageGroupPanel, 320);
-	lv_obj_set_height(UIPageGroupPanel, 420);
+	lv_obj_set_height(UIPageGroupPanel, 438);
 	lv_obj_set_x(UIPageGroupPanel, 0);
 	lv_obj_set_y(UIPageGroupPanel, 0);
 	lv_obj_set_align(UIPageGroupPanel, LV_ALIGN_BOTTOM_MID);

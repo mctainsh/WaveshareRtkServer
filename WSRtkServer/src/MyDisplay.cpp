@@ -67,13 +67,13 @@ void MyDisplay::Animate()
 
 ///////////////////////////////////////////////////////////////////////////
 // Draw the GPS connected tick box
-void MyDisplay::SetGpsConnected(bool connected)
-{
-	if (_gpsConnected == connected)
-		return;
-	_gpsConnected = connected;
-//	//_graphics.SetGpsConnected(_gpsConnected);
-}
+// void MyDisplay::SetGpsConnected(bool connected)
+// {
+// 	if (_gpsConnected == connected)
+// 		return;
+// 	_gpsConnected = connected;
+// //	//_graphics.SetGpsConnected(_gpsConnected);
+// }
 
 // ************************************************************************//
 // Page 3 - System detail

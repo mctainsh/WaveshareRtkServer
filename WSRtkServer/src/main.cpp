@@ -58,7 +58,7 @@ LVCore _lvCore;
 // Pages
 SwipePageGps _systemPageGps;
 SwipePageGps _swipePageGps;
- SwipePageIO _swipePageIO;
+SwipePageIO _swipePageIO;
 //  SwipePagePower _swipePagePower;
 SwipePageSettings _swipePageSettings;
 
@@ -124,13 +124,14 @@ void setup()
 
 	// Create the GPS status page
 	_systemPageGps.Create(UIPageGroupPanel);	 // Create the GPS status page and add
-												 	_swipePageIO.Create(UIPageGroupPanel);		 // Create the GPS status page and add
+	_swipePageIO.Create(UIPageGroupPanel);		 // Create the GPS status page and add
 	_swipePageSettings.Create(UIPageGroupPanel); // Create the settings page and add
 
 	// Fix the startup scroll offset error
-		lv_obj_scroll_to_view(_swipePageIO.GetPanel(), LV_ANIM_OFF);
+	lv_obj_scroll_to_view(_swipePageIO.GetPanel(), LV_ANIM_OFF);
 
 	_swipePageIO.RefreshData();
+	_lvCore.UpdateWiFiIndicator();
 
 	_powerManagementSystem.Setup(); // Setup the power management system
 
@@ -156,7 +157,8 @@ void loop()
 			_display.RefreshRtk(i);
 		_fastLoopWaitTime = t;
 		_loopPersSecondCount = 0;
-		_lvCore.SetTitleTime( _handyTime.Format("%a %H:%M:%S"));
+		_lvCore.SetTitleTime(_handyTime.Format("%a %H:%M:%S"));
+		//_lvCore.SetTitleDate(_handyTime.Format("%d %b %Y"));
 
 		// Check power management system
 		_powerManagementSystem.PowerLoop();
@@ -164,16 +166,18 @@ void loop()
 			_powerManagementSystem.RefreshData(_pagePower);
 
 		// If WiFI disconnected refresh the WiFi status
-		// if (WiFi.status() != WL_CONNECTED)
-		//	_swipePageGps.RefreshData();
-
-		_handyTime.UpdatePageTitle(_lvCore._label);
+		if (WiFi.status() != WL_CONNECTED)
+		{
+			_swipePageIO.RefreshData();
+			_lvCore.UpdateWiFiIndicator();
+		}
 	}
 
 	// Run every 10 seconds
 	if ((t - _slowLoopWaitTime) > SLOW_TIMER)
 	{
 		_swipePageIO.RefreshData();
+		_lvCore.UpdateWiFiIndicator();
 
 		// Check memory pressure
 		auto free = ESP.getFreeHeap();
@@ -199,6 +203,7 @@ void loop()
 			Logln("Set WIFI_STA mode");
 			WiFi.mode(WIFI_STA);
 			_swipePageIO.RefreshData();
+			_lvCore.UpdateWiFiIndicator();
 		}
 
 		// Update display battery
@@ -217,7 +222,9 @@ void loop()
 	bool gpsEnable = false;
 	if (IsWifiConnected())
 		gpsEnable = _gpsParser.ReadDataFromSerial(Serial2);
-	_display.SetGpsConnected(gpsEnable);
+
+	_lvCore.SetGpsConnected(gpsEnable);
+	//_display.SetGpsConnected(gpsEnable);
 
 	// Check the web portal
 	_webPortal.Loop();
@@ -265,7 +272,8 @@ bool IsWifiConnected()
 			_webPortal.OnConnected();
 		}
 
-				_swipePageIO.RefreshData();
+		_swipePageIO.RefreshData();
+		_lvCore.UpdateWiFiIndicator();
 	}
 
 	if (status == WL_CONNECTED)

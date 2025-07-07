@@ -33,7 +33,7 @@ public:
 		lv_obj_set_align(label, LV_ALIGN_TOP_LEFT);
 		lv_label_set_text(label, "Brightness");
 
-		lv_obj_t *wrap = ClearPanel(_uiPanelPage, 6, 6, 2, 2);
+		lv_obj_t *wrap = LVCore::ClearPanel(_uiPanelPage, 6, 6, 2, 2);
 
 		// Slider
 		lv_obj_t *slider = lv_slider_create(wrap);

@@ -29,6 +29,9 @@
 void my_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map);
 uint32_t millis_cb(void);
 void my_touchpad_read(lv_indev_t *indev, lv_indev_data_t *data);
+lv_obj_t *MakeStatusButton(lv_obj_t *parent, const char *title, lv_event_cb_t event_cb);
+lv_obj_t *ClearPanel(lv_obj_t *parent, int32_t l, int32_t r, int32_t t, int32_t b);
+// void SetIndicatorColour(lv_obj_t *btn, StatusButtonState state);
 
 #if LV_USE_LOG != 0
 void my_print(lv_log_level_t level, const char *buf)
@@ -66,6 +69,19 @@ private:
 	lv_obj_t *_homeScreen = nullptr;	   // Home screen object
 	lv_obj_t *_labelBattery = nullptr;	   // Label Battery percentage
 	lv_obj_t *_labelTime = nullptr;		   // Label for the time in top row
+
+	lv_obj_t *_btnStatusWifi = nullptr; // Button for WiFi status
+	lv_obj_t *_btnStatusGps = nullptr;	// Button for GPS connection status
+	lv_obj_t *_btnStatusSvr1 = nullptr; // Button for NTRIP server connection status
+	lv_obj_t *_btnStatusSvr2 = nullptr; // ..
+	lv_obj_t *_btnStatusSvr3 = nullptr; // ..
+	enum class StatusButtonState
+	{
+		Unknown,
+		Bad,
+		Good,
+	};
+
 public:
 	Arduino_GFX *GetGfx() { return _gfx; }
 	lv_obj_t *GetHomeScreen() { return _homeScreen; }
@@ -167,33 +183,114 @@ public:
 		lv_obj_set_style_bg_opa(lv_scr_act(), 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 		_homeScreen = lv_scr_act(); // Save the home screen
 
-		/* Option 1: Create a simple label
-		 * ---------------------
-		 */
+		// Setup battery labels
 		_labelBattery = lv_label_create(lv_scr_act());
 		lv_label_set_text(_labelBattery, "Battery");
 		lv_obj_align(_labelBattery, LV_ALIGN_TOP_LEFT, 0, 0);
 		lv_obj_set_style_text_color(_labelBattery, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
 
+		// Time label
 		_labelTime = lv_label_create(lv_scr_act());
 		lv_label_set_text(_labelTime, "Time");
-		lv_obj_align(_labelTime, LV_ALIGN_TOP_LEFT, 60, 0);
+		lv_obj_align(_labelTime, LV_ALIGN_TOP_LEFT, 0, 20);
 		lv_obj_set_style_text_color(_labelTime, lv_color_hex(0xFFFF00), LV_PART_MAIN | LV_STATE_DEFAULT);
 
-		_label = lv_label_create(lv_scr_act());
-		lv_label_set_text(_label, "JRM 1.6 LVGL(V" GFX_STR(LVGL_VERSION_MAJOR) "." GFX_STR(LVGL_VERSION_MINOR) "." GFX_STR(LVGL_VERSION_PATCH) ")");
-		lv_obj_align(_label, LV_ALIGN_TOP_LEFT, 0, 30);
-
-		// Blue text
-		lv_obj_set_style_text_color(_label, lv_color_hex(0xA0A0FF), LV_PART_MAIN | LV_STATE_DEFAULT);
+		// Version label
+		// _label = lv_label_create(lv_scr_act());
+		// lv_label_set_text(_label, "JRM 1.6 LVGL(V" GFX_STR(LVGL_VERSION_MAJOR) "." GFX_STR(LVGL_VERSION_MINOR) "." GFX_STR(LVGL_VERSION_PATCH) ")");
+		// lv_obj_align(_label, LV_ALIGN_TOP_LEFT, 0, 30);
+		// lv_obj_set_style_text_color(_label, lv_color_hex(0xA0A0FF), LV_PART_MAIN | LV_STATE_DEFAULT);
 
 		// Top switch
-		lv_obj_t *sw = lv_switch_create(lv_scr_act());
-		lv_obj_align(sw, LV_ALIGN_TOP_RIGHT, 0, 0);
-		lv_obj_add_state(sw, LV_STATE_CHECKED);
-		lv_obj_add_event_cb(sw, sw_event_cbX, LV_EVENT_VALUE_CHANGED, _label);
-		Logln("\tComplete");
+		// lv_obj_t *sw = lv_switch_create(lv_scr_act());
+		// lv_obj_align(sw, LV_ALIGN_TOP_RIGHT, 0, 0);
+		// lv_obj_add_state(sw, LV_STATE_CHECKED);
+		// lv_obj_add_event_cb(sw, sw_event_cbX, LV_EVENT_VALUE_CHANGED, _label);
+
+		// Add a clear panel for the status buttons
+		lv_obj_t *statusPanel = ClearPanel(lv_scr_act(), 0, 0, 0, 0);
+		lv_obj_set_width(statusPanel, LV_SIZE_CONTENT);
+		lv_obj_align(statusPanel, LV_ALIGN_TOP_RIGHT, 0, 0);
+		lv_obj_set_flex_flow(statusPanel, LV_FLEX_FLOW_ROW);
+		lv_obj_set_flex_align(statusPanel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+		lv_obj_remove_flag(statusPanel, LV_OBJ_FLAG_SCROLLABLE);
+		lv_obj_set_style_pad_column(statusPanel, 3, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+		_btnStatusWifi = MakeStatusButton(statusPanel, LV_SYMBOL_WIFI, [](lv_event_t *e)
+										  {
+			// Handle battery button click
+			Serial.println("WIFI button clicked"); });
+		_btnStatusGps = MakeStatusButton(statusPanel, LV_SYMBOL_USB, [](lv_event_t *e)
+										 {
+			// Handle battery button click
+			Serial.println("GPS button clicked"); });
+		_btnStatusSvr1 = MakeStatusButton(statusPanel, "S1", [](lv_event_t *e)
+										  {
+			// Handle battery button click
+			Serial.println("S1 button clicked"); });
+		_btnStatusSvr2 = MakeStatusButton(statusPanel, "S2", [](lv_event_t *e)
+										  {
+			// Handle battery button click
+			Serial.println("BatS2tery button clicked"); });
+		_btnStatusSvr3 = MakeStatusButton(statusPanel, "S3", [](lv_event_t *e)
+										  {
+			// Handle battery button click
+			Serial.println("BatS3tery button clicked"); });
+
 		return true;
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+	// Set the status button background and foreground colour
+	void SetIndicatorColour(lv_obj_t *btn, StatusButtonState state)
+	{
+		if (btn == nullptr)
+			return;
+		lv_color_t fg;
+		lv_color_t bg;
+		switch (state)
+		{
+		case StatusButtonState::Unknown:
+			fg = lv_color_hex(0x505050);
+			bg = lv_color_hex(0xE0E0E0);
+			break;
+		case StatusButtonState::Bad:
+			fg = lv_color_hex(0xFFFFFF);
+			bg = lv_color_hex(0xFF0000);
+			break;
+		case StatusButtonState::Good:
+			fg = lv_color_hex(0x0);
+			bg = lv_color_hex(0x00FF00);
+			break;
+		}
+		lv_obj_set_style_bg_color(btn, bg, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_text_color(btn, fg, LV_PART_MAIN | LV_STATE_DEFAULT);
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+	// Show the WiFi connection state as a colour indicator
+	void UpdateWiFiIndicator()
+	{
+		SetIndicatorColour(_btnStatusWifi, WiFi.status() == WL_CONNECTED ? StatusButtonState::Good : StatusButtonState::Bad);
+	}
+	void SetGpsConnected(bool connected)
+	{
+		SetIndicatorColour(_btnStatusGps, connected ? StatusButtonState::Good : StatusButtonState::Bad);
+	}
+
+	void UpdateStatusButtons()
+	{
+		// Update the status buttons based on the current state
+		if (_btnStatusWifi)
+			lv_obj_clear_state(_btnStatusWifi, LV_STATE_CHECKED);
+		if (_btnStatusGps)
+			lv_obj_clear_state(_btnStatusGps, LV_STATE_CHECKED);
+		if (_btnStatusSvr1)
+			lv_obj_clear_state(_btnStatusSvr1, LV_STATE_CHECKED);
+		if (_btnStatusSvr2)
+			lv_obj_clear_state(_btnStatusSvr2, LV_STATE_CHECKED);
+		if (_btnStatusSvr3)
+			lv_obj_clear_state(_btnStatusSvr3, LV_STATE_CHECKED);
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -261,6 +358,63 @@ public:
 		lv_style_transition_dsc_init(&trans, props, lv_anim_path_linear, 300, 0, NULL);
 
 		lv_style_set_transition(&StyleFancyButtonPressed, &trans);
+	}
+
+	///////////////////////////////////////////////////////////////////////////////
+	// Create a status button with a title and an event callback
+	// This is used for the status buttons in the top right corner
+	lv_obj_t *MakeStatusButton(lv_obj_t *parent, const char *title, lv_event_cb_t event_cb)
+	{
+		lv_obj_t *btn = lv_button_create(parent); /*Add a button the current screen*/
+		lv_obj_set_size(btn, 40, 40);
+		//	lv_obj_set_style_bg_color(btn, lv_color_hex(0xFFFF00), LV_PART_MAIN | LV_STATE_DEFAULT);
+		SetIndicatorColour(btn, StatusButtonState::Unknown);
+
+		// Border and radius
+		lv_obj_set_style_border_color(btn, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_border_opa(btn, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_border_width(btn, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_radius(btn, 8, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+		// Padding
+		lv_obj_set_style_pad_left(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_right(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_top(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_bottom(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+		// Text on the button
+		lv_obj_t *label = lv_label_create(btn);
+		lv_label_set_text(label, title);
+		lv_obj_center(label);
+
+		// Add event callback
+		lv_obj_add_event_cb(btn, event_cb, LV_EVENT_CLICKED, NULL);
+
+		return btn;
+	}
+
+public:
+	///////////////////////////////////////////////////////////////////////////
+	// Create a clear panel for wrapping to add padding
+	static lv_obj_t *ClearPanel(lv_obj_t *parent, int32_t l, int32_t r, int32_t t, int32_t b)
+	{
+		// Add a transparent panel around the button to give it padding
+		lv_obj_t *wrap = lv_obj_create(parent);
+		lv_obj_set_height(wrap, LV_SIZE_CONTENT);
+		lv_obj_set_width(wrap, lv_pct(100));
+		lv_obj_remove_flag(wrap, LV_OBJ_FLAG_SCROLLABLE);
+
+		// No background or border
+		lv_obj_set_style_bg_opa(wrap, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_border_opa(wrap, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+		// Padding
+		lv_obj_set_style_pad_left(wrap, l, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_right(wrap, r, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_top(wrap, t, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_bottom(wrap, b, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+		return wrap;
 	}
 };
 extern LVCore _lvCore;

@@ -156,25 +156,25 @@ public:
 		return false;			   // Failed to get local time
 	}
 
-	///////////////////////////////////////////////////////////////////////////
-	// Update the page title with the current date and time
-	void UpdatePageTitle(lv_obj_t *plabel)
-	{
-		if (!plabel)
-			return;
+	// ///////////////////////////////////////////////////////////////////////////
+	// // Update the page title with the current date and time
+	// void UpdatePageTitle(lv_obj_t *plabel)
+	// {
+	// 	if (!plabel)
+	// 		return;
 
-		struct tm timeinfo;
-		if (!ReadTime(&timeinfo))
-			return; // Failed to read time
+	// 	struct tm timeinfo;
+	// 	if (!ReadTime(&timeinfo))
+	// 		return; // Failed to read time
 
-		// Format the date and time
-		char buf[64];
-		size_t written = strftime(buf, sizeof(buf), "%A, %B %d %Y %H:%M:%S", &timeinfo);
-		if (written < 1)
-			return; // Failed to format time
+	// 	// Format the date and time
+	// 	char buf[64];
+	// 	size_t written = strftime(buf, sizeof(buf), "%A, %B %d %Y %H:%M:%S", &timeinfo);
+	// 	if (written < 1)
+	// 		return; // Failed to format time
 
-		lv_label_set_text(plabel, buf);
-	}
+	// 	lv_label_set_text(plabel, buf);
+	// }
 
 	///////////////////////////////////////////////////////////////////////////
 	// Get a formatted time
