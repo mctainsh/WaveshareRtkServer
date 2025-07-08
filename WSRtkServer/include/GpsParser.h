@@ -89,7 +89,7 @@ private:
 public:
 	MyDisplay &_display;
 	GpsCommandQueue _commandQueue;
-	bool _gpsConnected = false; // Are we receiving GPS data from GPS unit (Does not mean we have location)
+	StatusButtonState _gpsConnected = StatusButtonState::Unknown; // Are we receiving GPS data from GPS unit (Does not mean we have location)
 	NTRIPServer *_pNtripServer0, *_pNtripServer1, *_pNtripServer2;
 
 	GpsParser(MyDisplay &display) : _display(display), _commandQueue([this](std::string str)
@@ -120,14 +120,14 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////
 	// Read the latest GPS data and check for timeouts
-	bool ReadDataFromSerial(Stream &stream)
+	StatusButtonState ReadDataFromSerial(Stream &stream)
 	{
 		if (_startup)
 		{
 			LogX(StringPrintf("GPS Startup RX:%d TX:%d", SERIAL_RX, SERIAL_TX));
 			Serial2.begin(115200, SERIAL_8N1, SERIAL_RX, SERIAL_TX);
 			_startup = false;
-			return false;
+			return StatusButtonState::Bad;
 		}
 		int count = 0;
 
@@ -140,7 +140,7 @@ public:
 		if ((millis() - _timeOfLastMessage) > GPS_TIMEOUT)
 		{
 			LogX("RTK Data timeout");
-			_gpsConnected = false;
+			_gpsConnected = StatusButtonState::Bad;
 			_timeOfLastMessage = millis();
 			_commandQueue.StartInitialiseProcess();
 			_display.UpdateGpsStarts(true, false);
@@ -356,7 +356,7 @@ public:
 			}
 
 			// Record things are good again
-			_gpsConnected = true;
+			_gpsConnected = StatusButtonState::Good;
 			_timeOfLastMessage = millis();
 			_display.IncrementGpsPackets();
 

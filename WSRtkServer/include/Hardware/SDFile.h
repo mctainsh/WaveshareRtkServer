@@ -421,7 +421,7 @@ public:
 				files.erase(files.begin() + i);
 
 		// If we have more than MAX_LOG_FILES, remove the oldest ones
-		const int MAX_LOG_FILES = 10; // Maximum number of log files to keep
+		const int MAX_LOG_FILES = 50; // Maximum number of log files to keep
 		int filesToRemove = files.size() - MAX_LOG_FILES;
 
 		// Starting at the first item, remove files until we have less than 250kb available

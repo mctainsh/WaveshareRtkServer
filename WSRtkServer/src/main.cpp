@@ -32,6 +32,7 @@ unsigned long _fastLoopWaitTime = 0;		  // Time of last second
 int _loopPersSecondCount = 0;				  // Number of times the main loops runs in a second
 unsigned long _lastButtonPress = 0;			  // Time of last button press to turn off display on T-Display-S3
 History _history;							  // Temperature history
+int _drawLoopSkip = 0;						  // Draw every 100th draw loop to reduce CPU load
 
 WebPortal _webPortal;
 
@@ -49,7 +50,6 @@ PowerManagementSystem _powerManagementSystem; // Power management system
 
 // WiFi monitoring states
 #define WIFI_STARTUP_TIMEOUT 90000
-// unsigned long _wifiFullResetTime = 0;
 wl_status_t _lastWifiStatus = wl_status_t::WL_NO_SHIELD;
 
 bool IsWifiConnected();
@@ -63,6 +63,9 @@ SwipePageIO _swipePageIO;
 SwipePageSettings _swipePageSettings;
 
 extern PagePower *_pagePower;
+
+void FastLoop(unsigned long t, StatusButtonState gpsState);
+void SlowLoop(unsigned long t);
 
 ///////////////////////////////////////////////////////////////////////////////
 // This function is called once at the beginning of the program
@@ -145,89 +148,102 @@ void setup()
 void loop()
 {
 	// Let the LVGL library handle its tasks
-	lv_task_handler();
+	if (_drawLoopSkip++ > 1000)
+	{
+		_drawLoopSkip = 0;
+		lv_task_handler();
+	}
+
+	// Check for new data GPS serial data
+	StatusButtonState gpsState = StatusButtonState::Unknown;
+	if (IsWifiConnected())
+		gpsState = _gpsParser.ReadDataFromSerial(Serial2);
 
 	// Trigger something 1 every seconds
 	int t = millis();
 	_loopPersSecondCount++;
 	if ((t - _fastLoopWaitTime) > 1000)
-	{
-		// Refresh RTK Display
-		for (int i = 0; i < RTK_SERVERS; i++)
-			_display.RefreshRtk(i);
-		_fastLoopWaitTime = t;
-		_loopPersSecondCount = 0;
-		_lvCore.SetTitleTime(_handyTime.Format("%a %H:%M:%S"));
-		//_lvCore.SetTitleDate(_handyTime.Format("%d %b %Y"));
-
-		// Check power management system
-		_powerManagementSystem.PowerLoop();
-		if (_pagePower != nullptr)
-			_powerManagementSystem.RefreshData(_pagePower);
-
-		// If WiFI disconnected refresh the WiFi status
-		if (WiFi.status() != WL_CONNECTED)
-		{
-			_swipePageIO.RefreshData();
-			_lvCore.UpdateWiFiIndicator();
-		}
-	}
+		FastLoop(t, gpsState);
 
 	// Run every 10 seconds
 	if ((t - _slowLoopWaitTime) > SLOW_TIMER)
-	{
-		_swipePageIO.RefreshData();
-		_lvCore.UpdateWiFiIndicator();
-
-		// Check memory pressure
-		auto free = ESP.getFreeHeap();
-		auto total = ESP.getHeapSize();
-
-		auto temperature = _history.CheckTemperatureLoop();
-
-		// Update the loop performance counter
-		Serial.printf("%s Loop %d G:%ld Heap:%d%% %.1f°C %s\n",
-					  _handyTime.LongString().c_str(),
-					  _loopPersSecondCount,
-					  _gpsParser.GetGpsBytesRec(),
-					  (int)(100.0 * free / total),
-					  temperature,
-					  WiFi.localIP().toString().c_str());
-
-		// Disable Access point mode
-		if (WiFi.getMode() != WIFI_STA && WiFi.status() == WL_CONNECTED)
-		{
-			Logln("W105 - WiFi mode is not WIFI_STA, resetting");
-			WiFi.softAPdisconnect(false);
-			//_wifiManager.setConfigPortalTimeout(60);
-			Logln("Set WIFI_STA mode");
-			WiFi.mode(WIFI_STA);
-			_swipePageIO.RefreshData();
-			_lvCore.UpdateWiFiIndicator();
-		}
-
-		// Update display battery
-		_lvCore.SetBatteryPercent(_powerManagementSystem.GetBatteryPercent());
-
-		// Performance text
-		std::string perfText = StringPrintf("%d%% %.0fC %ddBm",
-											(int)(100.0 * free / total),
-											temperature,
-											WiFi.RSSI());
-		_display.SetPerformance(perfText);
-		_slowLoopWaitTime = t;
-	}
-
-	// Check for new data GPS serial data
-	bool gpsEnable = false;
-	if (IsWifiConnected())
-		gpsEnable = _gpsParser.ReadDataFromSerial(Serial2);
-
-	_lvCore.SetGpsConnected(gpsEnable);
-	//_display.SetGpsConnected(gpsEnable);
+		SlowLoop(t);
 
 	// Check the web portal
 	_webPortal.Loop();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// This function is called every second to refresh the display and handle power management
+	StatusButtonState gpsState = StatusButtonState::Unknown;
+void FastLoop(unsigned long t, StatusButtonState gpsState)
+{
+	// Refresh RTK Display
+	for (int i = 0; i < RTK_SERVERS; i++)
+		_display.RefreshRtk(i);
+	_fastLoopWaitTime = t;
+	_loopPersSecondCount = 0;
+	_lvCore.SetTitleTime(_handyTime.Format("%a %H:%M:%S"));
+	//_lvCore.SetTitleDate(_handyTime.Format("%d %b %Y"));
+
+	// Check power management system
+	_powerManagementSystem.PowerLoop();
+	if (_pagePower != nullptr)
+		_powerManagementSystem.RefreshData(_pagePower);
+
+	// If WiFI disconnected refresh the WiFi status
+	if (WiFi.status() != WL_CONNECTED)
+	{
+		_swipePageIO.RefreshData();
+		_lvCore.UpdateWiFiIndicator();
+	}
+	_lvCore.SetGpsConnected(gpsState);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// This function is called every 10 seconds to handle slow tasks
+void SlowLoop(unsigned long t)
+{
+	_swipePageIO.RefreshData();
+	_lvCore.UpdateWiFiIndicator();
+
+	// Check memory pressure
+	auto free = ESP.getFreeHeap();
+	auto total = ESP.getHeapSize();
+
+	auto temperature = _history.CheckTemperatureLoop();
+
+	// Update the loop performance counter
+	Serial.printf("%s Loop %d G:%ld Heap:%d%% %.1f°C %s\n",
+				  _handyTime.LongString().c_str(),
+				  _loopPersSecondCount,
+				  _gpsParser.GetGpsBytesRec(),
+				  (int)(100.0 * free / total),
+				  temperature,
+				  WiFi.localIP().toString().c_str());
+
+	// Disable Access point mode
+	if (WiFi.getMode() != WIFI_STA && WiFi.status() == WL_CONNECTED)
+	{
+		Logln("W105 - WiFi mode is not WIFI_STA, resetting");
+		WiFi.softAPdisconnect(false);
+		//_wifiManager.setConfigPortalTimeout(60);
+		Logln("Set WIFI_STA mode");
+		WiFi.mode(WIFI_STA);
+		_swipePageIO.RefreshData();
+		_lvCore.UpdateWiFiIndicator();
+	}
+
+	// Update display battery
+	_lvCore.SetBatteryPercent(_powerManagementSystem.GetBatteryPercent(), _powerManagementSystem.IsCharging());
+
+	// Performance text
+	std::string perfText = StringPrintf("%d%% %.0fC %ddBm",
+										(int)(100.0 * free / total),
+										temperature,
+										WiFi.RSSI());
+	_display.SetPerformance(perfText);
+	_slowLoopWaitTime = t;
 }
 
 //////////////////////////////////////////////////////////////////////////////

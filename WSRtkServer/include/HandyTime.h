@@ -4,10 +4,19 @@
 #include <SensorPCF85063.hpp>
 
 #include <WiFi.h>
-#include "time.h"
-#include "HandyLog.h"
+#include <time.h>
+#include <lvgl.h>	  // Add this include for lv_label_set_text
+#include <esp_sntp.h> // Include SNTP for time synchronization
 #include "Global.h"
-#include <lvgl.h> // Add this include for lv_label_set_text
+#include "HandyLog.h"
+#include "HandyString.h"
+
+#define TIME_SYNC_SHORT 60 * 1000	 // 2 minutes
+#define TIME_SYNC_LONG 2 * 60 * 1000 // 12 hours
+// #define TIME_SYNC_LONG 12* 60 * 60 * 1000 // 12 hours
+
+class HandyTime; 
+extern HandyTime _handyTime;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Time functions
@@ -18,9 +27,9 @@ private:
 	long _gmtOffset_sec = 0;
 	int _daylightOffset_sec = 0;
 
-	bool _timeSyncEnabled = false;	 // Indicates we have WiFi or read a time from onboard clock
-	unsigned long _lastSyncTime = 0; // Last time we synced the time
-	unsigned long _syncInterval = 0; // Default sync interval of 1 hour
+	bool _timeSyncEnabled = false;				   // Indicates we have WiFi or read a time from onboard clock
+	unsigned long _lastSyncTime = 0;			   // Last time we synced the time
+	unsigned long _syncInterval = TIME_SYNC_SHORT; // Default sync interval of 1 hour
 
 	SensorPCF85063 _rtc;		  // Create an instance of the PCF85063 RTC
 	bool _rtcWorking = false;	  // Time setup failed, so we will not try to read the time
@@ -33,6 +42,7 @@ public:
 	// Check if we have a time value and use it
 	void Setup()
 	{
+		//_instance = &this; // Set the instance to this class
 		// Initialize the RTC module using I2C with specified SDA and SCL pins
 		if (!_rtc.begin(Wire, I2C_SDA, I2C_SCL))
 		{
@@ -53,6 +63,7 @@ public:
 		// Read the current time from the RTC
 		Logln("Clock integrity is guaranteed; oscillator has not been interrupted");
 		RTC_DateTime datetime = _rtc.getDateTime();
+		Logf("Read %d-%02d-%02d %02d:%02d", datetime.getYear(), datetime.getMonth(), datetime.getDay(), datetime.getHour(), datetime.getMinute());
 
 		// If the RTC is not set, we will set it to a default value
 		if (datetime.getYear() < 1)
@@ -74,10 +85,12 @@ public:
 			Logln("[ERROR]: Failed to set local time");
 			return;
 		}
+
+		// Time successfully set from RTC
 		_timeSyncEnabled = true;
 		_lastSyncTime = millis(); // Set the last sync time to now
 		_rtcInitialized = true;	  // RTC has been initialized successfully
-		Logf("Time set to %s", LongString().c_str());
+		Logf("RTC Time set to %s", LongString().c_str());
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -124,26 +137,15 @@ public:
 		// Check if a sync is needed
 		if (millis() - _lastSyncTime > _syncInterval)
 		{
-			Logln("Sync NTP time", false);
-			configTime(_gmtOffset_sec, _daylightOffset_sec, "pool.ntp.org", "time.nist.gov", "time.google.com");
 			_lastSyncTime = millis();
+			_syncInterval = TIME_SYNC_SHORT; // Set sync interval to 1 minute
 
-			// Try to get the local time
-			if (getLocalTime(info))
-			{
-				Logln("NTP time synced", false);
-				_syncInterval = 60 * 60 * 1000; // Set sync interval to 1 hour
-				if (_rtcWorking)
-					_rtc.setDateTime(info->tm_year + 1900, info->tm_mon + 1, info->tm_mday,
-									 info->tm_hour, info->tm_min, info->tm_sec);
-				return true;
-			}
-			else
-			{
-				Logln("ERROR : Failed to sync NTP time", false);
-				_syncInterval = 60 * 1000; // Set sync interval to 1 minute
-				return false;
-			}
+			// Register the SNTP sync callback
+			sntp_set_time_sync_notification_cb(HandyTime::OnTimeSyncCallback);
+
+			// Request a new time sync
+			Logln(StringPrintf("Sync NTP time (%d)", _gmtOffset_sec).c_str(), false);
+			configTime(_gmtOffset_sec, _daylightOffset_sec, "pool.ntp.org", "time.nist.gov", "time.google.com");
 		}
 
 		// Try to get the local time
@@ -152,29 +154,31 @@ public:
 
 		// If we failed to get the local time, try again after a short delay
 		// .. program runs real slow here
-		_syncInterval = 60 * 1000; // Set sync interval to 1 minute
-		return false;			   // Failed to get local time
+		_syncInterval = TIME_SYNC_SHORT; // Set sync interval to 1 minute
+		return false;					 // Failed to get local time
 	}
 
-	// ///////////////////////////////////////////////////////////////////////////
-	// // Update the page title with the current date and time
-	// void UpdatePageTitle(lv_obj_t *plabel)
-	// {
-	// 	if (!plabel)
-	// 		return;
+	//////////////////////////////////////////////////////////////////
+	// Callback function for time synchronization
+	// .. This is because the config time function does not block
+	// .. and we need to wait for the time to be set
+	static void OnTimeSyncCallback(struct timeval *tv)
+	{
+		Logln(StringPrintf("Time synchronized via NTP %u", tv->tv_sec).c_str(), false);
+		if (tv == nullptr || tv->tv_sec == 0)
+		{
+			Logln("*** ERROR : HandyTime OnTimeSyncCallback failed", false);
+			return;
+		}
+		tm info;
+		if (!_handyTime._rtcWorking || !getLocalTime(&info))
+			return;
+		Logln("NTP time synced", false);
 
-	// 	struct tm timeinfo;
-	// 	if (!ReadTime(&timeinfo))
-	// 		return; // Failed to read time
-
-	// 	// Format the date and time
-	// 	char buf[64];
-	// 	size_t written = strftime(buf, sizeof(buf), "%A, %B %d %Y %H:%M:%S", &timeinfo);
-	// 	if (written < 1)
-	// 		return; // Failed to format time
-
-	// 	lv_label_set_text(plabel, buf);
-	// }
+		_handyTime._rtc.setDateTime(info.tm_year + 1900, info.tm_mon + 1, info.tm_mday,
+									info.tm_hour, info.tm_min, info.tm_sec);
+		_handyTime._syncInterval = TIME_SYNC_LONG;
+	}
 
 	///////////////////////////////////////////////////////////////////////////
 	// Get a formatted time

@@ -313,15 +313,19 @@ return;
 	// The battery percentage may be inaccurate at first use, the PMU will automatically
 	// learn the battery curve and will automatically calibrate the battery percentage
 	// after a charge and discharge cycle
-	std::string GetBatteryPercent()
+	int GetBatteryPercent()
 	{
 		if (!_isMounted)
-			return "?";
-
-		if (_power.isBatteryConnect())
-			return std::to_string(_power.getBatteryPercent()) + "%";
-		else
-			return "No batt";
+			return -1;
+		if (!_power.isBatteryConnect())
+		return -1;
+		return _power.getBatteryPercent();
+	}
+	bool IsCharging()
+	{
+		if (!_isMounted)
+			return false;
+		return _power.isCharging();
 	}
 
 	///////////////////////////////////////////////////////////////////////////

@@ -29,8 +29,8 @@
 void my_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map);
 uint32_t millis_cb(void);
 void my_touchpad_read(lv_indev_t *indev, lv_indev_data_t *data);
-lv_obj_t *MakeStatusButton(lv_obj_t *parent, const char *title, lv_event_cb_t event_cb);
-lv_obj_t *ClearPanel(lv_obj_t *parent, int32_t l, int32_t r, int32_t t, int32_t b);
+//lv_obj_t *MakeStatusButton(lv_obj_t *parent, const char *title, lv_event_cb_t event_cb);
+//lv_obj_t *ClearPanel(lv_obj_t *parent, int32_t l, int32_t r, int32_t t, int32_t b);
 // void SetIndicatorColour(lv_obj_t *btn, StatusButtonState state);
 
 #if LV_USE_LOG != 0
@@ -41,13 +41,6 @@ void my_print(lv_log_level_t level, const char *buf)
 	Serial.flush();
 }
 #endif
-
-static void sw_event_cbX(lv_event_t *e)
-{
-	lv_obj_t *sw = lv_event_get_target_obj(e);
-	lv_obj_t *label = (lv_obj_t *)lv_event_get_user_data(e);
-	Serial.printf("SW %s %d\n", lv_label_get_text(label), lv_obj_has_state(sw, LV_STATE_CHECKED));
-}
 
 static lv_style_t StyleFancyButton;
 static lv_style_t StyleFancyButtonPressed;
@@ -75,12 +68,6 @@ private:
 	lv_obj_t *_btnStatusSvr1 = nullptr; // Button for NTRIP server connection status
 	lv_obj_t *_btnStatusSvr2 = nullptr; // ..
 	lv_obj_t *_btnStatusSvr3 = nullptr; // ..
-	enum class StatusButtonState
-	{
-		Unknown,
-		Bad,
-		Good,
-	};
 
 public:
 	Arduino_GFX *GetGfx() { return _gfx; }
@@ -195,18 +182,6 @@ public:
 		lv_obj_align(_labelTime, LV_ALIGN_TOP_LEFT, 0, 20);
 		lv_obj_set_style_text_color(_labelTime, lv_color_hex(0xFFFF00), LV_PART_MAIN | LV_STATE_DEFAULT);
 
-		// Version label
-		// _label = lv_label_create(lv_scr_act());
-		// lv_label_set_text(_label, "JRM 1.6 LVGL(V" GFX_STR(LVGL_VERSION_MAJOR) "." GFX_STR(LVGL_VERSION_MINOR) "." GFX_STR(LVGL_VERSION_PATCH) ")");
-		// lv_obj_align(_label, LV_ALIGN_TOP_LEFT, 0, 30);
-		// lv_obj_set_style_text_color(_label, lv_color_hex(0xA0A0FF), LV_PART_MAIN | LV_STATE_DEFAULT);
-
-		// Top switch
-		// lv_obj_t *sw = lv_switch_create(lv_scr_act());
-		// lv_obj_align(sw, LV_ALIGN_TOP_RIGHT, 0, 0);
-		// lv_obj_add_state(sw, LV_STATE_CHECKED);
-		// lv_obj_add_event_cb(sw, sw_event_cbX, LV_EVENT_VALUE_CHANGED, _label);
-
 		// Add a clear panel for the status buttons
 		lv_obj_t *statusPanel = ClearPanel(lv_scr_act(), 0, 0, 0, 0);
 		lv_obj_set_width(statusPanel, LV_SIZE_CONTENT);
@@ -273,9 +248,9 @@ public:
 	{
 		SetIndicatorColour(_btnStatusWifi, WiFi.status() == WL_CONNECTED ? StatusButtonState::Good : StatusButtonState::Bad);
 	}
-	void SetGpsConnected(bool connected)
+	void SetGpsConnected(StatusButtonState s)
 	{
-		SetIndicatorColour(_btnStatusGps, connected ? StatusButtonState::Good : StatusButtonState::Bad);
+		SetIndicatorColour(_btnStatusGps, s);
 	}
 
 	void UpdateStatusButtons()
@@ -304,10 +279,30 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////
 	// Set the battery percentage label
-	void SetBatteryPercent(std::string s)
+	void SetBatteryPercent(int percentage, bool charging)
 	{
-		if (_labelBattery)
-			lv_label_set_text(_labelBattery, s.c_str());
+		if (!_labelBattery)
+			return;
+		std::string s;
+		if (percentage < 0)
+		{
+			lv_label_set_text(_labelBattery, LV_SYMBOL_BATTERY_EMPTY);
+			return;
+		}
+		if (percentage < 20)
+			s = LV_SYMBOL_BATTERY_EMPTY;
+		else if (percentage < 40)
+			s = LV_SYMBOL_BATTERY_1;
+		else if (percentage < 60)
+			s = LV_SYMBOL_BATTERY_2;
+		else if (percentage < 80)
+			s = LV_SYMBOL_BATTERY_3;
+		else
+			s = LV_SYMBOL_BATTERY_FULL;
+		if (charging)
+			s += (" " LV_SYMBOL_CHARGE); // Add charging symbol if charging
+
+		lv_label_set_text(_labelBattery, (s + " " + std::to_string(percentage) + "%").c_str());
 	}
 
 	///////////////////////////////////////////////////////////////////////////

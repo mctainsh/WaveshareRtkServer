@@ -221,7 +221,7 @@ void WebPortal::Loop()
 	}
 	else
 	{
-		if (_loops++ > 10000)
+		if (_loops++ > 1000)
 		{
 			_loops = 0;
 			_wifiManager.process();
