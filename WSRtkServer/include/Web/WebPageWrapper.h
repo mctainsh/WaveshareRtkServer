@@ -172,7 +172,7 @@ public:
 	{
 		TableRow(indent, name, value.c_str());
 	}
-	void TableRow(int indent, const std::string &name, int32_t value)
+	void TableRow(int indent, const std::string &name, int64_t value)
 	{
 		TableRow(indent, name, ToThousands(value).c_str(), true);
 	}

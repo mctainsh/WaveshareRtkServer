@@ -40,9 +40,16 @@ extern HandyTime _handyTime;
 extern std::string _mdnsHostName;
 
 // Button states
-enum class StatusButtonState
-{
-	Unknown,
-	Bad,
-	Good,
-};
+// enum class StatusButtonState
+// {
+// 	Unknown,
+// 	Bad,
+// 	Good,
+// };
+	enum class ConnectionState
+	{
+		Unknown,
+		Disabled,
+		Connected,
+		Disconnected,
+	};

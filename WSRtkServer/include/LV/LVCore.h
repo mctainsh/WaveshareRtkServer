@@ -29,9 +29,9 @@
 void my_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map);
 uint32_t millis_cb(void);
 void my_touchpad_read(lv_indev_t *indev, lv_indev_data_t *data);
-//lv_obj_t *MakeStatusButton(lv_obj_t *parent, const char *title, lv_event_cb_t event_cb);
-//lv_obj_t *ClearPanel(lv_obj_t *parent, int32_t l, int32_t r, int32_t t, int32_t b);
-// void SetIndicatorColour(lv_obj_t *btn, StatusButtonState state);
+// lv_obj_t *MakeStatusButton(lv_obj_t *parent, const char *title, lv_event_cb_t event_cb);
+// lv_obj_t *ClearPanel(lv_obj_t *parent, int32_t l, int32_t r, int32_t t, int32_t b);
+//  void SetIndicatorColour(lv_obj_t *btn, StatusButtonState state);
 
 #if LV_USE_LOG != 0
 void my_print(lv_log_level_t level, const char *buf)
@@ -217,7 +217,7 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////
 	// Set the status button background and foreground colour
-	void SetIndicatorColour(lv_obj_t *btn, StatusButtonState state)
+	void SetIndicatorColour(lv_obj_t *btn, ConnectionState state)
 	{
 		if (btn == nullptr)
 			return;
@@ -225,17 +225,21 @@ public:
 		lv_color_t bg;
 		switch (state)
 		{
-		case StatusButtonState::Unknown:
+		case ConnectionState::Unknown:
 			fg = lv_color_hex(0x505050);
 			bg = lv_color_hex(0xE0E0E0);
 			break;
-		case StatusButtonState::Bad:
+		case ConnectionState::Disconnected:
 			fg = lv_color_hex(0xFFFFFF);
 			bg = lv_color_hex(0xFF0000);
 			break;
-		case StatusButtonState::Good:
+		case ConnectionState::Connected:
 			fg = lv_color_hex(0x0);
 			bg = lv_color_hex(0x00FF00);
+			break;
+		case ConnectionState::Disabled:
+			fg = lv_color_hex(0x0);
+			bg = lv_color_hex(0xFFFF00);
 			break;
 		}
 		lv_obj_set_style_bg_color(btn, bg, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -246,11 +250,17 @@ public:
 	// Show the WiFi connection state as a colour indicator
 	void UpdateWiFiIndicator()
 	{
-		SetIndicatorColour(_btnStatusWifi, WiFi.status() == WL_CONNECTED ? StatusButtonState::Good : StatusButtonState::Bad);
+		SetIndicatorColour(_btnStatusWifi, WiFi.status() == WL_CONNECTED ? ConnectionState::Connected : ConnectionState::Disconnected);
 	}
-	void SetGpsConnected(StatusButtonState s)
+	void SetGpsConnected(ConnectionState s)
 	{
 		SetIndicatorColour(_btnStatusGps, s);
+	}
+	void SetNtripConnected(ConnectionState s1, ConnectionState s2, ConnectionState s3)
+	{
+		SetIndicatorColour(_btnStatusSvr1, s1);
+		SetIndicatorColour(_btnStatusSvr2, s2);
+		SetIndicatorColour(_btnStatusSvr3, s3);
 	}
 
 	void UpdateStatusButtons()
@@ -363,7 +373,7 @@ public:
 		lv_obj_t *btn = lv_button_create(parent); /*Add a button the current screen*/
 		lv_obj_set_size(btn, 40, 40);
 		//	lv_obj_set_style_bg_color(btn, lv_color_hex(0xFFFF00), LV_PART_MAIN | LV_STATE_DEFAULT);
-		SetIndicatorColour(btn, StatusButtonState::Unknown);
+		SetIndicatorColour(btn, ConnectionState::Unknown);
 
 		// Border and radius
 		lv_obj_set_style_border_color(btn, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);

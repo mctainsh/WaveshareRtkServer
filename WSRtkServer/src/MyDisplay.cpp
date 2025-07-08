@@ -95,28 +95,28 @@ void MyDisplay::DisplayTime(unsigned long mil)
 	}
 }
 
-void MyDisplay::SetPerformance(std::string performance)
-{
-	_performance = performance;
-	if (_currentPage != 0)
-		return;
-	DrawML(performance.c_str(), COL2_P0, R5F4, COL2_P0_W, 4);
-	return;
-}
+// void MyDisplay::SetPerformance(std::string performance)
+// {
+// 	_performance = performance;
+// 	if (_currentPage != 0)
+// 		return;
+// 	DrawML(performance.c_str(), COL2_P0, R5F4, COL2_P0_W, 4);
+// 	return;
+// }
 
-void MyDisplay::UpdateGpsStarts(bool restart, bool reinitialize)
-{
-	if (restart)
-		_gpsResetCount++;
-	if (reinitialize)
-		_gpsReinitialize++;
-	if (_currentPage == 2)
-		DrawML(StringPrintf("R : %d  I : %d", _gpsResetCount, _gpsReinitialize).c_str(), COL2_P0, R2F4, COL2_P0_W, 4);
-}
-void MyDisplay::IncrementGpsPackets()
-{
-	SetValue(0, (_gpsMsgCount + 1), &_gpsMsgCount, COL2_P0, R5F4, COL2_P0_W, 4);
-}
+// void MyDisplay::UpdateGpsStarts(bool restart, bool reinitialize)
+// {
+// 	if (restart)
+// 		_gpsResetCount++;
+// 	if (reinitialize)
+// 		_gpsReinitialize++;
+// 	if (_currentPage == 2)
+// 		DrawML(StringPrintf("R : %d  I : %d", _gpsResetCount, _gpsReinitialize).c_str(), COL2_P0, R2F4, COL2_P0_W, 4);
+// }
+// void MyDisplay::IncrementGpsPackets()
+// {
+// 	SetValue(0, (_gpsMsgCount + 1), &_gpsMsgCount, COL2_P0, R5F4, COL2_P0_W, 4);
+// }
 
 /////////////////////////////////////////////////////////////////////////////
 // Depends on page currently shown

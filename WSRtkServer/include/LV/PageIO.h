@@ -34,7 +34,7 @@ public:
 		AppendRowTitle("Space");
 
 		// Flash memory
-		AppendRowTitle(LV_SYMBOL_DRIVE " Flash", TblFormat::Highlight);
+		AppendRowTitle(LV_SYMBOL_SAVE " Flash", TblFormat::Highlight);
 		AppendRowTitle("Sketch", TblFormat::Right);
 		AppendRowTitle("Size", TblFormat::Right);
 		AppendRowTitle("SPIFFS", TblFormat::Right);

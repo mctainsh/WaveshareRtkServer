@@ -1,12 +1,13 @@
 #pragma once
 
 #include <WiFi.h>
+#include <string>
+#include <vector>
 
 // Buffer used to grab data to send
 #define SOCKET_IN_BUFFER_MAX 512
 
-#include <string>
-#include <vector>
+#include "Global.h"
 #include "QueueData.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -34,15 +35,8 @@ public:
 	inline unsigned long GetExpiredPackets() const { return _expiredPackets; }
 	inline unsigned long GetTotalTimeouts() const { return _totalTimeouts; }
 	inline bool IsEnabled() const { return _status != ConnectionState::Disabled; }
+	inline ConnectionState ConState() const { return _status; }
 	void TaskFunction();
-
-	enum class ConnectionState
-	{
-		Unknown,
-		Disabled,
-		Connected,
-		Disconnected,
-	};
 
 private:
 	WiFiClient _client;									// Socket connection

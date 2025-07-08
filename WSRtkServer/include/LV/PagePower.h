@@ -38,6 +38,9 @@ public:
 		AppendRowTitle("VBus", TblFormat::Right);
 		AppendRowTitle("Battery", TblFormat::Right);
 		AppendRowTitle("System", TblFormat::Right);
+		
+		AppendRowTitle("Other", TblFormat::Highlight);
+		AppendRowTitle("CPU Temp", TblFormat::Right);
 
 		AddCloseButton(scr, PagePower::OnClose); // Add a close button to the bottom of the page
 

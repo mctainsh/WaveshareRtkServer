@@ -4,8 +4,10 @@
 #include "SwipePageBase.h"
 #include "PanelLabelValue.h"
 #include "Web/WebPortal.hpp"
+#include "GpsParser.h"
 
-extern WebPortal _webPortal;
+extern WebPortal _webPortal; // Web portal instance
+extern GpsParser _gpsParser; // GPS parser instance
 
 ///////////////////////////////////////////////////////////////////////////////
 // This is a page with a number of controls on it is added to a scrolling panel
@@ -19,14 +21,19 @@ private:
 public:
 	void Create(lv_obj_t *parentGroupPanel)
 	{
-		CreatePanel(parentGroupPanel, LV_SYMBOL_GPS " GPS Status", 0xFF00FF);	 // Create the panel for this page
-		_panelLabelValue1.Create(_uiPanelPage, "TTime", "00:00:00");			 // Create a panel with label and value
-		_panelLabelValue2.Create(_uiPanelPage, "Other", "00:00:00");			 // Create a panel with label and value
-		_panelLabelValue3.Create(_uiPanelPage, "More message Time", "00:00:00"); // Create a panel with label and value
+		CreatePanel(parentGroupPanel, LV_SYMBOL_USB " GPS Status", 0xFF00FF); // Create the panel for this page
+		//_panelLabelValue1.Create(_uiPanelPage, "TTime", "00:00:00");			 // Create a panel with label and value
+		//_panelLabelValue2.Create(_uiPanelPage, "Other", "00:00:00");			 // Create a panel with label and value
+		//_panelLabelValue3.Create(_uiPanelPage, "More message Time", "00:00:00"); // Create a panel with label and value
 
 		CreateTable(_uiPanelPage, lv_pct(100)); // Create a table with a height of 200 pixels
-		AppendRowTitle("Name", TblFormat::Highlight);
-		AppendRowTitle("Apple");
+		AppendRowTitle("GPS", TblFormat::Highlight);
+		//AppendRowTitle("Bytes", TblFormat::Right);
+		AppendRowTitle("Resets", TblFormat::Right);
+		AppendRowTitle("Reinitialize", TblFormat::Right);
+		AppendRowTitle("ASCII Pkts", TblFormat::Right);
+		AppendRowTitle("RTK Pkts", TblFormat::Right);
+
 		// WiFi
 		AppendRowTitle(LV_SYMBOL_WIFI " WiFi", TblFormat::Highlight);
 		AppendRowTitle("Status");
@@ -40,9 +47,17 @@ public:
 
 	void RefreshData()
 	{
+		// GPS Data
+		// SetTableValue( 1, _gpsParser.GetGpsBytesRec());
+		SetTableValue(1, _gpsParser.GetGpsResetCount());
+		SetTableValue(2, _gpsParser.GetGpsReinitialize());
+		SetTableValue(3, _gpsParser.GetAsciiMsgCount());
+		SetTableValue(4, _gpsParser.GetRtkMsgCount());
+
 		// WiFi
+		const int x = 5;
 		auto status = WiFi.status();
-		SetTableString(1, WifiStatus(status));
+		SetTableString(x + 1, WifiStatus(status));
 		auto strength = WiFi.RSSI();
 		std::string strengthTitle = "Unusable";
 		if (strength > -30)
@@ -54,22 +69,22 @@ public:
 		else if (strength > -80)
 			strengthTitle = "Not Good";
 		if (strength == 0)
-			SetTableValue(2, "Not Connected");
+			SetTableValue(x + 2, "Not Connected");
 		else
-			SetTableValue(2, (std::to_string(strength) + "dBm " + strengthTitle).c_str());
+			SetTableValue(x + 2, (std::to_string(strength) + "dBm " + strengthTitle).c_str());
 
-		SetTableValue(3, WiFi.getHostname());
+		SetTableValue(x + 3, WiFi.getHostname());
 		if (status == WL_CONNECTED)
 		{
-			SetTableValue(4, WiFi.localIP().toString().c_str());
-			SetTableValue(5, (_mdnsHostName + ".local").c_str());
+			SetTableValue(x + 4, WiFi.localIP().toString().c_str());
+			SetTableValue(x + 5, (_mdnsHostName + ".local").c_str());
 		}
 		else
 		{
-			SetTableValue(4, "X -> 192.168.4.1");
-			SetTableValue(5, "");
+			SetTableValue(x + 4, "X -> 192.168.4.1");
+			SetTableValue(x + 5, "");
 		}
-		SetTableValue(6, WiFiModeText(WiFi.getMode()));
-		SetTableValue(7, std::to_string(_webPortal.GetConnectCount() - 1).c_str());
+		SetTableValue(x + 6, WiFiModeText(WiFi.getMode()));
+		SetTableValue(x + 7, std::to_string(_webPortal.GetConnectCount() - 1).c_str());
 	}
 };

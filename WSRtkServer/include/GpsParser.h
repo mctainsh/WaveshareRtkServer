@@ -84,12 +84,13 @@ private:
 	int32_t _gpsResetCount = 0;				   // Number GPS resets
 	int32_t _gpsReinitialize = 0;			   // Number GPS initializations
 	int32_t _asciiMsgCount = 0;				   // Number ASCII of packets received
+	int32_t _rtkMsgCount = 0;				   // Number RTK packets received
 	int32_t _bytesReceived = 0;				   // Total number of received GPS bytes
 
 public:
 	MyDisplay &_display;
 	GpsCommandQueue _commandQueue;
-	StatusButtonState _gpsConnected = StatusButtonState::Unknown; // Are we receiving GPS data from GPS unit (Does not mean we have location)
+	ConnectionState _gpsConnected = ConnectionState::Unknown; // Are we receiving GPS data from GPS unit (Does not mean we have location)
 	NTRIPServer *_pNtripServer0, *_pNtripServer1, *_pNtripServer2;
 
 	GpsParser(MyDisplay &display) : _display(display), _commandQueue([this](std::string str)
@@ -108,6 +109,7 @@ public:
 	inline const int32_t GetGpsResetCount() const { return _gpsResetCount; }
 	inline const int32_t GetGpsReinitialize() const { return _gpsReinitialize; }
 	inline const int32_t GetAsciiMsgCount() const { return _asciiMsgCount; }
+	inline const int32_t GetRtkMsgCount() const { return _rtkMsgCount; }
 	inline const bool HasGpsExpired(unsigned long millis) const { return (millis - _timeOfLastMessage) > GPS_TIMEOUT; }
 
 	/// @brief Save links to the NTRIP casters
@@ -120,14 +122,14 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////
 	// Read the latest GPS data and check for timeouts
-	StatusButtonState ReadDataFromSerial(Stream &stream)
+	ConnectionState ReadDataFromSerial(Stream &stream)
 	{
 		if (_startup)
 		{
 			LogX(StringPrintf("GPS Startup RX:%d TX:%d", SERIAL_RX, SERIAL_TX));
 			Serial2.begin(115200, SERIAL_8N1, SERIAL_RX, SERIAL_TX);
 			_startup = false;
-			return StatusButtonState::Bad;
+			return ConnectionState::Disconnected;
 		}
 		int count = 0;
 
@@ -140,10 +142,10 @@ public:
 		if ((millis() - _timeOfLastMessage) > GPS_TIMEOUT)
 		{
 			LogX("RTK Data timeout");
-			_gpsConnected = StatusButtonState::Bad;
+			_gpsConnected = ConnectionState::Disconnected;
 			_timeOfLastMessage = millis();
 			_commandQueue.StartInitialiseProcess();
-			_display.UpdateGpsStarts(true, false);
+			//_display.UpdateGpsStarts(true, false);
 			_gpsReinitialize++;
 		}
 		return _gpsConnected;
@@ -356,9 +358,10 @@ public:
 			}
 
 			// Record things are good again
-			_gpsConnected = StatusButtonState::Good;
+			_gpsConnected = ConnectionState::Connected;
 			_timeOfLastMessage = millis();
-			_display.IncrementGpsPackets();
+			_rtkMsgCount++;
+			//_display.IncrementGpsPackets();
 
 			// Log what we missed
 			if (_missedBytesDuringError > 0)
@@ -509,7 +512,7 @@ public:
 		{
 			_timeOfLastMessage = millis();
 			_gpsResetCount++;
-			_display.UpdateGpsStarts(true, false);
+			//_display.UpdateGpsStarts(true, false);
 			return;
 		}
 

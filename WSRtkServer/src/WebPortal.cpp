@@ -431,11 +431,6 @@ void WebPortal::ShowStatusHtml()
 		1, "Device serial #", _gpsParser.GetCommandQueue().GetDeviceSerial());
 
 	// Counters and stats
-	int32_t resetCount, reinitialize, messageCount;
-	_display.GetGpsStats(resetCount, reinitialize, messageCount);
-	p.TableRow(1, "Reset count", resetCount);
-	p.TableRow(1, "Reinitialize count", reinitialize);
-
 	p.TableRow(1, "Bytes received", _gpsParser.GetGpsBytesRec());
 	p.TableRow(1, "Reset count", _gpsParser.GetGpsResetCount());
 	p.TableRow(1, "Reinitialize count", _gpsParser.GetGpsReinitialize());

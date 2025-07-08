@@ -15,6 +15,9 @@
 #include <Wire.h>
 #include <Arduino.h>
 #include "XPowersLib.h"
+#include "History.h"
+
+extern History _history;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Panel containing a label and a value
@@ -523,6 +526,11 @@ return;
 	/// Refresh the data in the table
 	void RefreshData(SwipePageBase *pPage)
 	{
+		// CPU Temperature
+		char tempStr[16];
+		snprintf(tempStr, sizeof(tempStr), "%.1f °C", _history.CheckTemperatureLoop());
+		pPage->SetTableString(14, tempStr);
+
 		if( !_isMounted )
 		{
 			pPage->SetTableValue(0, "PMU not mounted");

@@ -144,6 +144,10 @@ public:
 	{
 		SetTableValue(row, value.c_str());
 	}
+	void SetTableValue(uint32_t row, int64_t value)
+	{
+		SetTableValue(row, ToThousands(value).c_str());
+	}
 
 	///////////////////////////////////////////////////////////////////////////
 	// Add a close button to the bottom of the page

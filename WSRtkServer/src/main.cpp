@@ -64,7 +64,7 @@ SwipePageSettings _swipePageSettings;
 extern PagePower *_pagePower;
 extern PageIO *_pageIO;
 
-void FastLoop(unsigned long t, StatusButtonState gpsState);
+void FastLoop(unsigned long t, ConnectionState gpsState);
 void SlowLoop(unsigned long t);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -155,7 +155,7 @@ void loop()
 	}
 
 	// Check for new data GPS serial data
-	StatusButtonState gpsState = StatusButtonState::Unknown;
+	ConnectionState gpsState = ConnectionState::Unknown;
 	if (IsWifiConnected())
 		gpsState = _gpsParser.ReadDataFromSerial(Serial2);
 
@@ -175,8 +175,8 @@ void loop()
 
 ///////////////////////////////////////////////////////////////////////////////
 // This function is called every second to refresh the display and handle power management
-StatusButtonState gpsState = StatusButtonState::Unknown;
-void FastLoop(unsigned long t, StatusButtonState gpsState)
+ConnectionState gpsState = ConnectionState::Unknown;
+void FastLoop(unsigned long t, ConnectionState gpsState)
 {
 	// Refresh RTK Display
 	for (int i = 0; i < RTK_SERVERS; i++)
@@ -185,6 +185,8 @@ void FastLoop(unsigned long t, StatusButtonState gpsState)
 	_loopPersSecondCount = 0;
 	_lvCore.SetTitleTime(_handyTime.Format("%a %H:%M:%S"));
 	//_lvCore.SetTitleDate(_handyTime.Format("%d %b %Y"));
+
+	_swipePageGps.RefreshData();
 
 	// Check power management system
 	_powerManagementSystem.PowerLoop();
@@ -199,7 +201,10 @@ void FastLoop(unsigned long t, StatusButtonState gpsState)
 		_swipePageGps.RefreshData();
 		_lvCore.UpdateWiFiIndicator();
 	}
+
+	// Update the connection buttons
 	_lvCore.SetGpsConnected(gpsState);
+	_lvCore.SetNtripConnected(_ntripServer0.ConState(), _ntripServer1.ConState(), _ntripServer2.ConState());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -240,11 +245,11 @@ void SlowLoop(unsigned long t)
 	_lvCore.SetBatteryPercent(_powerManagementSystem.GetBatteryPercent(), _powerManagementSystem.IsCharging());
 
 	// Performance text
-	std::string perfText = StringPrintf("%d%% %.0fC %ddBm",
-										(int)(100.0 * free / total),
-										temperature,
-										WiFi.RSSI());
-	_display.SetPerformance(perfText);
+	//std::string perfText = StringPrintf("%d%% %.0fC %ddBm",
+	//									(int)(100.0 * free / total),
+	//									temperature,
+	//									WiFi.RSSI());
+	//_display.SetPerformance(perfText);
 	_slowLoopWaitTime = t;
 }
 
