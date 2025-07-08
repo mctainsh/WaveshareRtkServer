@@ -44,8 +44,9 @@ public:
 		//lv_obj_align_to(slider, label, LV_ALIGN_TOP_MID, 0, 0);
 		lv_obj_add_event_cb(slider, SwipePageSettings::OnSlider, LV_EVENT_VALUE_CHANGED, NULL); /*Assign an event function*/
 
-		// Add button for testing
-		CreateFancyButton(LV_SYMBOL_BATTERY_2 " Power", _uiPanelPage, SwipePageSettings::OnButton, lv_pct(100));
+		// Add buttons
+		CreateFancyButton(LV_SYMBOL_BATTERY_2 " Power", _uiPanelPage, SwipePageSettings::OnPowerBtn, lv_pct(100));
+		CreateFancyButton(LV_SYMBOL_DRIVE " System", _uiPanelPage, SwipePageSettings::OnDriveBtn, lv_pct(100));
 	}
 
 	void RefreshData()
@@ -70,15 +71,15 @@ public:
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////
-	// Event handler for the button
-	static void OnButton(lv_event_t *e)
+	// Event handler for the power page
+	static void OnPowerBtn(lv_event_t *e)
 	{
 		if ( lv_event_get_code(e) != LV_EVENT_CLICKED )
 			return;
 		auto *self = static_cast<SwipePageSettings *>(lv_event_get_user_data(e));
-		self->OnButtonClicked(e);
+		self->OnPowerBtnClicked(e);
 	}
-	void OnButtonClicked(lv_event_t *e)
+	void OnPowerBtnClicked(lv_event_t *e)
 	{
 		_pagePower = new PagePower(); // Create a new instance of PagePower
 		if( _pagePower == nullptr )
@@ -87,5 +88,25 @@ public:
 			return;
 		}
 		_pagePower->Show();
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////
+	// Event handler for the drive page
+	static void OnDriveBtn(lv_event_t *e)
+	{
+		if ( lv_event_get_code(e) != LV_EVENT_CLICKED )
+			return;
+		auto *self = static_cast<SwipePageSettings *>(lv_event_get_user_data(e));
+		self->OnDriveBtnClicked(e);
+	}
+	void OnDriveBtnClicked(lv_event_t *e)
+	{
+		_pageIO = new PageIO(); 
+		if( _pageIO == nullptr )
+		{
+			Serial.println("Failed to create PageIO instance");
+			return;
+		}
+		_pageIO->Show();
 	}
 };

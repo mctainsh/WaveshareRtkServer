@@ -173,13 +173,13 @@ public:
 		// Setup battery labels
 		_labelBattery = lv_label_create(lv_scr_act());
 		lv_label_set_text(_labelBattery, "Battery");
-		lv_obj_align(_labelBattery, LV_ALIGN_TOP_LEFT, 0, 0);
+		lv_obj_align(_labelBattery, LV_ALIGN_TOP_LEFT, 0, 5);
 		lv_obj_set_style_text_color(_labelBattery, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
 
 		// Time label
 		_labelTime = lv_label_create(lv_scr_act());
 		lv_label_set_text(_labelTime, "Time");
-		lv_obj_align(_labelTime, LV_ALIGN_TOP_LEFT, 0, 20);
+		lv_obj_align(_labelTime, LV_ALIGN_TOP_LEFT, 0, 25);
 		lv_obj_set_style_text_color(_labelTime, lv_color_hex(0xFFFF00), LV_PART_MAIN | LV_STATE_DEFAULT);
 
 		// Add a clear panel for the status buttons

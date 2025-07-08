@@ -12,15 +12,18 @@ extern SDFile _sdFile;
 extern std::string _mdnsHostName;
 extern WebPortal _webPortal;
 
+class PageIO;
+PageIO *_pageIO = nullptr;
+
 ///////////////////////////////////////////////////////////////////////////////
 // This is a page with information about drives and memory
-class SwipePageIO : public SwipePageBase
+class PageIO : public SwipePageBase
 {
-private:
 public:
-	void Create(lv_obj_t *parentGroupPanel)
+	void Show()
 	{
-		CreatePanel(parentGroupPanel, LV_SYMBOL_DIRECTORY " Disk & Memory", 0xA4CCD9);
+		lv_obj_t *scr = lv_obj_create(NULL);
+		CreatePanel(scr, LV_SYMBOL_DIRECTORY " Disk & Memory", 0xA4CCD9);
 
 		// Table
 		CreateTable(_uiPanelPage, LV_SIZE_CONTENT); // Create a table with a height of 200 pixels
@@ -48,8 +51,16 @@ public:
 		AppendRowTitle("Host Name");
 		AppendRowTitle("Type");
 		AppendRowTitle("Reconnects");
+
+		AddCloseButton(scr, PageIO::OnClose); // Add a close button to the bottom of the page
+
+		// Animate the screen load
+		lv_screen_load_anim(scr, lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OVER_LEFT, 300, 0, false);
+		_pageIO = this;
 	}
 
+	///////////////////////////////////////////////////////////////////////////
+	// Uplate the table with the current data
 	void RefreshData()
 	{
 		// SD Card
@@ -95,5 +106,18 @@ public:
 		}
 		SetTableValue(14, WiFiModeText(WiFi.getMode()));
 		SetTableValue(15, std::to_string(_webPortal.GetConnectCount() - 1).c_str());
+	}
+
+	
+	/////////////////////////////////////////////////////////////////////////////////
+	// Event handler for the button
+	static void OnClose(lv_event_t *e)
+	{
+		if (lv_event_get_code(e) != LV_EVENT_CLICKED)
+			return;
+		if (_pageIO != nullptr)
+			delete _pageIO;
+		_pageIO = nullptr; // Clear the pointer to the PagePower instance
+		lv_screen_load_anim(_lvCore.GetHomeScreen(), lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OUT_RIGHT, 300, 0, false);
 	}
 };

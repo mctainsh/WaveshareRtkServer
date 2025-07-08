@@ -86,8 +86,8 @@ protected:
 		lv_obj_add_flag(_table, LV_OBJ_FLAG_SEND_DRAW_TASK_EVENTS);
 
 		// Disable table highlighting
-		lv_obj_clear_flag(_table, LV_OBJ_FLAG_CLICKABLE);  // Optional: disables click
-		lv_obj_clear_state(_table, LV_STATE_FOCUSED);      // Remove focus state
+		lv_obj_clear_flag(_table, LV_OBJ_FLAG_CLICKABLE); // Optional: disables click
+		lv_obj_clear_state(_table, LV_STATE_FOCUSED);	  // Remove focus state
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -106,7 +106,7 @@ protected:
 public:
 	///////////////////////////////////////////////////////////////////////////
 	// This function is called when the close button is clicked
-	static lv_obj_t* CreateFancyButton( const char *title, lv_obj_t* parent, lv_event_cb_t event_cb,  int32_t width, int32_t height = 60)
+	static lv_obj_t *CreateFancyButton(const char *title, lv_obj_t *parent, lv_event_cb_t event_cb, int32_t width, int32_t height = 60)
 	{
 		lv_obj_t *wrap = LVCore::ClearPanel(parent, 6, 6, 6, 6);
 		lv_obj_set_height(wrap, height);
@@ -134,11 +134,33 @@ public:
 	// Set value in the table
 	void SetTableValue(uint32_t row, const char *value)
 	{
-		lv_table_set_cell_value(_table, row, 1, value);
+		// Check if the table is hidden before setting the value
+		if (_table && !lv_obj_has_flag(_table, LV_OBJ_FLAG_HIDDEN))
+			lv_table_set_cell_value(_table, row, 1, value);
+		else
+			Serial.printf("Table is hidden, cannot set value for row %p: %s\n", _table, value);
 	}
-		void SetTableString(uint32_t row, const std::string& value)
+	void SetTableString(uint32_t row, const std::string &value)
 	{
-		lv_table_set_cell_value(_table, row, 1, value.c_str());
+		SetTableValue(row, value.c_str());
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+	// Add a close button to the bottom of the page
+	void AddCloseButton(lv_obj_t *screen, lv_event_cb_t event_cb)
+	{
+		// Spacer to push next item to bottom
+		lv_obj_t *spacer = lv_obj_create(_uiPanelPage);
+		lv_obj_set_size(spacer, LV_PCT(100), 1);								 // Width 100%, height minimal
+		lv_obj_set_style_bg_opa(spacer, LV_OPA_TRANSP, 0);						 // Make it invisible
+		lv_obj_set_style_border_opa(spacer, 0, LV_PART_MAIN | LV_STATE_DEFAULT); // No border
+		lv_obj_set_flex_grow(spacer, 1);										 // This makes it expand and push the next item down
+
+		// Add close button to bottom of the page
+		lv_obj_t *btnWrap = CreateFancyButton(LV_SYMBOL_CLOSE " Close", _uiPanelPage, event_cb, lv_pct(100));
+
+		// Animate the screen load
+		lv_screen_load_anim(screen, lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OVER_LEFT, 300, 0, false);
 	}
 
 	lv_obj_t *GetPanel() { return _uiPanelPage; }
@@ -149,7 +171,11 @@ public:
 static void OnTableDrawEvent(lv_event_t *e)
 {
 	lv_draw_task_t *draw_task = lv_event_get_draw_task(e);
+	if (!draw_task)
+		return;
 	lv_draw_dsc_base_t *base_dsc = (lv_draw_dsc_base_t *)lv_draw_task_get_draw_dsc(draw_task);
+	if (!base_dsc)
+		return;
 
 	// If the cells are drawn...
 	if (base_dsc->part != LV_PART_ITEMS)

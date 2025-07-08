@@ -3,7 +3,7 @@
 #include "LV/LVCore.h"
 #include "UI/screens/ui_MainScreen.h"
 #include <LV/SwipePageGps.h>
-#include <LV/SwipePageIO.h>
+#include <LV/PageIO.h>
 
 #include "Hardware/SdFile.h"
 #include <LV/SwipePageSettings.h>
@@ -56,13 +56,13 @@ bool IsWifiConnected();
 LVCore _lvCore;
 
 // Pages
-SwipePageGps _systemPageGps;
+// SwipePageGps _systemPageGps;
 SwipePageGps _swipePageGps;
-SwipePageIO _swipePageIO;
 //  SwipePagePower _swipePagePower;
 SwipePageSettings _swipePageSettings;
 
 extern PagePower *_pagePower;
+extern PageIO *_pageIO;
 
 void FastLoop(unsigned long t, StatusButtonState gpsState);
 void SlowLoop(unsigned long t);
@@ -126,14 +126,14 @@ void setup()
 	ui_MainScreen_screen_init();
 
 	// Create the GPS status page
-	_systemPageGps.Create(UIPageGroupPanel);	 // Create the GPS status page and add
-	_swipePageIO.Create(UIPageGroupPanel);		 // Create the GPS status page and add
+	_swipePageGps.Create(UIPageGroupPanel); // Create the GPS status page and add
+	//_swipePageIO.Create(UIPageGroupPanel);		 // Create the GPS status page and add
 	_swipePageSettings.Create(UIPageGroupPanel); // Create the settings page and add
 
 	// Fix the startup scroll offset error
-	lv_obj_scroll_to_view(_swipePageIO.GetPanel(), LV_ANIM_OFF);
+	lv_obj_scroll_to_view(_swipePageGps.GetPanel(), LV_ANIM_OFF);
 
-	_swipePageIO.RefreshData();
+	_swipePageGps.RefreshData();
 	_lvCore.UpdateWiFiIndicator();
 
 	_powerManagementSystem.Setup(); // Setup the power management system
@@ -175,7 +175,7 @@ void loop()
 
 ///////////////////////////////////////////////////////////////////////////////
 // This function is called every second to refresh the display and handle power management
-	StatusButtonState gpsState = StatusButtonState::Unknown;
+StatusButtonState gpsState = StatusButtonState::Unknown;
 void FastLoop(unsigned long t, StatusButtonState gpsState)
 {
 	// Refresh RTK Display
@@ -190,11 +190,13 @@ void FastLoop(unsigned long t, StatusButtonState gpsState)
 	_powerManagementSystem.PowerLoop();
 	if (_pagePower != nullptr)
 		_powerManagementSystem.RefreshData(_pagePower);
+	if (_pageIO != nullptr)
+		_pageIO->RefreshData();
 
 	// If WiFI disconnected refresh the WiFi status
 	if (WiFi.status() != WL_CONNECTED)
 	{
-		_swipePageIO.RefreshData();
+		_swipePageGps.RefreshData();
 		_lvCore.UpdateWiFiIndicator();
 	}
 	_lvCore.SetGpsConnected(gpsState);
@@ -204,7 +206,7 @@ void FastLoop(unsigned long t, StatusButtonState gpsState)
 // This function is called every 10 seconds to handle slow tasks
 void SlowLoop(unsigned long t)
 {
-	_swipePageIO.RefreshData();
+	_swipePageGps.RefreshData();
 	_lvCore.UpdateWiFiIndicator();
 
 	// Check memory pressure
@@ -230,7 +232,7 @@ void SlowLoop(unsigned long t)
 		//_wifiManager.setConfigPortalTimeout(60);
 		Logln("Set WIFI_STA mode");
 		WiFi.mode(WIFI_STA);
-		_swipePageIO.RefreshData();
+		_swipePageGps.RefreshData();
 		_lvCore.UpdateWiFiIndicator();
 	}
 
@@ -288,7 +290,7 @@ bool IsWifiConnected()
 			_webPortal.OnConnected();
 		}
 
-		_swipePageIO.RefreshData();
+		_swipePageGps.RefreshData();
 		_lvCore.UpdateWiFiIndicator();
 	}
 

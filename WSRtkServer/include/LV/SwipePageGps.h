@@ -3,6 +3,9 @@
 #include "lvgl.h"
 #include "SwipePageBase.h"
 #include "PanelLabelValue.h"
+#include "Web/WebPortal.hpp"
+
+extern WebPortal _webPortal;
 
 ///////////////////////////////////////////////////////////////////////////////
 // This is a page with a number of controls on it is added to a scrolling panel
@@ -24,23 +27,49 @@ public:
 		CreateTable(_uiPanelPage, lv_pct(100)); // Create a table with a height of 200 pixels
 		AppendRowTitle("Name", TblFormat::Highlight);
 		AppendRowTitle("Apple");
-		AppendRowTitle("Banana", TblFormat::Bold | TblFormat::Right);
-		AppendRowTitle("Lemon");
-		AppendRowTitle("Grape");
-		AppendRowTitle("Melon");
-		AppendRowTitle("Peach");
-		AppendRowTitle("Nuts");
+		// WiFi
+		AppendRowTitle(LV_SYMBOL_WIFI " WiFi", TblFormat::Highlight);
+		AppendRowTitle("Status");
+		AppendRowTitle("Strength");
+		AppendRowTitle("A/P Name");
+		AppendRowTitle("IP Address");
+		AppendRowTitle("Host Name");
+		AppendRowTitle("Type");
+		AppendRowTitle("Reconnects");
+	}
 
-		// Fill the first column
+	void RefreshData()
+	{
+		// WiFi
+		auto status = WiFi.status();
+		SetTableString(1, WifiStatus(status));
+		auto strength = WiFi.RSSI();
+		std::string strengthTitle = "Unusable";
+		if (strength > -30)
+			strengthTitle = "Excellent";
+		else if (strength > -67)
+			strengthTitle = "Very Good";
+		else if (strength > -70)
+			strengthTitle = "Okay";
+		else if (strength > -80)
+			strengthTitle = "Not Good";
+		if (strength == 0)
+			SetTableValue(2, "Not Connected");
+		else
+			SetTableValue(2, (std::to_string(strength) + "dBm " + strengthTitle).c_str());
 
-		SetTableValue(0, "Price");
-		SetTableValue(1, "$7");
-		SetTableValue(2, "$7");
-		SetTableValue(3, "$6");
-		SetTableValue(4, "If the lvgl library is installed online, you need to copy the demos folder to src");
-		//		lv_table_set_cell_user_data(_table, 4, 1, (void *)0x1234);
-		SetTableValue(5, "");
-		SetTableValue(6, "$1");
-		SetTableValue(7, "$9");
+		SetTableValue(3, WiFi.getHostname());
+		if (status == WL_CONNECTED)
+		{
+			SetTableValue(4, WiFi.localIP().toString().c_str());
+			SetTableValue(5, (_mdnsHostName + ".local").c_str());
+		}
+		else
+		{
+			SetTableValue(4, "X -> 192.168.4.1");
+			SetTableValue(5, "");
+		}
+		SetTableValue(6, WiFiModeText(WiFi.getMode()));
+		SetTableValue(7, std::to_string(_webPortal.GetConnectCount() - 1).c_str());
 	}
 };

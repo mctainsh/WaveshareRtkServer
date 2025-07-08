@@ -4,8 +4,6 @@
 #include "SwipePageBase.h"
 #include "LVCore.h"
 
-// #include "XPowersLib.h"
-
 class PagePower;
 PagePower *_pagePower = nullptr;
 
@@ -41,15 +39,17 @@ public:
 		AppendRowTitle("Battery", TblFormat::Right);
 		AppendRowTitle("System", TblFormat::Right);
 
-		// Spacer to push next item to bottom
-		lv_obj_t *spacer = lv_obj_create(_uiPanelPage);
-		lv_obj_set_size(spacer, LV_PCT(100), 1);								 // Width 100%, height minimal
-		lv_obj_set_style_bg_opa(spacer, LV_OPA_TRANSP, 0);						 // Make it invisible
-		lv_obj_set_style_border_opa(spacer, 0, LV_PART_MAIN | LV_STATE_DEFAULT); // No border
-		lv_obj_set_flex_grow(spacer, 1);										 // This makes it expand and push the next item down
+		AddCloseButton(scr, PagePower::OnClose); // Add a close button to the bottom of the page
 
-		// Add close button to bottom of the page
-		lv_obj_t *btnWrap = CreateFancyButton(LV_SYMBOL_CLOSE " Close", _uiPanelPage, PagePower::OnClose, lv_pct(100));
+		// // Spacer to push next item to bottom
+		// lv_obj_t *spacer = lv_obj_create(_uiPanelPage);
+		// lv_obj_set_size(spacer, LV_PCT(100), 1);								 // Width 100%, height minimal
+		// lv_obj_set_style_bg_opa(spacer, LV_OPA_TRANSP, 0);						 // Make it invisible
+		// lv_obj_set_style_border_opa(spacer, 0, LV_PART_MAIN | LV_STATE_DEFAULT); // No border
+		// lv_obj_set_flex_grow(spacer, 1);										 // This makes it expand and push the next item down
+
+		// // Add close button to bottom of the page
+		// lv_obj_t *btnWrap = CreateFancyButton(LV_SYMBOL_CLOSE " Close", _uiPanelPage, PagePower::OnClose, lv_pct(100));
 
 		// Animate the screen load
 		lv_screen_load_anim(scr, lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OVER_LEFT, 300, 0, false);

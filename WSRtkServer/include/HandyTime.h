@@ -11,11 +11,10 @@
 #include "HandyLog.h"
 #include "HandyString.h"
 
-#define TIME_SYNC_SHORT 60 * 1000	 // 2 minutes
-#define TIME_SYNC_LONG 2 * 60 * 1000 // 12 hours
-// #define TIME_SYNC_LONG 12* 60 * 60 * 1000 // 12 hours
+#define TIME_SYNC_SHORT 60 * 1000		   // 2 minutes
+#define TIME_SYNC_LONG 12 * 60 * 60 * 1000 // 12 hours
 
-class HandyTime; 
+class HandyTime;
 extern HandyTime _handyTime;
 
 ///////////////////////////////////////////////////////////////////////////////
