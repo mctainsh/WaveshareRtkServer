@@ -29,7 +29,7 @@ public:
 
 		CreateTable(_uiPanelPage, LV_SIZE_CONTENT); // Create a table with a height of 200 pixels
 		AppendRowTitle("GPS", TblFormat::Highlight);
-		//AppendRowTitle("Bytes", TblFormat::Right);
+		// AppendRowTitle("Bytes", TblFormat::Right);
 		AppendRowTitle("Resets", TblFormat::Right);
 		AppendRowTitle("Reinitialize", TblFormat::Right);
 		AppendRowTitle("ASCII Pkts", TblFormat::Right);
@@ -41,7 +41,7 @@ public:
 		AppendRowTitle("Strength");
 		AppendRowTitle("IP Address");
 		_hostOrApNameRow = AppendRowTitle("AP OR HOST");
-		//AppendRowTitle("Type");
+		// AppendRowTitle("Type");
 		AppendRowTitle("Reconnects");
 	}
 
@@ -73,25 +73,28 @@ public:
 		else
 			SetTableValue(x + 2, (std::to_string(strength) + "dBm " + strengthTitle).c_str());
 
-		
 
-//OR
-		//AppendRowTitle("Host Name");
-		//
-
-
+		// IP Address
 		if (status == WL_CONNECTED)
-		{
 			SetTableValue(x + 3, WiFi.localIP().toString().c_str());
-			lv_table_set_cell_value(_table, x + 4, 0, "Host name");
+		else
+			SetTableValue(x + 3, "X -> 192.168.4.1");
+		
+		// Host name or A/P name
+		const char *name;
+		if (WiFi.getMode() == WIFI_STA)
+		{
 			SetTableValue(x + 4, (_mdnsHostName + ".local").c_str());
+			name = "Host Name";
 		}
 		else
 		{
-			SetTableValue(x + 3, "X -> 192.168.4.1");
-			lv_table_set_cell_value(_table, x + 4, 0, "A/P Name");
 			SetTableValue(x + 4, WiFi.getHostname());
+			name = "A/P Name";
 		}
+		lv_table_set_cell_value(_table, x + 4, 0, name);
+
+		// Connection count
 		SetTableValue(x + 5, std::to_string(_webPortal.GetConnectCount() - 1).c_str());
 	}
 };

@@ -39,21 +39,13 @@ void WebPortal::Setup()
 	Logf("Start listening on %s", apName.c_str());
 
 	// Loop here until we are in AP_STA mode
-	while (WiFi.getMode() != WIFI_AP_STA)
-	{
-		Logln("Waiting for WiFi mode to be set to AP_STA");
-		WiFi.mode(WIFI_AP_STA);
-		delay(250);
-	}
-	Logln("Mode set to AP_STA");
-
-	// Wait for WiFi to be ready
-//	while (WiFi.status() == WL_NO_SHIELD)
-//	{
-//		Logln("Waiting for WiFi to be ready");
-//		delay(100);
-//	}
-
+	// while (WiFi.getMode() != WIFI_AP_STA)
+	// {
+	// 	Logln("Waiting for WiFi mode to be set to AP_STA");
+	// 	WiFi.mode(WIFI_AP_STA);
+	// 	delay(250);
+	// }
+	// Logln("Mode set to AP_STA");
 
 	// Setup callbacks
 	_wifiManager.setWebServerCallback(std::bind(&WebPortal::OnBindServerCallback, this));

@@ -307,13 +307,15 @@ bool IsWifiConnected()
 		return true;
 	}
 
-	if (status != WL_DISCONNECTED && _webPortal.GetConnectCount() > 0)
-		return false;
+	// If not connected. Every 2 minutes, restart the WiFi portal
+	//if (status != WL_DISCONNECTED && _webPortal.GetConnectCount() > 0)
+	//	return false;
 
 	// If we have been disconnected, we will try to reconnect
-	if( (status == WL_DISCONNECTED || status == WL_NO_SHIELD) && ( millis() - _lastWiFiConnected ) > 120000 )
+	//if( (status == WL_DISCONNECTED || status == WL_NO_SHIELD) && ( millis() - _lastWiFiConnected ) > 120000 )
+	if( ( millis() - _lastWiFiConnected ) > 120000 )
 	{
-		Logln("E107 - WIFI Disconnected");
+		Logln("E107 - WIFI NOT Connected");
 		_swipePageHome.RefreshData();
 		_lastWiFiConnected = millis();
 		_webPortal.Setup(); // Restart the web portal
