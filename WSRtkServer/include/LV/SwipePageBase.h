@@ -92,7 +92,7 @@ protected:
 
 	///////////////////////////////////////////////////////////////////////////
 	// Append a row title to the table
-	void AppendRowTitle(const char *title, int format = (int)TblFormat::None)
+	int AppendRowTitle(const char *title, int format = (int)TblFormat::None)
 	{
 		lv_table_set_cell_value(_table, _rowCount, 0, title);
 		lv_table_set_cell_value(_table, _rowCount, 1, "");
@@ -101,6 +101,7 @@ protected:
 		if (format)
 			lv_table_set_cell_user_data(_table, _rowCount, 1, (void *)format);
 		_rowCount++;
+		return _rowCount - 1; // Return the row index
 	}
 
 public:
@@ -164,7 +165,7 @@ public:
 		lv_obj_t *btnWrap = CreateFancyButton(LV_SYMBOL_CLOSE " Close", _uiPanelPage, event_cb, lv_pct(100));
 
 		// Animate the screen load
-		lv_screen_load_anim(screen, lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OVER_LEFT, 300, 0, false);
+		//lv_screen_load_anim(screen, lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OVER_LEFT, 300, 0, false);
 	}
 
 	lv_obj_t *GetPanel() { return _uiPanelPage; }

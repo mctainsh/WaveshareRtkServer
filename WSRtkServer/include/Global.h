@@ -3,7 +3,7 @@
 #define I2C_SDA 8
 #define I2C_SCL 7
 
-#define APP_VERSION "3.108.1083"
+#define APP_VERSION "3.108.1086"
 
 // Disables logging to serial
 #define SERIAL_LOG
@@ -39,17 +39,11 @@
 extern HandyTime _handyTime;
 extern std::string _mdnsHostName;
 
-// Button states
-// enum class StatusButtonState
-// {
-// 	Unknown,
-// 	Bad,
-// 	Good,
-// };
-	enum class ConnectionState
-	{
-		Unknown,
-		Disabled,
-		Connected,
-		Disconnected,
-	};
+// States for WiFi GPS and NTRIPS
+enum class ConnectionState
+{
+	Unknown,
+	Disabled,
+	Connected,
+	Disconnected,
+};

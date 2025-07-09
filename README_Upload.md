@@ -1,14 +1,21 @@
-## Upload the binary to the TTGO T-Display-S3
+<style>
+.r2{
+	text-align:right;
+}
+</style>
+
+## Upload the binary to the Waveshare ESP32 S3 3.5" Touch
+
+These instructions will walk you through the steps to install the firmware on the to 
 
 ```
-IMPORTANT : This applies to ESP32-S3 only. Nt other devices like ESP32 or ESP32-S2
+If everything goes bad you can reset the device by uploading the original firmware at address 0x0.  The firmware can be downloaded from https://files.waveshare.com/wiki/ESP32-S3-Touch-LCD-3.5/ESP32-S3-Touch-LCD-3.5-Demo.zip The firmware bin can be found at '..\ESP32-S3-Touch-LCD-3.5-Demo\Firmware'
 
-ALSO : T-Display and T-Display-S3 have very subtly different addresses. Pay attention.
-
-If everything goes bad you can reset by uploading the firmware_no_touch.bin version from https://github.com/Xinyuan-LilyGO/T-Display-S3/tree/main/firmware
+Also check out the Wiki 
+https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-3.5
 ```
 
-- Download the files from [TTGO T-Display-S3 Binaries](https://1drv.ms/f/s!Avrf6GYUWqyFhtUYAQn6uUMdvsv8OQ). Ensure you load the one for your ESP32 and GPS receiver
+- Download the files from [Waveshare ESP32 S3 3.5" Touch](https://1drv.ms/f/c/85ac5a1466e8dffa/Qvrf6GYUWqwggIWYqgEAAAAAAQn6uUMdvsv8OQ). Ensure you load the one for your ESP32 and GPS receiver
 
 ## Method 1 (Easier)
 
@@ -20,9 +27,24 @@ If everything goes bad you can reset by uploading the firmware_no_touch.bin vers
 
 4) Add the files shown in the files and addresses table below
 
+<table style='margin-left:100px;'>
+<tr><th>File</th><th>Address</th></tr>
+<tr><td>bootloader.bin</td><td class='r2'>0x0000</td></tr>
+<tr><td>partitions.bin</td><td class='r2'>0x8000</td></tr>
+<tr><td>boot_app0.bin</td><td class='r2'>0xE000</td></tr>
+<tr><td>firmware.bin/td><td class='r2'>0x10000</td></tr>
+</table>
+
 5) Select `Program`
 
-6) Once upload completes. Jump to step `9` of Method 2.
+6) Once upload completes. Wait 30 seconds thenselect `RESET`.
+
+7) The device will reboot. The first time it runs, it will format the flash memory. This can rake upto 3 minutes. (Please be patient).
+
+8) Once startup is complete the seceen should look like
+
+
+
 
 ## Method 2
 

@@ -11,22 +11,23 @@ extern GpsParser _gpsParser; // GPS parser instance
 
 ///////////////////////////////////////////////////////////////////////////////
 // This is a page with a number of controls on it is added to a scrolling panel
-class SwipePageGps : public SwipePageBase
+class SwipePageHome : public SwipePageBase
 {
 private:
-	PanelLabelValue _panelLabelValue1; // Create an instance of PanelLabelValue
-	PanelLabelValue _panelLabelValue2; // Create an instance of PanelLabelValue
-	PanelLabelValue _panelLabelValue3; // Create an instance of PanelLabelValue
+	// PanelLabelValue _panelLabelValue1; // Create an instance of PanelLabelValue
+	// PanelLabelValue _panelLabelValue2; // Create an instance of PanelLabelValue
+	// PanelLabelValue _panelLabelValue3; // Create an instance of PanelLabelValue
+	int _hostOrApNameRow = 0;
 
 public:
 	void Create(lv_obj_t *parentGroupPanel)
 	{
-		CreatePanel(parentGroupPanel, LV_SYMBOL_USB " GPS Status", 0xFF00FF); // Create the panel for this page
+		CreatePanel(parentGroupPanel, LV_SYMBOL_USB " GPS Status", 0xA2E1DB); // Create the panel for this page
 		//_panelLabelValue1.Create(_uiPanelPage, "TTime", "00:00:00");			 // Create a panel with label and value
 		//_panelLabelValue2.Create(_uiPanelPage, "Other", "00:00:00");			 // Create a panel with label and value
 		//_panelLabelValue3.Create(_uiPanelPage, "More message Time", "00:00:00"); // Create a panel with label and value
 
-		CreateTable(_uiPanelPage, lv_pct(100)); // Create a table with a height of 200 pixels
+		CreateTable(_uiPanelPage, LV_SIZE_CONTENT); // Create a table with a height of 200 pixels
 		AppendRowTitle("GPS", TblFormat::Highlight);
 		//AppendRowTitle("Bytes", TblFormat::Right);
 		AppendRowTitle("Resets", TblFormat::Right);
@@ -38,10 +39,9 @@ public:
 		AppendRowTitle(LV_SYMBOL_WIFI " WiFi", TblFormat::Highlight);
 		AppendRowTitle("Status");
 		AppendRowTitle("Strength");
-		AppendRowTitle("A/P Name");
 		AppendRowTitle("IP Address");
-		AppendRowTitle("Host Name");
-		AppendRowTitle("Type");
+		_hostOrApNameRow = AppendRowTitle("AP OR HOST");
+		//AppendRowTitle("Type");
 		AppendRowTitle("Reconnects");
 	}
 
@@ -73,18 +73,25 @@ public:
 		else
 			SetTableValue(x + 2, (std::to_string(strength) + "dBm " + strengthTitle).c_str());
 
-		SetTableValue(x + 3, WiFi.getHostname());
+		
+
+//OR
+		//AppendRowTitle("Host Name");
+		//
+
+
 		if (status == WL_CONNECTED)
 		{
-			SetTableValue(x + 4, WiFi.localIP().toString().c_str());
-			SetTableValue(x + 5, (_mdnsHostName + ".local").c_str());
+			SetTableValue(x + 3, WiFi.localIP().toString().c_str());
+			lv_table_set_cell_value(_table, x + 4, 0, "Host name");
+			SetTableValue(x + 4, (_mdnsHostName + ".local").c_str());
 		}
 		else
 		{
-			SetTableValue(x + 4, "X -> 192.168.4.1");
-			SetTableValue(x + 5, "");
+			SetTableValue(x + 3, "X -> 192.168.4.1");
+			lv_table_set_cell_value(_table, x + 4, 0, "A/P Name");
+			SetTableValue(x + 4, WiFi.getHostname());
 		}
-		SetTableValue(x + 6, WiFiModeText(WiFi.getMode()));
-		SetTableValue(x + 7, std::to_string(_webPortal.GetConnectCount() - 1).c_str());
+		SetTableValue(x + 5, std::to_string(_webPortal.GetConnectCount() - 1).c_str());
 	}
 };

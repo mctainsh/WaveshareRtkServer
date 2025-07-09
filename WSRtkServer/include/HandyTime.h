@@ -29,10 +29,10 @@ private:
 	bool _timeSyncEnabled = false;				   // Indicates we have WiFi or read a time from onboard clock
 	unsigned long _lastSyncTime = 0;			   // Last time we synced the time
 	unsigned long _syncInterval = TIME_SYNC_SHORT; // Default sync interval of 1 hour
+	SensorPCF85063 _rtc;						   // Create an instance of the PCF85063 RTC
+	bool _rtcWorking = false;					   // Time setup failed, so we will not try to read the time
+	bool _rtcInitialized = false;				   // RTC has been initialized
 
-	SensorPCF85063 _rtc;		  // Create an instance of the PCF85063 RTC
-	bool _rtcWorking = false;	  // Time setup failed, so we will not try to read the time
-	bool _rtcInitialized = false; // RTC has been initialized
 public:
 	void WiFiReady() { _timeSyncEnabled = true; }
 	bool IsTimeSet() const { return _rtcInitialized; } // Check if the RTC has been initialized
@@ -106,23 +106,22 @@ public:
 	// tzMinutes is the timezone offset in minutes, e.g., "60" for GMT
 	void LoadTimezoneOffset(std::string tzMinutes)
 	{
-		if (!tzMinutes.empty())
+		if (tzMinutes.empty())
+			return;
+		try
 		{
-			try
-			{
-				float minutes = std::stof(tzMinutes);
-				_gmtOffset_sec = static_cast<long>(minutes * 60); // Convert minutes to seconds
-				_daylightOffset_sec = 0;						  // Default to no daylight saving time
-				Logf("Timezone set to %s minutes (%ld seconds)", tzMinutes.c_str(), _gmtOffset_sec);
-			}
-			catch (const std::invalid_argument &e)
-			{
-				Logf("Invalid timezone minutes: %s", tzMinutes.c_str());
-			}
-			catch (const std::out_of_range &e)
-			{
-				Logf("Timezone minutes out of range: %s", tzMinutes.c_str());
-			}
+			float minutes = std::stof(tzMinutes);
+			_gmtOffset_sec = static_cast<long>(minutes * 60); // Convert minutes to seconds
+			_daylightOffset_sec = 0;						  // Default to no daylight saving time
+			Logf("Timezone set to %s minutes (%ld seconds)", tzMinutes.c_str(), _gmtOffset_sec);
+		}
+		catch (const std::invalid_argument &e)
+		{
+			Logf("Invalid timezone minutes: %s", tzMinutes.c_str());
+		}
+		catch (const std::out_of_range &e)
+		{
+			Logf("Timezone minutes out of range: %s", tzMinutes.c_str());
 		}
 	}
 

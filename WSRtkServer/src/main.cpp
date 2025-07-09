@@ -1,8 +1,11 @@
 #include <Arduino.h>
 #include "Global.h"
 #include "LV/LVCore.h"
+
+#include "History.h"
+
 #include "UI/screens/ui_MainScreen.h"
-#include <LV/SwipePageGps.h>
+#include <LV/SwipePageHome.h>
 #include <LV/PageIO.h>
 
 #include "Hardware/SdFile.h"
@@ -20,7 +23,6 @@
 #include "Hardware/MyFiles.h"
 #include <Web/WebPortal.hpp>
 #include "WiFiEvents.h"
-#include "History.h"
 
 WiFiManager _wifiManager;
 
@@ -29,6 +31,7 @@ WiFiManager _wifiManager;
 
 unsigned long _slowLoopWaitTime = SLOW_TIMER; // Time of last 10 second
 unsigned long _fastLoopWaitTime = 0;		  // Time of last second
+unsigned long _lastWiFiConnected = 0; // Time of last WiFi connection
 int _loopPersSecondCount = 0;				  // Number of times the main loops runs in a second
 unsigned long _lastButtonPress = 0;			  // Time of last button press to turn off display on T-Display-S3
 History _history;							  // Temperature history
@@ -56,8 +59,8 @@ bool IsWifiConnected();
 LVCore _lvCore;
 
 // Pages
-// SwipePageGps _systemPageGps;
-SwipePageGps _swipePageGps;
+// SwipePageHome _systemPageGps;
+SwipePageHome _swipePageHome;
 //  SwipePagePower _swipePagePower;
 SwipePageSettings _swipePageSettings;
 
@@ -126,18 +129,19 @@ void setup()
 	ui_MainScreen_screen_init();
 
 	// Create the GPS status page
-	_swipePageGps.Create(UIPageGroupPanel); // Create the GPS status page and add
+	_swipePageHome.Create(UIPageGroupPanel); // Create the GPS status page and add
 	//_swipePageIO.Create(UIPageGroupPanel);		 // Create the GPS status page and add
 	_swipePageSettings.Create(UIPageGroupPanel); // Create the settings page and add
 
 	// Fix the startup scroll offset error
-	lv_obj_scroll_to_view(_swipePageGps.GetPanel(), LV_ANIM_OFF);
+	lv_obj_scroll_to_view(_swipePageHome.GetPanel(), LV_ANIM_OFF);
 
-	_swipePageGps.RefreshData();
+	_swipePageHome.RefreshData();
 	_lvCore.UpdateWiFiIndicator();
 
 	_powerManagementSystem.Setup(); // Setup the power management system
 
+	Logln("Setup complete");
 	Serial.println(" ========================== Setup done ========================== ");
 	_webPortal.Setup();
 }
@@ -186,7 +190,7 @@ void FastLoop(unsigned long t, ConnectionState gpsState)
 	_lvCore.SetTitleTime(_handyTime.Format("%a %H:%M:%S"));
 	//_lvCore.SetTitleDate(_handyTime.Format("%d %b %Y"));
 
-	_swipePageGps.RefreshData();
+	_swipePageHome.RefreshData();
 
 	// Check power management system
 	_powerManagementSystem.PowerLoop();
@@ -198,7 +202,7 @@ void FastLoop(unsigned long t, ConnectionState gpsState)
 	// If WiFI disconnected refresh the WiFi status
 	if (WiFi.status() != WL_CONNECTED)
 	{
-		_swipePageGps.RefreshData();
+		_swipePageHome.RefreshData();
 		_lvCore.UpdateWiFiIndicator();
 	}
 
@@ -211,7 +215,7 @@ void FastLoop(unsigned long t, ConnectionState gpsState)
 // This function is called every 10 seconds to handle slow tasks
 void SlowLoop(unsigned long t)
 {
-	_swipePageGps.RefreshData();
+	_swipePageHome.RefreshData();
 	_lvCore.UpdateWiFiIndicator();
 
 	// Check memory pressure
@@ -237,7 +241,7 @@ void SlowLoop(unsigned long t)
 		//_wifiManager.setConfigPortalTimeout(60);
 		Logln("Set WIFI_STA mode");
 		WiFi.mode(WIFI_STA);
-		_swipePageGps.RefreshData();
+		_swipePageHome.RefreshData();
 		_lvCore.UpdateWiFiIndicator();
 	}
 
@@ -271,8 +275,6 @@ bool IsWifiConnected()
 	{
 		_lastWifiStatus = status;
 		Logf("Wifi Status %d %s", status, WifiStatus(status));
-		//	_display.SetWebStatus(status);
-		_display.RefreshWiFiState();
 		//_wifiFullResetTime = millis();
 
 		// Reconnected
@@ -295,19 +297,27 @@ bool IsWifiConnected()
 			_webPortal.OnConnected();
 		}
 
-		_swipePageGps.RefreshData();
+		_swipePageHome.RefreshData();
 		_lvCore.UpdateWiFiIndicator();
 	}
 
 	if (status == WL_CONNECTED)
+	{
+		_lastWiFiConnected = millis();
 		return true;
+	}
 
 	if (status != WL_DISCONNECTED && _webPortal.GetConnectCount() > 0)
 		return false;
 
-	// Block here until we are connected again
-	//	_webPortal.Setup();
-	return false;
+	// If we have been disconnected, we will try to reconnect
+	if( (status == WL_DISCONNECTED || status == WL_NO_SHIELD) && ( millis() - _lastWiFiConnected ) > 120000 )
+	{
+		Logln("E107 - WIFI Disconnected");
+		_swipePageHome.RefreshData();
+		_lastWiFiConnected = millis();
+		_webPortal.Setup(); // Restart the web portal
+	}
 
 	// // Reset the WIFI if Disconnected (This seems to be unrecoverable)
 	// auto delay = millis() - _wifiFullResetTime;

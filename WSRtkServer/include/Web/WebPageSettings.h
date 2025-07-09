@@ -358,7 +358,7 @@ public:
 			AddInput("password", pw, "Password", server.GetPassword().c_str());
 
 			if (saved)
-				_client.printf("<div class='alert alert-success' role='alert'>Caster %s settings saved successfully!</div>", num.c_str());
+				_client.printf("<div class='alert alert-success' role='alert'>Caster %s settings saved successfully! Reset device to apply changes.</div>", num.c_str());
 
 			_client.printf("<button type='submit' class='btn btn-primary'>Save Caster %s</button></form>", num.c_str());
 		}

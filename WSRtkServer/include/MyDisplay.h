@@ -27,7 +27,7 @@ public:
 	//void IncrementGpsPackets();
 	void ActionButton();
 	void NextPage();
-	void RefreshWiFiState();
+	//void RefreshWiFiState();
 	void RefreshRtk(int index);
 	void RefreshLog(const std::vector<std::string> &log);
 	void RefreshGpsLog();

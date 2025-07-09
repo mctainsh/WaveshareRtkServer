@@ -9,16 +9,16 @@ All up you it will cost about US$250 to make the station with GNSS receiver, ant
 The display also allow you to see at an instant if the system is connected and sending to all the casters
 
 <div style="display: flex; gap:10px;">
-	<img src="https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/TTGO-Display-S3/S3-Screen-Home.jpg?raw=true" width="180" />
-	<img src="https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/TTGO-Display-S3/S3-Screen-GPS.jpg?raw=true" width="180" />
-	<img src="https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/TTGO-Display-S3/S3-Screen-RTK.jpg?raw=true" width="180" />
+	<img src="Photos/ScreenShots/S3-Screen-Home.jpg?raw=true" width="180" />
+	<img src="Photos/ScreenShots/S3-Screen-Home.jpg?raw=true" width="180" />
+	<img src="Photos/ScreenShots/S3-Screen-Home.jpg?raw=true" width="180" />
 </div>
 
 [![IMAGE ALT TEXT HERE](https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/YouTube.png?raw=true)](https://www.youtube.com/watch?v=e3zAwOrCTnI)
 
 NOTE : Using ESP32 S3 allows sending to up to three RTK casters without blocking.
 
-<img src="https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/TTGO-Display-S3/T-Display-S3-UM982_Boxed.jpg?raw=true" width="400" />
+<img src="Photos/Onocoy_Screen.png?raw=true" width="400" />
 
 
 ## Table of Contents 
@@ -52,7 +52,7 @@ This project enables an Waveshare ESP32 S3 3.5" Touch to act as an RTK server se
 
 ### Shopping notes
 
-Note :  These links only get you to the page. You still need to pick the "Color:" of each itesm. Meaning the actual item. (Again, these are not affiliate links. Shop around to get the best deal for you. Double check shipping of each selection)
+Note :  These links only get you to the page. You still need to pick the "Color:" of each item. Meaning the actual item. (Again, these are not affiliate links. Shop around to get the best deal for you. Double check shipping of each selection)
 
 IMPORTANT : When you buy stuff from AliExpress. The link is just ceneral to the product type. You MUST select the correct model or you just eand up with the Antenna or PCB?
 
@@ -82,8 +82,7 @@ Use the Gerber files for the PCB and the STEP files for the housing. I'd recomme
 
 ## Wiring Diagram
 
-### TTGO T-Display-S3
-| Waveshare Pin | Use | UM982 pin | Use |
+| Waveshare Use | Pin | UM980 Pin | UM980 Use |
 | --- | --- | --- | --- |
 | 5V | 2| 2 | 5V |
 | GND | 4 | 5 | GND |
@@ -94,25 +93,8 @@ Use the Gerber files for the PCB and the STEP files for the housing. I'd recomme
 
 
 <div style="display:flex;">
-	<img src="https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/TTGO-Display-S3/T-DIsplay-S3_Schematic.jpg?raw=true" Height="320" />
-	<img src="https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/WiringDiagram.png?raw=true" Height="320" />
+	<img src="Photos/WiringDiagram.png?raw=true" Height="640" />
 </div>
-
-### TTGO T-Display (NOT recommended)
-
-| TTGO T-Display Pin | Use | UM982 pin | Use |
-| --- | --- | --- | --- |
-| 5V | 5V| 2 | 5V |
-| G | GND | 5 | GND |
-| NC | |  |  |
-| 26 | TX | 3 | RX |
-| 25 | RX | 4 | TX |
-
-<img src="https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/TTGO-Display/T-DIsplay_Schematic.jpg?raw=true" width="400" />
-
-
-
-
 
 
 ## Software 
@@ -129,15 +111,10 @@ Use the Gerber files for the PCB and the STEP files for the housing. I'd recomme
 
 ### ESP32 device setup
 
-Depending on the device you will need to upload the binary
+You will need to install the software onto the new Waveshare device
 
 
- - [Upload Binary for TTGO T-Display-S3](https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/README_Upload_T-Display-S3.md)
-
- - OR
-
- - [Upload Binary for TTGO T-Display](https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/README_Upload_T-Display.md)
-
+ - [How to upload software](README_Upload.md)
 
 
 
@@ -183,36 +160,6 @@ Note : You don't need to sign up to all three. Leave the CASTER ADDRESS blank to
 | CASTER 3 PASSWORD | Create this with Rtk2Go signup |
 
 WARNING :  Do not run without real credentials or your IP may be blocked!!
-
-### Modifying the code and doing your own thing
-
-This is not necessary. You can just use the firmware already developed.
-
-1. **Install VS Code** : Follow [Instructions](https://code.visualstudio.com/docs/setup/setup-overview)
-
-2. **Install the PlatformIO IDE** : Download and install the [PlatformIO](https://platformio.org/install).
- 
-3. **Clone This Repository**
-
-```bash
-git clone https://github.com/mctainsh/WaveshareRtkServer.git
-```
-
-or just copy the files from
-```
-https://github.com/mctainsh/Esp32/tree/main/WaveshareRtkServer/WaveshareRtkServer
-```
-4. **Enable the TTGO T-Display header** : To use the TTGO T-Display-S3 with the TFT_eSPI library, you need to make the following changes to the User_Setup.h file in the library.
-
-```
-	.pio\libdeps\lilygo-t-display\TFT_eSPI\User_Setup_Select.h
-	4.1. Comment out the default setup file
-		//#include <User_Setup.h>           // Default setup is root library folder
-	4.2. Uncomment the TTGO T-Display-S3 setup file
-		#include <User_Setups/Setup206_LilyGo_T_Display_S3.h>     // For the LilyGo T-Display S3 based ESP32S3 with ST7789 170 x 320 TFT
-	4.3. Add the following line to the start of the file
-		#define DISABLE_ALL_LIBRARY_WARNINGS
-```
 
 ### Configuration 
 
@@ -306,27 +253,10 @@ Only shows the state of the first two casters
 
 ## TODO
 
-1. Write instructions to install without compiling with PlatformIO (Using ESP32 Upload tool)
-
-2. Make http sends in non-blocking to prevent one NTRIP server upsetting the others
-
-3. Rework the TTGO T-Display code to make the display nicer (Currently optimized for larger S3)
-
-4. Put each NTRIP server details on its own page
-
-5. Make better looking STL
-
-6. Build one using ESP32-S3 Mini board. Won't have display but will be very compact
+1. Make better looking STL
 
 ## License 
 This project is licensed under the GNU General Public License - see the [LICENSE](https://github.com/mctainsh/Esp32/blob/main/LICENSE)  file for details.
-
-## More photos
-![T-Display-S3](https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/T-DISPLAY-S3.jpg?raw=true)
-
-![UM982](https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/UM982.png?raw=true)
-
-![Dimensions](https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/UM982-PCB.png?raw=true)
 
 ---
 
