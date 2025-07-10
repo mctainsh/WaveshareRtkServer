@@ -5,12 +5,32 @@
 
 // See lv_conf.h for configuration options (.pio\libdeps\Waveshare-S3-35\lv_conf.h)
 
+
+///////////////////////////////////////////////////////////////////////////////
+// Using Custom Fonts
+// This is a custom font for FontAwesome Regular 18pt
+// Generated using the lv_font_conv tool
+// 		https://lvgl.io/tools/fontconverter
+//   Name    : FontAwesomeRegular18
+//   Size    : 18
+//   Style   : Regular
+//   Bpp     : 1
+//   Fallback: lv_font_montserrat_18
+//   Font    : Font Awesome 6 Free-Solid-900.otf
+//   Range : 0xf2fe,0xF2C9,0xf7c0,0xf7bf
+// Generate
+//   Place in the fonts folder
+//   Direct to #include "lvgl.h"
+
+
+
 #include <lvgl.h>
 #include <esp32-hal-ledc.h>
 #include <Arduino_GFX_Library.h>
 #include "TCA9554.h"
 #include "esp_lcd_touch_axs15231b.h"
 #include <Wire.h>
+//#include "FontAwesomeRegular18.h"
 
 #define GFX_BL 6 // default backlight pin, you may replace DF_GFX_BL to actual backlight pin
 
@@ -44,6 +64,8 @@ void my_print(lv_log_level_t level, const char *buf)
 
 static lv_style_t StyleFancyButton;
 static lv_style_t StyleFancyButtonPressed;
+
+extern lv_font_t FontAwesomeRegular18;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Time functions
@@ -191,14 +213,16 @@ public:
 		lv_obj_remove_flag(statusPanel, LV_OBJ_FLAG_SCROLLABLE);
 		lv_obj_set_style_pad_column(statusPanel, 3, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-		_btnStatusWifi = MakeStatusButton(statusPanel, LV_SYMBOL_WIFI, [](lv_event_t *e)
-										  {
+		_btnStatusWifi = MakeStatusButton(
+			statusPanel, LV_SYMBOL_WIFI, [](lv_event_t *e)
+			{
 			// Handle battery button click
 			Serial.println("WIFI button clicked"); });
-		_btnStatusGps = MakeStatusButton(statusPanel, LV_SYMBOL_USB, [](lv_event_t *e)
+		_btnStatusGps = MakeStatusButton(statusPanel, FA_SATELLITE_DISH, [](lv_event_t *e)
 										 {
 			// Handle battery button click
 			Serial.println("GPS button clicked"); });
+
 		_btnStatusSvr1 = MakeStatusButton(statusPanel, "S1", [](lv_event_t *e)
 										  {
 			// Handle battery button click
@@ -206,11 +230,11 @@ public:
 		_btnStatusSvr2 = MakeStatusButton(statusPanel, "S2", [](lv_event_t *e)
 										  {
 			// Handle battery button click
-			Serial.println("BatS2tery button clicked"); });
+			Serial.println("Battery S2 button clicked"); });
 		_btnStatusSvr3 = MakeStatusButton(statusPanel, "S3", [](lv_event_t *e)
 										  {
 			// Handle battery button click
-			Serial.println("BatS3tery button clicked"); });
+			Serial.println("Battery S3 button clicked"); });
 
 		return true;
 	}
@@ -372,8 +396,8 @@ public:
 	{
 		lv_obj_t *btn = lv_button_create(parent); /*Add a button the current screen*/
 		lv_obj_set_size(btn, 40, 40);
-		//	lv_obj_set_style_bg_color(btn, lv_color_hex(0xFFFF00), LV_PART_MAIN | LV_STATE_DEFAULT);
 		SetIndicatorColour(btn, ConnectionState::Unknown);
+		//lv_obj_set_style_text_font(btn, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
 
 		// Border and radius
 		lv_obj_set_style_border_color(btn, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -390,6 +414,8 @@ public:
 		// Text on the button
 		lv_obj_t *label = lv_label_create(btn);
 		lv_label_set_text(label, title);
+		lv_obj_set_style_text_font(label, &FontAwesomeRegular18, LV_PART_MAIN | LV_STATE_DEFAULT);
+
 		lv_obj_center(label);
 
 		// Add event callback

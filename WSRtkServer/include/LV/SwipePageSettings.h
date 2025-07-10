@@ -9,9 +9,12 @@
 #include <Global.h>
 #include "PagePower.h"
 #include "PageTemperature.h"
+#include "PageLogView.h"
 
 extern SDFile _sdFile;
 extern std::string _mdnsHostName;
+extern PageIO *_pageIO;
+extern PagePower *_pagePower; 
 
 ///////////////////////////////////////////////////////////////////////////////
 // This is a page with information about drives and memory
@@ -46,13 +49,10 @@ public:
 		lv_obj_add_event_cb(slider, SwipePageSettings::OnSlider, LV_EVENT_VALUE_CHANGED, NULL); /*Assign an event function*/
 
 		// Add buttons
-		CreateFancyButton(LV_SYMBOL_BATTERY_2 " Power", _uiPanelPage, SwipePageSettings::OnPowerBtn, lv_pct(100));
-		CreateFancyButton(LV_SYMBOL_DRIVE " System", _uiPanelPage, SwipePageSettings::OnDriveBtn, lv_pct(100));
-		CreateFancyButton(LV_SYMBOL_LIST " CPU Temp.", _uiPanelPage, SwipePageSettings::OnTempChartBtn, lv_pct(100));
-	}
-
-	void RefreshData()
-	{
+		CreateFancyButton(LV_SYMBOL_BATTERY_2 " Power", _uiPanelPage, SwipePageSettings::OnPowerBtn, this, lv_pct(100));
+		CreateFancyButton(LV_SYMBOL_DRIVE " System", _uiPanelPage, SwipePageSettings::OnDriveBtn, this, lv_pct(100));
+		CreateFancyButton(FA_TEMPERATURE " CPU Temp.", _uiPanelPage, SwipePageSettings::OnTempChartBtn, this, lv_pct(100));
+		CreateFancyButton(LV_SYMBOL_LIST " Log Review", _uiPanelPage, SwipePageSettings::OnLogReviewBtn, this, lv_pct(100));
 	}
 
 	//////////////////////////////////////////////////////////////////
@@ -78,17 +78,8 @@ public:
 	{
 		if (lv_event_get_code(e) != LV_EVENT_CLICKED)
 			return;
-		auto *self = static_cast<SwipePageSettings *>(lv_event_get_user_data(e));
-		self->OnPowerBtnClicked(e);
-	}
-	void OnPowerBtnClicked(lv_event_t *e)
-	{
-		_pagePower = new PagePower(); // Create a new instance of PagePower
 		if (_pagePower == nullptr)
-		{
-			Serial.println("Failed to create PagePower instance");
-			return;
-		}
+			_pagePower = new PagePower();
 		_pagePower->Show();
 	}
 
@@ -98,17 +89,8 @@ public:
 	{
 		if (lv_event_get_code(e) != LV_EVENT_CLICKED)
 			return;
-		auto *self = static_cast<SwipePageSettings *>(lv_event_get_user_data(e));
-		self->OnDriveBtnClicked(e);
-	}
-	void OnDriveBtnClicked(lv_event_t *e)
-	{
-		_pageIO = new PageIO();
 		if (_pageIO == nullptr)
-		{
-			Serial.println("Failed to create PageIO instance");
-			return;
-		}
+			_pageIO = new PageIO();
 		_pageIO->Show();
 	}
 
@@ -123,12 +105,35 @@ public:
 	}
 	void OnTempChartBtnClicked(lv_event_t *e)
 	{
-		_pageTemperature = new PageTemperature();
-		if (_pageTemperature == nullptr)
+		auto p = new PageTemperature();
+		if (p == nullptr)
 		{
-			Serial.println("Failed to create PageIO instance");
+			Serial.println("Failed to create PageTemperature instance");
 			return;
 		}
-		_pageTemperature->Show();
+		p->Show();
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////
+	// Event handler for the log page
+	static void OnLogReviewBtn(lv_event_t *e)
+	{
+		if (lv_event_get_code(e) != LV_EVENT_CLICKED)
+			return;
+		auto *self = static_cast<SwipePageSettings *>(lv_event_get_user_data(e));
+		self->OnLogReviewBtnClicked(e);
+	}
+	void OnLogReviewBtnClicked(lv_event_t *e)
+	{
+		auto p = new PageLogView();
+		if (p == nullptr)
+		{
+			Serial.println("Failed to create PageTemperature instance");
+			return;
+		}
+		p->Show();
+		//	if( _pageIO == nullptr)
+		//		_pageIO = new PageIO();
+		//	_pageIO->Show();
 	}
 };

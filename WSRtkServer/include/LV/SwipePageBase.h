@@ -2,6 +2,8 @@
 
 #include "lvgl.h"
 
+extern lv_font_t FontAwesomeRegular18;
+
 // Enum for table format options
 enum TblFormat
 {
@@ -21,8 +23,13 @@ class SwipePageBase
 private:
 protected:
 	lv_obj_t *_uiPanelPage; // Panel we are drawing on
+	lv_obj_t *_titleLabel;
 	lv_obj_t *_table;		// Table if we have one
 	u32_t _rowCount = 0;	// Number of rows in the table
+	const char *_title;
+
+	lv_obj_t *_screen = nullptr; // The screen we are drawing on
+	bool _ready = false;		 // True if the page is ready to be updated
 
 protected:
 	///////////////////////////////////////////////////////////////////////////
@@ -53,13 +60,13 @@ protected:
 		lv_obj_set_style_bg_opa(_uiPanelPage, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 
 		// Add title label
-		lv_obj_t *titleLabel = lv_label_create(_uiPanelPage);
-		lv_obj_set_width(titleLabel, LV_SIZE_CONTENT);
-		lv_obj_set_height(titleLabel, LV_SIZE_CONTENT);
-		lv_obj_set_align(titleLabel, LV_ALIGN_TOP_LEFT);
-		lv_label_set_text(titleLabel, title);
-		// lv_obj_set_style_text_decor(ui_TitleLabel, LV_TEXT_DECOR_NONE, LV_PART_MAIN | LV_STATE_DEFAULT);
-		lv_obj_set_style_text_font(titleLabel, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+		_titleLabel = lv_label_create(_uiPanelPage);
+		lv_obj_set_width(_titleLabel, LV_SIZE_CONTENT);
+		lv_obj_set_height(_titleLabel, LV_SIZE_CONTENT);
+		lv_obj_set_align(_titleLabel, LV_ALIGN_TOP_LEFT);
+		lv_label_set_text(_titleLabel, title);
+		// lv_obj_set_style_text_decor(ui__titleLabel, LV_TEXT_DECOR_NONE, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_text_font(_titleLabel, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -107,7 +114,7 @@ protected:
 public:
 	///////////////////////////////////////////////////////////////////////////
 	// This function is called when the close button is clicked
-	static lv_obj_t *CreateFancyButton(const char *title, lv_obj_t *parent, lv_event_cb_t event_cb, int32_t width, int32_t height = 60)
+	static lv_obj_t *CreateFancyButton(const char *title, lv_obj_t *parent, lv_event_cb_t event_cb, void * user_data, int32_t width, int32_t height = 60)
 	{
 		lv_obj_t *wrap = LVCore::ClearPanel(parent, 6, 6, 6, 6);
 		lv_obj_set_height(wrap, height);
@@ -122,13 +129,41 @@ public:
 		lv_obj_center(btn);
 
 		// Add event callback
-		lv_obj_add_event_cb(btn, event_cb, LV_EVENT_CLICKED, NULL);
+		lv_obj_add_event_cb(btn, event_cb, LV_EVENT_CLICKED, user_data);
 
 		// Label
 		lv_obj_t *btnLabel = lv_label_create(btn);
 		lv_label_set_text(btnLabel, title);
+		lv_obj_set_style_text_font(btnLabel, &FontAwesomeRegular18, LV_PART_MAIN | LV_STATE_DEFAULT);
 		lv_obj_center(btnLabel);
 		return wrap;
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+	// Show the page. Called with pages that are derived from this class
+	void Show()
+	{
+		lv_screen_load_anim(_screen, lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OVER_LEFT, 300, 0, false);
+		_ready = true; // Set the page as ready to be updated
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////
+	// Event handler for the close button
+	static void OnClose(lv_event_t *e)
+	{
+		if (lv_event_get_code(e) != LV_EVENT_CLICKED)
+			return;
+
+		auto *self = static_cast<SwipePageBase *>(lv_event_get_user_data(e));
+		if (self == nullptr)
+		{
+			Logln("E917 - OnClose called with null self");
+			return;
+		}
+		self->_ready = false; // Set the page as not ready
+
+		// Animate to home
+		lv_screen_load_anim(_lvCore.GetHomeScreen(), lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OUT_RIGHT, 300, 0, false);	
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -152,7 +187,7 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////
 	// Add a close button to the bottom of the page
-	void AddCloseButton(lv_obj_t *screen, lv_event_cb_t event_cb)
+	void AddCloseButton(lv_obj_t *screen, lv_event_cb_t event_cb, void * user_data)
 	{
 		// Spacer to push next item to bottom
 		lv_obj_t *spacer = lv_obj_create(_uiPanelPage);
@@ -162,10 +197,7 @@ public:
 		lv_obj_set_flex_grow(spacer, 1);										 // This makes it expand and push the next item down
 
 		// Add close button to bottom of the page
-		lv_obj_t *btnWrap = CreateFancyButton(LV_SYMBOL_CLOSE " Close", _uiPanelPage, event_cb, lv_pct(100));
-
-		// Animate the screen load
-		//lv_screen_load_anim(screen, lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OVER_LEFT, 300, 0, false);
+		CreateFancyButton(LV_SYMBOL_CLOSE " Close", _uiPanelPage, event_cb, user_data, lv_pct(100));
 	}
 
 	lv_obj_t *GetPanel() { return _uiPanelPage; }

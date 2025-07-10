@@ -3,7 +3,7 @@
 #define I2C_SDA 8
 #define I2C_SCL 7
 
-#define APP_VERSION "3.108.1087"
+#define APP_VERSION "3.108.1088"
 
 // Disables logging to serial
 #define SERIAL_LOG
@@ -47,3 +47,9 @@ enum class ConnectionState
 	Connected,
 	Disconnected,
 };
+
+// Font Awesome symbols
+#define FA_POO "\xEF\x8B\xAF"
+#define FA_TEMPERATURE "\xEF\x8B\x89"
+#define FA_SATELLITE_DISH "\xEF\x9F\x80"
+#define FA_SATELLITE "\xEF\x9E\xBF"

@@ -31,11 +31,11 @@ WiFiManager _wifiManager;
 
 unsigned long _slowLoopWaitTime = SLOW_TIMER; // Time of last 10 second
 unsigned long _fastLoopWaitTime = 0;		  // Time of last second
-unsigned long _lastWiFiConnected = 0; // Time of last WiFi connection
+unsigned long _lastWiFiConnected = 0;		  // Time of last WiFi connection
 int _loopPersSecondCount = 0;				  // Number of times the main loops runs in a second
 unsigned long _lastButtonPress = 0;			  // Time of last button press to turn off display on T-Display-S3
 History _history;							  // Temperature history
-int _drawLoopSkip = 0;						  // Draw every 100th draw loop to reduce CPU load
+unsigned long _drawLoopSkip = 0;			  // Draw every 100th draw loop to reduce CPU load
 
 WebPortal _webPortal;
 
@@ -64,8 +64,8 @@ SwipePageHome _swipePageHome;
 //  SwipePagePower _swipePagePower;
 SwipePageSettings _swipePageSettings;
 
-extern PagePower *_pagePower;
-extern PageIO *_pageIO;
+PageIO *_pageIO = nullptr;
+PagePower *_pagePower = nullptr;
 
 void FastLoop(unsigned long t, ConnectionState gpsState);
 void SlowLoop(unsigned long t);
@@ -129,14 +129,13 @@ void setup()
 	ui_MainScreen_screen_init();
 
 	// Create the GPS status page
-	_swipePageHome.Create(UIPageGroupPanel); // Create the GPS status page and add
-	//_swipePageIO.Create(UIPageGroupPanel);		 // Create the GPS status page and add
+	_swipePageHome.Create(UIPageGroupPanel);	 // Create the GPS status page and add
 	_swipePageSettings.Create(UIPageGroupPanel); // Create the settings page and add
 
 	// Fix the startup scroll offset error
 	lv_obj_scroll_to_view(_swipePageHome.GetPanel(), LV_ANIM_OFF);
 
-	_swipePageHome.RefreshData();
+	//_swipePageHome.RefreshData();
 	_lvCore.UpdateWiFiIndicator();
 
 	_powerManagementSystem.Setup(); // Setup the power management system
@@ -151,10 +150,11 @@ void setup()
 // It handles the LVGL tasks and allows the GUI to update
 void loop()
 {
+	int t = millis();
 	// Let the LVGL library handle its tasks
-	if (_drawLoopSkip++ > 1000)
+	if ((t - _drawLoopSkip) > 100)
 	{
-		_drawLoopSkip = 0;
+		_drawLoopSkip = t;
 		lv_task_handler();
 	}
 
@@ -164,7 +164,6 @@ void loop()
 		gpsState = _gpsParser.ReadDataFromSerial(Serial2);
 
 	// Trigger something 1 every seconds
-	int t = millis();
 	_loopPersSecondCount++;
 	if ((t - _fastLoopWaitTime) > 1000)
 		FastLoop(t, gpsState);
@@ -196,13 +195,14 @@ void FastLoop(unsigned long t, ConnectionState gpsState)
 	_powerManagementSystem.PowerLoop();
 	if (_pagePower != nullptr)
 		_powerManagementSystem.RefreshData(_pagePower);
+
 	if (_pageIO != nullptr)
 		_pageIO->RefreshData();
 
 	// If WiFI disconnected refresh the WiFi status
 	if (WiFi.status() != WL_CONNECTED)
 	{
-		_swipePageHome.RefreshData();
+		//_swipePageHome.RefreshData();
 		_lvCore.UpdateWiFiIndicator();
 	}
 
@@ -249,7 +249,7 @@ void SlowLoop(unsigned long t)
 	_lvCore.SetBatteryPercent(_powerManagementSystem.GetBatteryPercent(), _powerManagementSystem.IsCharging());
 
 	// Performance text
-	//std::string perfText = StringPrintf("%d%% %.0fC %ddBm",
+	// std::string perfText = StringPrintf("%d%% %.0fC %ddBm",
 	//									(int)(100.0 * free / total),
 	//									temperature,
 	//									WiFi.RSSI());
@@ -308,12 +308,12 @@ bool IsWifiConnected()
 	}
 
 	// If not connected. Every 2 minutes, restart the WiFi portal
-	//if (status != WL_DISCONNECTED && _webPortal.GetConnectCount() > 0)
+	// if (status != WL_DISCONNECTED && _webPortal.GetConnectCount() > 0)
 	//	return false;
 
 	// If we have been disconnected, we will try to reconnect
-	//if( (status == WL_DISCONNECTED || status == WL_NO_SHIELD) && ( millis() - _lastWiFiConnected ) > 120000 )
-	if( ( millis() - _lastWiFiConnected ) > 120000 )
+	// if( (status == WL_DISCONNECTED || status == WL_NO_SHIELD) && ( millis() - _lastWiFiConnected ) > 120000 )
+	if ((millis() - _lastWiFiConnected) > 120000)
 	{
 		Logln("E107 - WIFI NOT Connected");
 		_swipePageHome.RefreshData();

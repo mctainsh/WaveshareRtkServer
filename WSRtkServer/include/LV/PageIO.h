@@ -13,17 +13,19 @@ extern std::string _mdnsHostName;
 extern WebPortal _webPortal;
 
 class PageIO;
-PageIO *_pageIO = nullptr;
+extern PageIO *_pageIO; // Pointer to the PageIO instance
 
 ///////////////////////////////////////////////////////////////////////////////
 // This is a page with information about drives and memory
 class PageIO : public SwipePageBase
 {
+private:
 public:
-	void Show()
+	PageIO()
 	{
-		lv_obj_t *scr = lv_obj_create(NULL);
-		CreatePanel(scr, LV_SYMBOL_DIRECTORY " Disk & Memory", 0xA4CCD9);
+		_title = LV_SYMBOL_DIRECTORY " Disk & Memory";
+		_screen = lv_obj_create(NULL);
+		CreatePanel(_screen, _title, 0xA4CCD9);
 
 		// Table
 		CreateTable(_uiPanelPage, LV_SIZE_CONTENT); // Create a table with a height of 200 pixels
@@ -52,17 +54,16 @@ public:
 		AppendRowTitle("Type");
 		AppendRowTitle("Reconnects");
 
-		AddCloseButton(scr, PageIO::OnClose); // Add a close button to the bottom of the page
-
-		// Animate the screen load
-		lv_screen_load_anim(scr, lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OVER_LEFT, 300, 0, false);
-		_pageIO = this;
+		AddCloseButton(_screen, SwipePageBase::OnClose, this); // Add a close button to the bottom of the page
 	}
 
 	///////////////////////////////////////////////////////////////////////////
 	// Uplate the table with the current data
 	void RefreshData()
 	{
+		if (!_ready || _screen == nullptr)
+			return;
+
 		// SD Card
 		SetTableValue(1, _sdFile.GetState().c_str());
 		SetTableValue(2, _sdFile.GetDriveSpace().c_str());
@@ -106,18 +107,5 @@ public:
 		}
 		SetTableValue(14, WiFiModeText(WiFi.getMode()));
 		SetTableValue(15, std::to_string(_webPortal.GetConnectCount() - 1).c_str());
-	}
-
-	
-	/////////////////////////////////////////////////////////////////////////////////
-	// Event handler for the button
-	static void OnClose(lv_event_t *e)
-	{
-		if (lv_event_get_code(e) != LV_EVENT_CLICKED)
-			return;
-		if (_pageIO != nullptr)
-			delete _pageIO;
-		_pageIO = nullptr; // Clear the pointer to the PagePower instance
-		lv_screen_load_anim(_lvCore.GetHomeScreen(), lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OUT_RIGHT, 300, 0, false);
 	}
 };

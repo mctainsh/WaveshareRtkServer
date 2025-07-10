@@ -28,7 +28,6 @@ extern "C" {
 ///////////////////// SCREENS ////////////////////
 
 #include "Screens/ui_MainScreen.h"
-#include "Screens/ui_GpsStatus.h"
 
 ///////////////////// VARIABLES ////////////////////
 

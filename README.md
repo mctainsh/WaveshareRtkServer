@@ -65,7 +65,7 @@ Be sure to combine the PCB and housing into one order to save on shipping
  
 1. **UM980 with antenna** - Witte Intelligent WTRTK-982 high-precision positioning and orientation module. I got it from AliExpress for about US$180.00 [Not affiliate link. Find your own seller](https://www.aliexpress.com/item/1005009184512773.html). Select UM980 with big white flying sourcer antenna and cable.
  
-2. **ESP32 S3** - Waveshare ESP32-S3 3.5inch Capacitive Touch Display Development Board, 320×480 Pixels, IPS Panel, 262K Color, Onboard Camera Interface, Supports Wi-Fi US$25.99 [Buy](https://www.waveshare.com/esp32-s3-touch-lcd-3.5.htm). Select version with or without case.
+2. **ESP32 S3** - Waveshare ESP32-S3 3.5inch Capacitive Touch Display Development Board, 320×480 Pixels, IPS Panel, 262K Color, Onboard Camera Interface, Supports Wi-Fi US$25.99 [Buy](https://www.waveshare.com/esp32-s3-touch-lcd-3.5b.htm?&aff_id=117711). Select version with or without case.
  
 3. **Wires and Protoboard** - Connects the ESP32 to receiver as described below.
 

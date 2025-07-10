@@ -51,15 +51,15 @@ public:
 		for (uint32_t i = 0; i < TEMP_HISTORY_SIZE; i++)
 		{
 			lv_chart_set_next_value(chart, ser1, (int32_t)temps[i]);
-			//lv_chart_set_next_value(chart, ser1, (int32_t)lv_rand(50, 90));
+			// lv_chart_set_next_value(chart, ser1, (int32_t)lv_rand(50, 90));
 		}
 
 		lv_chart_refresh(chart);		// Required after direct set
 		lv_obj_set_flex_grow(chart, 1); // This makes it expand and push the next item down
 
 		// Bottom button
-		lv_obj_t *btnWrap = CreateFancyButton(LV_SYMBOL_CLOSE " Close", _uiPanelPage, PageTemperature::OnClose, lv_pct(100));
-	
+		CreateFancyButton(LV_SYMBOL_CLOSE " Close", _uiPanelPage, PageTemperature::OnClose, this, lv_pct(100));
+
 		// Animate the screen load
 		lv_screen_load_anim(scr, lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OVER_LEFT, 300, 0, false);
 		_pageTemperature = this;
@@ -71,9 +71,9 @@ public:
 	{
 		if (lv_event_get_code(e) != LV_EVENT_CLICKED)
 			return;
+		lv_screen_load_anim(_lvCore.GetHomeScreen(), lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OUT_RIGHT, 300, 0, true);
 		if (_pageTemperature != nullptr)
 			delete _pageTemperature;
 		_pageTemperature = nullptr; // Clear the pointer to the PageTemperature instance
-		lv_screen_load_anim(_lvCore.GetHomeScreen(), lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OUT_RIGHT, 300, 0, false);
 	}
 };
