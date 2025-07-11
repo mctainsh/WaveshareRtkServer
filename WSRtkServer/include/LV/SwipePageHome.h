@@ -6,8 +6,11 @@
 #include "Web/WebPortal.hpp"
 #include "GpsParser.h"
 
-extern WebPortal _webPortal; // Web portal instance
-extern GpsParser _gpsParser; // GPS parser instance
+extern WebPortal _webPortal;	  // Web portal instance
+extern GpsParser _gpsParser;	  // GPS parser instance
+extern NTRIPServer _ntripServer0; // NTRIP server  instance
+extern NTRIPServer _ntripServer1; // ..
+extern NTRIPServer _ntripServer2; // ..
 
 ///////////////////////////////////////////////////////////////////////////////
 // This is a page with a number of controls on it is added to a scrolling panel
@@ -18,6 +21,7 @@ private:
 	// PanelLabelValue _panelLabelValue2; // Create an instance of PanelLabelValue
 	// PanelLabelValue _panelLabelValue3; // Create an instance of PanelLabelValue
 	int _hostOrApNameRow = 0;
+	lv_obj_t *_ntripTable = nullptr; // NTRIP table
 
 public:
 	void Create(lv_obj_t *parentGroupPanel)
@@ -28,6 +32,7 @@ public:
 		//_panelLabelValue3.Create(_uiPanelPage, "More message Time", "00:00:00"); // Create a panel with label and value
 
 		CreateTable(_uiPanelPage, LV_SIZE_CONTENT); // Create a table with a height of 200 pixels
+		AppendRowTitle("Up time");
 		AppendRowTitle("GPS", TblFormat::Highlight);
 		// AppendRowTitle("Bytes", TblFormat::Right);
 		AppendRowTitle("Resets", TblFormat::Right);
@@ -43,16 +48,58 @@ public:
 		_hostOrApNameRow = AppendRowTitle("AP OR HOST");
 		// AppendRowTitle("Type");
 		AppendRowTitle("Reconnects");
+
+		// NTRIP Servers
+		lv_obj_t *backup = _table;					// Save the current table
+		_rowCount = 0;								// Reset the row count
+		CreateTable(_uiPanelPage, LV_SIZE_CONTENT); // Create a table with a height of 200 pixels
+		lv_table_set_col_width(_table, 0, 78);
+		lv_table_set_col_width(_table, 1, 78);
+		lv_table_set_col_width(_table, 2, 78);
+		lv_table_set_col_width(_table, 3, 78);
+
+		AppendRowTitle("Server", TblFormat::Highlight | TblFormat::SingleLine | TblFormat::Bold, 3);
+		AppendRowTitle("Status", TblFormat::SingleLine, 3);
+		AppendRowTitle("Reconne.", TblFormat::Right, 3);
+		AppendRowTitle("Packets", TblFormat::Right, 3);
+		AppendRowTitle("Timeouts", TblFormat::Right, 3);
+
+		SetTableString(0, ShortServerName(_ntripServer0.GetAddress()), 1);
+		SetTableString(0, ShortServerName(_ntripServer1.GetAddress()), 2);
+		SetTableString(0, ShortServerName(_ntripServer2.GetAddress()), 3);
+
+		// Restore the table
+		_ntripTable = _table; // Save the NTRIP table
+		_table = backup;
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+	// Return word between second last and last '.' (Domain name)
+	std::string ShortServerName(const std::string &name)
+	{
+		std::string s = name;
+		size_t lastDot = name.find_last_of('.');
+		if (lastDot != std::string::npos)
+		{
+			size_t secondLastDot = name.find_last_of('.', lastDot - 1);
+			if (secondLastDot == std::string::npos)
+				s = name.substr(0, lastDot); // Only one dot found, return up to the last dot
+			else
+				s = name.substr(secondLastDot + 1, lastDot - secondLastDot - 1); // Return the part between the two dots
+		}
+		// Now trim the remainder with '...'
+		return s;
 	}
 
 	void RefreshData()
 	{
+		SetTableString( 0, Uptime(millis())); // Set the up time
 		// GPS Data
 		// SetTableValue( 1, _gpsParser.GetGpsBytesRec());
-		SetTableValue(1, _gpsParser.GetGpsResetCount());
-		SetTableValue(2, _gpsParser.GetGpsReinitialize());
-		SetTableValue(3, _gpsParser.GetAsciiMsgCount());
-		SetTableValue(4, _gpsParser.GetRtkMsgCount());
+		SetTableValue(2, _gpsParser.GetGpsResetCount());
+		SetTableValue(3, _gpsParser.GetGpsReinitialize());
+		SetTableValue(4, _gpsParser.GetAsciiMsgCount());
+		SetTableValue(5, _gpsParser.GetRtkMsgCount());
 
 		// WiFi
 		const int x = 5;
@@ -73,13 +120,12 @@ public:
 		else
 			SetTableValue(x + 2, (std::to_string(strength) + "dBm " + strengthTitle).c_str());
 
-
 		// IP Address
 		if (status == WL_CONNECTED)
 			SetTableValue(x + 3, WiFi.localIP().toString().c_str());
 		else
 			SetTableValue(x + 3, "X -> 192.168.4.1");
-		
+
 		// Host name or A/P name
 		const char *name;
 		if (WiFi.getMode() == WIFI_STA)
@@ -96,5 +142,27 @@ public:
 
 		// Connection count
 		SetTableValue(x + 5, std::to_string(_webPortal.GetConnectCount() - 1).c_str());
+
+		// ***** Refresh Ntrip Servers *****
+		lv_obj_t *backup = _table; // Save the current table
+		_table = _ntripTable;	   // Restore the NTRIP table
+
+		SetNtripData(1, _ntripServer0);
+		SetNtripData(2, _ntripServer1);
+		SetNtripData(3, _ntripServer2);
+
+		_table = backup;
+	}
+
+	void SetNtripData(int column, NTRIPServer &svr)
+	{
+		const int max_chars = 7; // Maximum characters to display in the status
+		std::string text = svr.GetStatus();
+		if (text.length() > max_chars)
+			text = text.substr(0, max_chars) + "...";
+		SetTableString(1, text, column);
+		SetTableValue(2, svr.GetReconnects(), column);
+		SetTableValue(3, svr.GetPacketsSent(), column);
+		SetTableValue(4, svr.GetTotalTimeouts(), column);
 	}
 };

@@ -12,6 +12,7 @@ enum TblFormat
 	Centre = 4,
 	Bold = 8,
 	Highlight = 16,
+	SingleLine = 32, // Single line text
 };
 
 static void OnTableDrawEvent(lv_event_t *e);
@@ -65,13 +66,12 @@ protected:
 		lv_obj_set_height(_titleLabel, LV_SIZE_CONTENT);
 		lv_obj_set_align(_titleLabel, LV_ALIGN_TOP_LEFT);
 		lv_label_set_text(_titleLabel, title);
-		// lv_obj_set_style_text_decor(ui__titleLabel, LV_TEXT_DECOR_NONE, LV_PART_MAIN | LV_STATE_DEFAULT);
 		lv_obj_set_style_text_font(_titleLabel, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
 	}
 
 	///////////////////////////////////////////////////////////////////////////
 	// Create a table
-	void CreateTable(lv_obj_t *parent, int32_t height)
+	lv_obj_t * CreateTable(lv_obj_t *parent, int32_t height)
 	{
 		_table = lv_table_create(parent);
 		lv_obj_set_height(_table, height);
@@ -95,18 +95,28 @@ protected:
 		// Disable table highlighting
 		lv_obj_clear_flag(_table, LV_OBJ_FLAG_CLICKABLE); // Optional: disables click
 		lv_obj_clear_state(_table, LV_STATE_FOCUSED);	  // Remove focus state
+		return _table;
 	}
 
 	///////////////////////////////////////////////////////////////////////////
 	// Append a row title to the table
-	int AppendRowTitle(const char *title, int format = (int)TblFormat::None)
+	int AppendRowTitle(const char *title, int format = (int)TblFormat::None, int columns = 1)
 	{
 		lv_table_set_cell_value(_table, _rowCount, 0, title);
-		lv_table_set_cell_value(_table, _rowCount, 1, "");
+		for( int n = 1; n <= columns; n++)
+			lv_table_set_cell_value(_table, _rowCount, n, "");
+		//lv_table_set_cell_value(_table, _rowCount, 1, "");
 		if (format & TblFormat::Highlight)
 			lv_table_set_cell_user_data(_table, _rowCount, 0, (void *)format);
 		if (format)
-			lv_table_set_cell_user_data(_table, _rowCount, 1, (void *)format);
+		{
+			for( int n = 1; n <= columns; n++)
+			{
+				lv_table_set_cell_user_data(_table, _rowCount, n, (void *)format);
+				if( format & TblFormat::SingleLine)
+					lv_table_set_cell_ctrl(_table, _rowCount, n, LV_TABLE_CELL_CTRL_TEXT_CROP);
+			}
+		}
 		_rowCount++;
 		return _rowCount - 1; // Return the row index
 	}
@@ -120,8 +130,16 @@ public:
 		lv_obj_set_height(wrap, height);
 		lv_obj_set_width(wrap, width);
 
+		CreateFancyButtonOnly(title, wrap, event_cb, user_data);		
+		return wrap;
+	}
+
+		///////////////////////////////////////////////////////////////////////////
+	// This function is called when the close button is clicked
+	static lv_obj_t *CreateFancyButtonOnly(const char *title, lv_obj_t *parent, lv_event_cb_t event_cb, void * user_data)
+	{
 		// Create the button
-		lv_obj_t *btn = lv_button_create(wrap);
+		lv_obj_t *btn = lv_button_create(parent);
 		lv_obj_remove_style_all(btn); // Remove the style coming from the theme
 		lv_obj_add_style(btn, &StyleFancyButton, 0);
 		lv_obj_add_style(btn, &StyleFancyButtonPressed, LV_STATE_PRESSED);
@@ -136,9 +154,8 @@ public:
 		lv_label_set_text(btnLabel, title);
 		lv_obj_set_style_text_font(btnLabel, &FontAwesomeRegular18, LV_PART_MAIN | LV_STATE_DEFAULT);
 		lv_obj_center(btnLabel);
-		return wrap;
+		return btn;
 	}
-
 	///////////////////////////////////////////////////////////////////////////
 	// Show the page. Called with pages that are derived from this class
 	void Show()
@@ -168,21 +185,21 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////
 	// Set value in the table
-	void SetTableValue(uint32_t row, const char *value)
+	void SetTableValue(uint32_t row, const char *value, int column = 1)
 	{
 		// Check if the table is hidden before setting the value
 		if (_table && !lv_obj_has_flag(_table, LV_OBJ_FLAG_HIDDEN))
-			lv_table_set_cell_value(_table, row, 1, value);
+			lv_table_set_cell_value(_table, row, column, value);
 		else
 			Serial.printf("Table is hidden, cannot set value for row %p: %s\n", _table, value);
 	}
-	void SetTableString(uint32_t row, const std::string &value)
+	void SetTableString(uint32_t row, const std::string &value, int column = 1)
 	{
-		SetTableValue(row, value.c_str());
+		SetTableValue(row, value.c_str(), column);
 	}
-	void SetTableValue(uint32_t row, int64_t value)
+	void SetTableValue(uint32_t row, int64_t value, int column = 1)
 	{
-		SetTableValue(row, ToThousands(value).c_str());
+		SetTableValue(row, ToThousands(value).c_str(), column);
 	}
 
 	///////////////////////////////////////////////////////////////////////////

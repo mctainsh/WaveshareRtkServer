@@ -30,6 +30,10 @@ public:
 		// Table
 		CreateTable(_uiPanelPage, LV_SIZE_CONTENT); // Create a table with a height of 200 pixels
 
+		// Firmware version
+		AppendRowTitle("Firmware");
+		SetTableValue(0, "Version : " APP_VERSION);
+
 		// SD Card
 		AppendRowTitle(LV_SYMBOL_SD_CARD " SD Card", TblFormat::Highlight);
 		AppendRowTitle("State");
@@ -65,21 +69,22 @@ public:
 			return;
 
 		// SD Card
-		SetTableValue(1, _sdFile.GetState().c_str());
-		SetTableValue(2, _sdFile.GetDriveSpace().c_str());
+		SetTableValue(2, _sdFile.GetState().c_str());
+		SetTableValue(3, _sdFile.GetDriveSpace().c_str());
 
 		// Flash details
-		SetTableValue(4, MakeKbPercent(ESP.getSketchSize(), ESP.getFreeSketchSpace()).c_str());
+		SetTableValue(5, MakeKbPercent(ESP.getSketchSize(), ESP.getFreeSketchSpace()).c_str());
 
-		SetTableValue(5, (ToThousands(ESP.getFlashChipSize() / KB) + " kb").c_str());
-		SetTableValue(6, MakeKbPercent(SPIFFS.usedBytes(), SPIFFS.totalBytes()).c_str());
+		SetTableValue(6, (ToThousands(ESP.getFlashChipSize() / KB) + " kb").c_str());
+		SetTableValue(7, MakeKbPercent(SPIFFS.usedBytes(), SPIFFS.totalBytes()).c_str());
 
 		// PSRAM
-		SetTableValue(7, MakeKbPercent(ESP.getPsramSize() - ESP.getFreePsram(), ESP.getPsramSize()).c_str());
+		SetTableValue(8, MakeKbPercent(ESP.getPsramSize() - ESP.getFreePsram(), ESP.getPsramSize()).c_str());
 
 		// WiFi
+		int n = 10;
 		auto status = WiFi.status();
-		SetTableString(9, WifiStatus(status));
+		SetTableString(n + 0, WifiStatus(status));
 		auto strength = WiFi.RSSI();
 		std::string strengthTitle = "Unusable";
 		if (strength > -30)
@@ -91,21 +96,21 @@ public:
 		else if (strength > -80)
 			strengthTitle = "Not Good";
 		if (strength == 0)
-			SetTableValue(10, "Not Connected");
+			SetTableValue(n + 1, "Not Connected");
 		else
-			SetTableValue(10, (std::to_string(strength) + "dBm " + strengthTitle).c_str());
+			SetTableValue(n + 1, (std::to_string(strength) + "dBm " + strengthTitle).c_str());
 		SetTableValue(11, WiFi.getHostname());
 		if (status == WL_CONNECTED)
 		{
-			SetTableValue(12, WiFi.localIP().toString().c_str());
-			SetTableValue(13, (_mdnsHostName + ".local").c_str());
+			SetTableValue(n + 3, WiFi.localIP().toString().c_str());
+			SetTableValue(n + 4, (_mdnsHostName + ".local").c_str());
 		}
 		else
 		{
-			SetTableValue(12, "X -> 192.168.4.1");
-			SetTableValue(13, "");
+			SetTableValue(n + 3, "X -> 192.168.4.1");
+			SetTableValue(n + 4, "");
 		}
-		SetTableValue(14, WiFiModeText(WiFi.getMode()));
-		SetTableValue(15, std::to_string(_webPortal.GetConnectCount() - 1).c_str());
+		SetTableValue(n + 5, WiFiModeText(WiFi.getMode()));
+		SetTableValue(n + 6, std::to_string(_webPortal.GetConnectCount() - 1).c_str());
 	}
 };

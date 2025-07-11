@@ -21,16 +21,19 @@ extern PagePower *_pagePower;
 class SwipePageSettings : public SwipePageBase
 {
 private:
-	PanelLabelValue _panelVersion;
-
+	
 public:
 	void Create(lv_obj_t *parentGroupPanel)
 	{
 		CreatePanel(parentGroupPanel, LV_SYMBOL_SETTINGS " Settings", 0xbae1ff);
 
-		_panelVersion.Create(_uiPanelPage, "Firmware", APP_VERSION); // Create a panel with label and value
+		// Add buttons
+		CreateFancyButton(LV_SYMBOL_BATTERY_2 " Power", _uiPanelPage, SwipePageSettings::OnPowerBtn, this, lv_pct(100));
+		CreateFancyButton(LV_SYMBOL_DRIVE " System", _uiPanelPage, SwipePageSettings::OnDriveBtn, this, lv_pct(100));
+		CreateFancyButton(FA_TEMPERATURE " CPU Temp.", _uiPanelPage, SwipePageSettings::OnTempChartBtn, this, lv_pct(100));
+		CreateFancyButton(LV_SYMBOL_LIST " Log Review", _uiPanelPage, SwipePageSettings::OnLogReviewBtn, this, lv_pct(100));
 
-		// Slider label
+		// Brightness slider label
 		lv_obj_t *label = lv_label_create(_uiPanelPage);
 		lv_obj_set_width(label, LV_SIZE_CONTENT);
 		lv_obj_set_height(label, LV_SIZE_CONTENT);
@@ -39,20 +42,14 @@ public:
 
 		lv_obj_t *wrap = LVCore::ClearPanel(_uiPanelPage, 6, 6, 2, 2);
 
-		// Slider
+		// Brightness slider
 		lv_obj_t *slider = lv_slider_create(wrap);
 		lv_slider_set_value(slider, 100, LV_ANIM_ON);
 		lv_obj_set_width(slider, lv_pct(80));
 		lv_obj_center(slider);
 		lv_obj_align(slider, LV_ALIGN_CENTER, 0, 0);
 		// lv_obj_align_to(slider, label, LV_ALIGN_TOP_MID, 0, 0);
-		lv_obj_add_event_cb(slider, SwipePageSettings::OnSlider, LV_EVENT_VALUE_CHANGED, NULL); /*Assign an event function*/
-
-		// Add buttons
-		CreateFancyButton(LV_SYMBOL_BATTERY_2 " Power", _uiPanelPage, SwipePageSettings::OnPowerBtn, this, lv_pct(100));
-		CreateFancyButton(LV_SYMBOL_DRIVE " System", _uiPanelPage, SwipePageSettings::OnDriveBtn, this, lv_pct(100));
-		CreateFancyButton(FA_TEMPERATURE " CPU Temp.", _uiPanelPage, SwipePageSettings::OnTempChartBtn, this, lv_pct(100));
-		CreateFancyButton(LV_SYMBOL_LIST " Log Review", _uiPanelPage, SwipePageSettings::OnLogReviewBtn, this, lv_pct(100));
+		lv_obj_add_event_cb(slider, SwipePageSettings::OnSlider, LV_EVENT_VALUE_CHANGED, NULL);
 	}
 
 	//////////////////////////////////////////////////////////////////
