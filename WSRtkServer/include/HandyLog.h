@@ -10,6 +10,7 @@ template<typename... Args>
 void Logf(const std::string& format, Args... args);
 
 const std::string Uptime(unsigned long millis);
+const std::string UptimeDMS(unsigned long millis);
 const void TruncateLog( std::vector<std::string> &log );
 const std::vector<std::string> CopyMainLog();
 

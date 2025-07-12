@@ -51,6 +51,26 @@ const std::string Uptime(unsigned long millis)
 	uptime = StringPrintf("%d ", t) + uptime;
 	return uptime;
 }
+const std::string UptimeDMS(unsigned long millis)
+{
+	uint32_t t = millis / 1000;					   // Seconds
+	uint32_t r = t % 60;						   // Remainder (Seconds)
+	std::string uptime = StringPrintf(":%02d", r); 
+
+	t = (t - r) / 60; // Minutes
+	r = t % 60;
+	uptime = StringPrintf(":%02d", r) + uptime;
+
+	t = (t - r) / 60; // Hours
+	r = t % 24;	
+	uptime = StringPrintf("%02d", r) + uptime;
+
+	t = (t - r) / 24; // Days
+	if( t < 1 )
+		return uptime; // No days
+	uptime = StringPrintf("%d days ", t) + uptime;
+	return uptime;
+}
 
 std::string Logln(const char *msg, bool timePrefix)
 {
@@ -90,7 +110,7 @@ std::string AddToLog(const char *msg, bool timePrefix)
 	std::string time = timePrefix ? _handyTime.LongString() : "\t\t";
 	if (xSemaphoreTake(_serialMutex, portMAX_DELAY))
 	{
-		//s = StringPrintf("%s %s", Uptime(millis()).c_str(), msg);
+		// s = StringPrintf("%s %s", Uptime(millis()).c_str(), msg);
 		s = StringPrintf("%s %s", time.c_str(), msg);
 
 		if (_mainLog.capacity() < MAX_LOG_LENGTH)

@@ -3,7 +3,7 @@
 #define I2C_SDA 8
 #define I2C_SCL 7
 
-#define APP_VERSION "3.108.1089"
+#define APP_VERSION "3.118.1098"
 
 // Disables logging to serial
 #define SERIAL_LOG
@@ -21,6 +21,8 @@
 #define MAX_LOG_ROW_LENGTH (128 + 24)
 
 #define RTK_SERVERS 3
+
+#define WIFI_RESTART_TIMEOUT 120000
 
 #define GPS_BUFFER_SIZE (16 * 1024)
 

@@ -65,7 +65,7 @@ public:
 	// Uplate the table with the current data
 	void RefreshData()
 	{
-		if (!_ready || _screen == nullptr)
+		if (!Ready())
 			return;
 
 		// SD Card

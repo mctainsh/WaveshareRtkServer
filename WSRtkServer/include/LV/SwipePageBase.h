@@ -21,12 +21,47 @@ static void OnTableDrawEvent(lv_event_t *e);
 // This is the base page all swiping pages are derived from
 class SwipePageBase
 {
+public:
+	bool Ready() const { return _ready && _screen != nullptr; } // True if the page is ready to be updated
+	lv_obj_t *GetPanel() { return _uiPanelPage; }
+
+	///////////////////////////////////////////////////////////////////////////
+	// Show the page. Called with pages that are derived from this class
+	void Show()
+	{
+		lv_screen_load_anim(_screen, lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OVER_LEFT, 300, 0, false);
+		_ready = true; // Set the page as ready to be updated
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+	// Set value in the table
+	void SetTableValue(uint32_t row, const char *value, int column = 1)
+	{
+		// Check if the table is hidden before setting the value
+		if (_table && !lv_obj_has_flag(_table, LV_OBJ_FLAG_HIDDEN))
+			lv_table_set_cell_value(_table, row, column, value);
+		else
+			Serial.printf("Table is hidden, cannot set value for row %p: %s\n", _table, value);
+	}
+	void SetTableString(uint32_t row, const std::string &value, int column = 1)
+	{
+		SetTableValue(row, value.c_str(), column);
+	}
+	void SetTableValue(uint32_t row, int64_t value, int column = 1)
+	{
+		SetTableValue(row, ToThousands(value).c_str(), column);
+	}
+	void SetTableShort(uint32_t row, int64_t value, int column = 1)
+	{
+		SetTableString(row, ShortenNumber(value), column);
+	}
+
 private:
 protected:
 	lv_obj_t *_uiPanelPage; // Panel we are drawing on
 	lv_obj_t *_titleLabel;
-	lv_obj_t *_table;		// Table if we have one
-	u32_t _rowCount = 0;	// Number of rows in the table
+	lv_obj_t *_table;	 // Table if we have one
+	u32_t _rowCount = 0; // Number of rows in the table
 	const char *_title;
 
 	lv_obj_t *_screen = nullptr; // The screen we are drawing on
@@ -71,7 +106,7 @@ protected:
 
 	///////////////////////////////////////////////////////////////////////////
 	// Create a table
-	lv_obj_t * CreateTable(lv_obj_t *parent, int32_t height)
+	lv_obj_t *CreateTable(lv_obj_t *parent, int32_t height)
 	{
 		_table = lv_table_create(parent);
 		lv_obj_set_height(_table, height);
@@ -103,17 +138,20 @@ protected:
 	int AppendRowTitle(const char *title, int format = (int)TblFormat::None, int columns = 1)
 	{
 		lv_table_set_cell_value(_table, _rowCount, 0, title);
-		for( int n = 1; n <= columns; n++)
+		for (int n = 1; n <= columns; n++)
 			lv_table_set_cell_value(_table, _rowCount, n, "");
-		//lv_table_set_cell_value(_table, _rowCount, 1, "");
-		if (format & TblFormat::Highlight)
-			lv_table_set_cell_user_data(_table, _rowCount, 0, (void *)format);
+		// lv_table_set_cell_value(_table, _rowCount, 1, "");
 		if (format)
 		{
-			for( int n = 1; n <= columns; n++)
+			// First column only get highlight
+			if (format & TblFormat::Highlight)
+				lv_table_set_cell_user_data(_table, _rowCount, 0, (void *)TblFormat::Highlight);
+
+			// Remaining columns
+			for (int n = 1; n <= columns; n++)
 			{
 				lv_table_set_cell_user_data(_table, _rowCount, n, (void *)format);
-				if( format & TblFormat::SingleLine)
+				if (format & TblFormat::SingleLine)
 					lv_table_set_cell_ctrl(_table, _rowCount, n, LV_TABLE_CELL_CTRL_TEXT_CROP);
 			}
 		}
@@ -121,22 +159,21 @@ protected:
 		return _rowCount - 1; // Return the row index
 	}
 
-public:
 	///////////////////////////////////////////////////////////////////////////
 	// This function is called when the close button is clicked
-	static lv_obj_t *CreateFancyButton(const char *title, lv_obj_t *parent, lv_event_cb_t event_cb, void * user_data, int32_t width, int32_t height = 60)
+	static lv_obj_t *CreateFancyButton(const char *title, lv_obj_t *parent, lv_event_cb_t event_cb, void *user_data, int32_t width, int32_t height = 60)
 	{
 		lv_obj_t *wrap = LVCore::ClearPanel(parent, 6, 6, 6, 6);
 		lv_obj_set_height(wrap, height);
 		lv_obj_set_width(wrap, width);
 
-		CreateFancyButtonOnly(title, wrap, event_cb, user_data);		
+		CreateFancyButtonOnly(title, wrap, event_cb, user_data);
 		return wrap;
 	}
 
-		///////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////
 	// This function is called when the close button is clicked
-	static lv_obj_t *CreateFancyButtonOnly(const char *title, lv_obj_t *parent, lv_event_cb_t event_cb, void * user_data)
+	static lv_obj_t *CreateFancyButtonOnly(const char *title, lv_obj_t *parent, lv_event_cb_t event_cb, void *user_data)
 	{
 		// Create the button
 		lv_obj_t *btn = lv_button_create(parent);
@@ -156,13 +193,6 @@ public:
 		lv_obj_center(btnLabel);
 		return btn;
 	}
-	///////////////////////////////////////////////////////////////////////////
-	// Show the page. Called with pages that are derived from this class
-	void Show()
-	{
-		lv_screen_load_anim(_screen, lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OVER_LEFT, 300, 0, false);
-		_ready = true; // Set the page as ready to be updated
-	}
 
 	/////////////////////////////////////////////////////////////////////////////////
 	// Event handler for the close button
@@ -180,31 +210,12 @@ public:
 		self->_ready = false; // Set the page as not ready
 
 		// Animate to home
-		lv_screen_load_anim(_lvCore.GetHomeScreen(), lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OUT_RIGHT, 300, 0, false);	
-	}
-
-	///////////////////////////////////////////////////////////////////////////
-	// Set value in the table
-	void SetTableValue(uint32_t row, const char *value, int column = 1)
-	{
-		// Check if the table is hidden before setting the value
-		if (_table && !lv_obj_has_flag(_table, LV_OBJ_FLAG_HIDDEN))
-			lv_table_set_cell_value(_table, row, column, value);
-		else
-			Serial.printf("Table is hidden, cannot set value for row %p: %s\n", _table, value);
-	}
-	void SetTableString(uint32_t row, const std::string &value, int column = 1)
-	{
-		SetTableValue(row, value.c_str(), column);
-	}
-	void SetTableValue(uint32_t row, int64_t value, int column = 1)
-	{
-		SetTableValue(row, ToThousands(value).c_str(), column);
+		lv_screen_load_anim(_lvCore.GetHomeScreen(), lv_screen_load_anim_t::LV_SCR_LOAD_ANIM_OUT_RIGHT, 300, 0, false);
 	}
 
 	///////////////////////////////////////////////////////////////////////////
 	// Add a close button to the bottom of the page
-	void AddCloseButton(lv_obj_t *screen, lv_event_cb_t event_cb, void * user_data)
+	void AddCloseButton(lv_obj_t *screen, lv_event_cb_t event_cb, void *user_data)
 	{
 		// Spacer to push next item to bottom
 		lv_obj_t *spacer = lv_obj_create(_uiPanelPage);
@@ -216,8 +227,6 @@ public:
 		// Add close button to bottom of the page
 		CreateFancyButton(LV_SYMBOL_CLOSE " Close", _uiPanelPage, event_cb, user_data, lv_pct(100));
 	}
-
-	lv_obj_t *GetPanel() { return _uiPanelPage; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -288,3 +288,27 @@ std::string MakeKbPercent(u64_t usedBytes, u64_t totalBytes, u64_t divisor)
 		return "N/A";
 	return (ToThousands(usedBytes / divisor) + " / " + ToThousands(totalBytes / divisor) + unit + std::to_string((int)(100.0 * usedBytes / totalBytes)) + "%");
 }
+
+/////////////////////////////////////////////////////////////////////////////////
+// Convert a double to a string with a given precision
+std::string ToFloat(double value, int precision)
+{
+	std::ostringstream oss;
+	oss << std::fixed << std::setprecision(precision) << value;
+	return oss.str();
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+// Shorten a number to a string with appropriate suffix
+std::string ShortenNumber(int64_t value)
+{
+	if (value > 10000000000)
+		return std::to_string(value / 1000000000) + " G";
+	else if (value > 10000000)
+		return std::to_string(value / 1000000) + " M";
+	else if (value > 10000)
+		return std::to_string(value / 1000) + " k";
+	else
+		return ToThousands(value);
+		
+}

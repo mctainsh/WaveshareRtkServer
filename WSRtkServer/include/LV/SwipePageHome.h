@@ -20,21 +20,16 @@ private:
 	// PanelLabelValue _panelLabelValue1; // Create an instance of PanelLabelValue
 	// PanelLabelValue _panelLabelValue2; // Create an instance of PanelLabelValue
 	// PanelLabelValue _panelLabelValue3; // Create an instance of PanelLabelValue
-	int _hostOrApNameRow = 0;
 	lv_obj_t *_ntripTable = nullptr; // NTRIP table
 
 public:
 	void Create(lv_obj_t *parentGroupPanel)
 	{
-		CreatePanel(parentGroupPanel, LV_SYMBOL_USB " GPS Status", 0xA2E1DB); // Create the panel for this page
-		//_panelLabelValue1.Create(_uiPanelPage, "TTime", "00:00:00");			 // Create a panel with label and value
-		//_panelLabelValue2.Create(_uiPanelPage, "Other", "00:00:00");			 // Create a panel with label and value
-		//_panelLabelValue3.Create(_uiPanelPage, "More message Time", "00:00:00"); // Create a panel with label and value
+		CreatePanel(parentGroupPanel, LV_SYMBOL_HOME " System Status", 0xA2E1DB); // Create the panel for this page
 
 		CreateTable(_uiPanelPage, LV_SIZE_CONTENT); // Create a table with a height of 200 pixels
-		AppendRowTitle("Up time");
-		AppendRowTitle("GPS", TblFormat::Highlight);
-		// AppendRowTitle("Bytes", TblFormat::Right);
+		AppendRowTitle("Up time", TblFormat::Right);
+		AppendRowTitle("GPS", TblFormat::Highlight | TblFormat::Right);
 		AppendRowTitle("Resets", TblFormat::Right);
 		AppendRowTitle("Reinitialize", TblFormat::Right);
 		AppendRowTitle("ASCII Pkts", TblFormat::Right);
@@ -42,11 +37,10 @@ public:
 
 		// WiFi
 		AppendRowTitle(LV_SYMBOL_WIFI " WiFi", TblFormat::Highlight);
-		AppendRowTitle("Status");
+		// AppendRowTitle("Status");
 		AppendRowTitle("Strength");
 		AppendRowTitle("IP Address");
-		_hostOrApNameRow = AppendRowTitle("AP OR HOST");
-		// AppendRowTitle("Type");
+		AppendRowTitle("AP OR HOST");
 		AppendRowTitle("Reconnects");
 
 		// NTRIP Servers
@@ -74,28 +68,12 @@ public:
 	}
 
 	///////////////////////////////////////////////////////////////////////////
-	// Return word between second last and last '.' (Domain name)
-	std::string ShortServerName(const std::string &name)
+	// This function is called when the page is shown and every second to refresh it
+	void RefreshData(unsigned long wifiAgeMs)
 	{
-		std::string s = name;
-		size_t lastDot = name.find_last_of('.');
-		if (lastDot != std::string::npos)
-		{
-			size_t secondLastDot = name.find_last_of('.', lastDot - 1);
-			if (secondLastDot == std::string::npos)
-				s = name.substr(0, lastDot); // Only one dot found, return up to the last dot
-			else
-				s = name.substr(secondLastDot + 1, lastDot - secondLastDot - 1); // Return the part between the two dots
-		}
-		// Now trim the remainder with '...'
-		return s;
-	}
-
-	void RefreshData()
-	{
-		SetTableString( 0, Uptime(millis())); // Set the up time
+		SetTableString(0, UptimeDMS(millis())); // Set the up time
 		// GPS Data
-		// SetTableValue( 1, _gpsParser.GetGpsBytesRec());
+		SetTableValue(1, _gpsParser.GetGpsBytesRec());
 		SetTableValue(2, _gpsParser.GetGpsResetCount());
 		SetTableValue(3, _gpsParser.GetGpsReinitialize());
 		SetTableValue(4, _gpsParser.GetAsciiMsgCount());
@@ -104,7 +82,12 @@ public:
 		// WiFi
 		const int x = 5;
 		auto status = WiFi.status();
-		SetTableString(x + 1, WifiStatus(status));
+
+		// Are we trying to reconnect?
+		std::string statusText = WifiStatus(status);
+		if (wifiAgeMs > 2500)
+			statusText = statusText + "   [T-" + std::to_string((WIFI_RESTART_TIMEOUT - wifiAgeMs) / 1000) + "]";
+		SetTableString(x + 1, statusText);
 		auto strength = WiFi.RSSI();
 		std::string strengthTitle = "Unusable";
 		if (strength > -30)
@@ -154,6 +137,8 @@ public:
 		_table = backup;
 	}
 
+	///////////////////////////////////////////////////////////////////////////
+	// Set the NTRIP data in the table for one ntrip server
 	void SetNtripData(int column, NTRIPServer &svr)
 	{
 		const int max_chars = 7; // Maximum characters to display in the status
@@ -161,8 +146,26 @@ public:
 		if (text.length() > max_chars)
 			text = text.substr(0, max_chars) + "...";
 		SetTableString(1, text, column);
-		SetTableValue(2, svr.GetReconnects(), column);
-		SetTableValue(3, svr.GetPacketsSent(), column);
-		SetTableValue(4, svr.GetTotalTimeouts(), column);
+		SetTableShort(2, svr.GetReconnects(), column);
+		SetTableShort(3, svr.GetPacketsSent(), column);
+		SetTableShort(4, svr.GetTotalTimeouts(), column);
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+	// Return word between second last and last '.' (Domain name)
+	std::string ShortServerName(const std::string &name)
+	{
+		std::string s = name;
+		size_t lastDot = name.find_last_of('.');
+		if (lastDot != std::string::npos)
+		{
+			size_t secondLastDot = name.find_last_of('.', lastDot - 1);
+			if (secondLastDot == std::string::npos)
+				s = name.substr(0, lastDot); // Only one dot found, return up to the last dot
+			else
+				s = name.substr(secondLastDot + 1, lastDot - secondLastDot - 1); // Return the part between the two dots
+		}
+		// Now trim the remainder with '...'
+		return s;
 	}
 };

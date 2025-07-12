@@ -52,10 +52,9 @@ HandyTime _handyTime;						  // Time functions for NTP and local time
 PowerManagementSystem _powerManagementSystem; // Power management system
 
 // WiFi monitoring states
-#define WIFI_STARTUP_TIMEOUT 90000
 wl_status_t _lastWifiStatus = wl_status_t::WL_NO_SHIELD;
 
-bool IsWifiConnected();
+bool IsWifiConnected(unsigned long t);
 LVCore _lvCore;
 
 // Pages
@@ -160,20 +159,25 @@ void loop()
 
 	// Check for new data GPS serial data
 	ConnectionState gpsState = ConnectionState::Unknown;
-	if (IsWifiConnected())
+	if (IsWifiConnected(t))
 		gpsState = _gpsParser.ReadDataFromSerial(Serial2);
 
 	// Trigger something 1 every seconds
-	_loopPersSecondCount++;
 	if ((t - _fastLoopWaitTime) > 1000)
 		FastLoop(t, gpsState);
 
 	// Run every 10 seconds
+	_loopPersSecondCount++;
 	if ((t - _slowLoopWaitTime) > SLOW_TIMER)
 		SlowLoop(t);
 
 	// Check the web portal
-	_webPortal.Loop();
+	_webPortal.Loop(t);
+
+	// Log slow loops
+	auto delay = millis() - t;
+	if (delay > 500)
+		Logf("Slow loop %d ms", delay);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -181,30 +185,28 @@ void loop()
 ConnectionState gpsState = ConnectionState::Unknown;
 void FastLoop(unsigned long t, ConnectionState gpsState)
 {
+	_fastLoopWaitTime = t;
+
 	// Refresh RTK Display
 	for (int i = 0; i < RTK_SERVERS; i++)
 		_display.RefreshRtk(i);
-	_fastLoopWaitTime = t;
-	_loopPersSecondCount = 0;
 	_lvCore.SetTitleTime(_handyTime.Format("%a %H:%M:%S"));
-	//_lvCore.SetTitleDate(_handyTime.Format("%d %b %Y"));
 
-	_swipePageHome.RefreshData();
+	_swipePageHome.RefreshData(	t - _lastWiFiConnected );
 
 	// Check power management system
-	_powerManagementSystem.PowerLoop();
-	if (_pagePower != nullptr)
+	if (_pagePower != nullptr && _pagePower->Ready())
+	{
+		_powerManagementSystem.PowerLoop();
 		_powerManagementSystem.RefreshData(_pagePower);
+	}
 
 	if (_pageIO != nullptr)
 		_pageIO->RefreshData();
 
 	// If WiFI disconnected refresh the WiFi status
 	if (WiFi.status() != WL_CONNECTED)
-	{
-		//_swipePageHome.RefreshData();
 		_lvCore.UpdateWiFiIndicator();
-	}
 
 	// Update the connection buttons
 	_lvCore.SetGpsConnected(gpsState);
@@ -215,7 +217,8 @@ void FastLoop(unsigned long t, ConnectionState gpsState)
 // This function is called every 10 seconds to handle slow tasks
 void SlowLoop(unsigned long t)
 {
-	_swipePageHome.RefreshData();
+	_slowLoopWaitTime = t;
+	//_swipePageHome.RefreshData();
 	_lvCore.UpdateWiFiIndicator();
 
 	// Check memory pressure
@@ -224,10 +227,14 @@ void SlowLoop(unsigned long t)
 
 	auto temperature = _history.CheckTemperatureLoop();
 
+	// Calculate the loop performance
+	int lps = _loopPersSecondCount * 1000.0 / SLOW_TIMER;
+	_loopPersSecondCount = 0;
+
 	// Update the loop performance counter
-	Serial.printf("%s Loop %d G:%ld Heap:%d%% %.1f°C %s\n",
+	Serial.printf("%s Loop %d/s G:%" PRId64 " Free Heap:%d%% %.1f°C %s\n",
 				  _handyTime.LongString().c_str(),
-				  _loopPersSecondCount,
+				  lps,
 				  _gpsParser.GetGpsBytesRec(),
 				  (int)(100.0 * free / total),
 				  temperature,
@@ -241,8 +248,15 @@ void SlowLoop(unsigned long t)
 		//_wifiManager.setConfigPortalTimeout(60);
 		Logln("Set WIFI_STA mode");
 		WiFi.mode(WIFI_STA);
-		_swipePageHome.RefreshData();
+		//_swipePageHome.RefreshData(0);
 		_lvCore.UpdateWiFiIndicator();
+	}
+
+	// Check if Wifi is dead
+	if (!_wifiManager.getConfigPortalActive())
+	{
+		// Process the WiFi manager (Restart if necessary)
+		_wifiManager.startConfigPortal();
 	}
 
 	// Update display battery
@@ -254,7 +268,6 @@ void SlowLoop(unsigned long t)
 	//									temperature,
 	//									WiFi.RSSI());
 	//_display.SetPerformance(perfText);
-	_slowLoopWaitTime = t;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -267,7 +280,7 @@ void SaveBaseLocation(std::string newBaseLocation)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Check Wifi and reconnect
-bool IsWifiConnected()
+bool IsWifiConnected(unsigned long t)
 {
 	// Is the WIFI connected?
 	wl_status_t status = WiFi.status();
@@ -297,7 +310,7 @@ bool IsWifiConnected()
 			_webPortal.OnConnected();
 		}
 
-		_swipePageHome.RefreshData();
+		//_swipePageHome.RefreshData();
 		_lvCore.UpdateWiFiIndicator();
 	}
 
@@ -313,11 +326,11 @@ bool IsWifiConnected()
 
 	// If we have been disconnected, we will try to reconnect
 	// if( (status == WL_DISCONNECTED || status == WL_NO_SHIELD) && ( millis() - _lastWiFiConnected ) > 120000 )
-	if ((millis() - _lastWiFiConnected) > 120000)
+	if ((t - _lastWiFiConnected) > WIFI_RESTART_TIMEOUT)
 	{
 		Logln("E107 - WIFI NOT Connected");
-		_swipePageHome.RefreshData();
-		_lastWiFiConnected = millis();
+		//_swipePageHome.RefreshData();
+		_lastWiFiConnected = t;
 		_webPortal.Setup(); // Restart the web portal
 	}
 

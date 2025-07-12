@@ -29,6 +29,7 @@ void ReplaceCrLfEncode(std::string &str);
 std::string Trim(const std::string& str);
 std::string ToLower(const std::string& str);
 std::string MakeKbPercent(u64_t usedBytes, u64_t totalBytes, u64_t divisor = KB );
-
+std::string ToFloat(double value, int precision = 1);
+std::string ShortenNumber(int64_t value);
 
 #include "HandyString.tpp"

@@ -204,20 +204,12 @@ void WebPortal::OnBindServerCallback()
 ////////////////////////////////////////////////////////////////////////////
 /// @brief Process the look actions. This is called every loop only if the WiFi
 /// connection is available
-void WebPortal::Loop()
+void WebPortal::Loop(unsigned long t)
 {
-	if (!_wifiManager.getConfigPortalActive())
+	if ((t - _webLoopTime) > 1000)
 	{
-		// Process the WiFi manager (Restart if necessary)
-		_wifiManager.startConfigPortal();
-	}
-	else
-	{
-		if (_loops++ > 1000)
-		{
-			_loops = 0;
-			_wifiManager.process();
-		}
+		_webLoopTime = t;
+		_wifiManager.process();
 	}
 }
 

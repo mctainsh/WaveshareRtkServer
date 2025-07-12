@@ -30,14 +30,11 @@ private:
 	unsigned long _checkStartTime;
 
 public:
-	// XPowersPMU Get() { return _power; }
-
+	
 	///////////////////////////////////////////////////////////////////////////
 	// Setup power management system
 	void Setup()
 	{
-		return;
-
 		bool result = _power.begin(Wire, AXP2101_SLAVE_ADDRESS, I2C_SDA, I2C_SCL);
 
 		if (result == false)
@@ -45,9 +42,6 @@ public:
 			Logln("power is not online...");
 			return;
 		}
-
-EnterPmuSleep();
-return;
 
 		_isMounted = true;
 		Logf("AXP2101 ID:0x%x", _power.getChipID());
@@ -527,9 +521,7 @@ return;
 	void RefreshData(SwipePageBase *pPage)
 	{
 		// CPU Temperature
-		char tempStr[16];
-		snprintf(tempStr, sizeof(tempStr), "%.1f °C", _history.CheckTemperatureLoop());
-		pPage->SetTableString(14, tempStr);
+		pPage->SetTableString(14, ToFloat(_history.CheckTemperatureLoop()) + " °C");
 
 		if( !_isMounted )
 		{

@@ -10,7 +10,7 @@ class WebPortal
 {
 private:
 	int _connectCount = 0; // Number of time we have connected
-	int _loops = 0;		   // Use to prevent the PortalProcessing to take up too much processing time
+	int _webLoopTime = 0;		   // Use to prevent the PortalProcessing to take up too much processing time
 
 public:
 	int GetConnectCount() const { return _connectCount; } // Get the number of times we have connected
@@ -18,7 +18,7 @@ public:
 	void Setup();
 	void OnConnected();
 
-	void Loop();
+	void Loop( unsigned long t);
 
 private:
 	void IndexHtml();

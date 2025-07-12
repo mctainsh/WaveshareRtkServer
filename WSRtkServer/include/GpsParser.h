@@ -85,7 +85,7 @@ private:
 	int32_t _gpsReinitialize = 0;			   // Number GPS initializations
 	int32_t _asciiMsgCount = 0;				   // Number ASCII of packets received
 	int32_t _rtkMsgCount = 0;				   // Number RTK packets received
-	int32_t _bytesReceived = 0;				   // Total number of received GPS bytes
+	int64_t _bytesReceived = 0;				   // Total number of received GPS bytes
 
 public:
 	MyDisplay &_display;
@@ -105,7 +105,7 @@ public:
 	inline const std::map<int, int> &GetMsgTypeTotals() const { return _msgTypeTotals; }
 	inline const int GetReadErrorCount() const { return _readErrorCount; }
 	inline const int GetMaxBufferSize() const { return _maxBufferSize; }
-	inline const int GetGpsBytesRec() const { return _bytesReceived; }
+	inline const int64_t GetGpsBytesRec() const { return _bytesReceived; }
 	inline const int32_t GetGpsResetCount() const { return _gpsResetCount; }
 	inline const int32_t GetGpsReinitialize() const { return _gpsReinitialize; }
 	inline const int32_t GetAsciiMsgCount() const { return _asciiMsgCount; }
