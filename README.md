@@ -1,17 +1,22 @@
 # RTK Server (Multi miner) with Waveshare ESP32 S3 3.5" Touch 
 
-This project connects a LC29HDA, UM980 or UM982 RTK GNSS receiver to a Waveshare ESP32 S3 3.5" Touch allowing you to share RTK correction data with up to three networks at one time (Some give mining rewards). The ESP32 will automatically program the UM980/2 so there is no need to mess around with terminals or or the UPrecise software.
+This project connects a UM980 or UM982 RTK GNSS receiver to a Waveshare ESP32 S3 3.5" Touch allowing you to share RTK correction data with up to three networks at one time (Some give mining rewards). The ESP32 will automatically program the UM980/2 so there is no need to mess around with terminals or or the UPrecise software.
 
 This system uses a fancy large touch screen so you will be the envy of you friends and attract many potential mates.
 
-All up you it will cost about US$250 to make the station with GNSS receiver, antenna and ESP32 with display. 
+Warning - Build this masterpiece and you might need crowd control at your workbench. Forget pickup lines; nothing says “mysterious genius” like precision soldering and flawless GNSS integration. Just make sure your ESP32 isn’t the only thing handling all the signals! 
+
+All up you it will cost about US$275 to make the station with GNSS receiver, antenna and ESP32 with display. 
 
 The display also allow you to see at an instant if the system is connected and sending to all the casters
 
 <div style="display: flex; gap:10px;">
-	<img src="Photos/ScreenShots/S3-Screen-Home.jpg?raw=true" width="180" />
-	<img src="Photos/ScreenShots/S3-Screen-Home.jpg?raw=true" width="180" />
-	<img src="Photos/ScreenShots/S3-Screen-Home.jpg?raw=true" width="180" />
+	<img src="Photos/ScreenShots/Screen1Home.JPG?raw=true" width="100" />
+	<img src="Photos/ScreenShots/Screen2Settings.jpg?raw=true" width="100" />
+	<img src="Photos/ScreenShots/Screen3Power.JPG?raw=true" width="100" />
+	<img src="Photos/ScreenShots/Screen4IO.JPG?raw=true" width="100" />
+	<img src="Photos/ScreenShots/Screen5Temperature.JPG?raw=true" width="100" />
+	<img src="Photos/ScreenShots/Screen6Log.JPG?raw=true" width="100" />
 </div>
 
 [![IMAGE ALT TEXT HERE](https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/YouTube.png?raw=true)](https://www.youtube.com/watch?v=e3zAwOrCTnI)
@@ -23,7 +28,6 @@ NOTE : Using ESP32 S3 allows sending to up to three RTK casters without blocking
 
 ## Table of Contents 
  
-- [Project Overview](#project-overview)
 - [Hardware](#hardware)  
   - [Components](#components)
   - [Wiring Diagram](#wiring-diagram) 
@@ -31,46 +35,52 @@ NOTE : Using ESP32 S3 allows sending to up to three RTK casters without blocking
   - [Features](#features)
   - [Key Mappings](#key-mappings) 
   - [Doing your own mods](#modifying-the-code-and-doing-your-own-thing)
+- [Getting Credentails](#Getting-Credentails) 
   - [Usage](#usage)
 - [License](#license)
 
-## Project Overview
-
-This project enables an Waveshare ESP32 S3 3.5" Touch to act as an RTK server sending RTK corrections to up to three casters. Examples of these are be Onocoy, Rtk2Go or RtkDirect.
-
-### Terms
-
-| Name | Description |
-| --- | --- |
-| RTK Client | A device or software that receives RTK correction data from a server to improve positioning accuracy. |
-| RTK Server | A server that processes and distributes RTK correction data to clients. (This project builds a RTK Server) |
-| RTK Caster | A service that broadcasts RTK correction data over the internet using the NTRIP protocol. |
-
 
 ## Hardware 
-
 
 ### Shopping notes
 
 Note :  These links only get you to the page. You still need to pick the "Color:" of each item. Meaning the actual item. (Again, these are not affiliate links. Shop around to get the best deal for you. Double check shipping of each selection)
 
-IMPORTANT : When you buy stuff from AliExpress. The link is just ceneral to the product type. You MUST select the correct model or you just eand up with the Antenna or PCB?
+IMPORTANT : When you buy stuff from AliExpress. The link is just general to the product type. You MUST select the correct model or you may accidentally end up with the Antenna or PCB?
 
-Here is my AliExpress affiliate link https://s.click.aliexpress.com/e/_op3HJqa. Use it if you are bored.
+Here is my AliExpress affiliate link https://s.click.aliexpress.com/e/_op3HJqa. Use it if you are bored. Pretty sure it does not work with the products below.
 
-
-Be sure to combine the PCB and housing into one order to save on shipping
+If you purchase a PCB and housing, be sure to combine the PCB and housing into one order to save on shipping
 
 ### Components 
  
-1. **UM980 with antenna** - Witte Intelligent WTRTK-982 high-precision positioning and orientation module. I got it from AliExpress for about US$180.00 [Not affiliate link. Find your own seller](https://www.aliexpress.com/item/1005009184512773.html). Select UM980 with big white flying sourcer antenna and cable.
- 
-2. **ESP32 S3** - Waveshare ESP32-S3 3.5inch Capacitive Touch Display Development Board, 320×480 Pixels, IPS Panel, 262K Color, Onboard Camera Interface, Supports Wi-Fi US$25.99 [Buy](https://www.waveshare.com/esp32-s3-touch-lcd-3.5b.htm?&aff_id=117711). Select version with or without case.
- 
-3. **Wires and Protoboard** - Connects the ESP32 to receiver as described below.
+<table>
+	<tr>
+		<td width="70%">
+			<b>Waveshare S3 3.5" Touch</b> (Standard Ver.) - US$25.99<br/> ESP32-S3 3.5inch Capacitive Touch Display Development Board Type B, 320×480 Pixels, IPS Panel, 262K Color, Supports Wi-Fi and Bluetooth 5, ESP32 With Display <br/><a href="https://www.waveshare.com/esp32-s3-zero.htm?&aff_id=117711">[Buy with my referral link]</a>
+		</td>
+		<td>
+			<img src="Photos/WS-s3-touch-lcd-3.5b.jpg" Height='80px'/>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<b>**UM980 with antenna**</b> - US$180.00<br/> Witte Intelligent WTRTK-982 high-precision positioning and orientation module. I got it from AliExpress for about US$180.00 <br/>[Not affiliate link] https://www.aliexpress.com/item/1005009184512773.html
+		</td>
+		<td>
+			<img src="Photos/UM980_Antenna.png" Height='70px'/>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<b>Fan</b> - US$5.00.<br/>5V Radial fan 3101. Radial fans are quieter. Ball bearing ones are best. I used<br/> https://vi.aliexpress.com/item/1005007887849652.html
+		</td>
+		<td>
+			<img src="Photos/Fan.png" Height='70px' />
+		</td>
+	</tr>
+</table>
 
-4. **Fan** - 5V 3010 Radian Fan [Buy here](https://www.aliexpress.com/item/4001158064689.html) Select 5V version 30mm x 30mm 
- 
 
 
 [PCB and 3D files can be found here]("https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Hardware)
@@ -82,10 +92,10 @@ Use the Gerber files for the PCB and the STEP files for the housing. I'd recomme
 
 ## Wiring Diagram
 
-| Waveshare Use | Pin | UM980 Pin | UM980 Use |
-| --- | --- | --- | --- |
-| 5V | 2| 2 | 5V |
-| GND | 4 | 5 | GND |
+| Waveshare Use | Waveshare Pin | UM980 Pin | UM980 Use | Fan
+| --- | --- | --- | --- | --- |
+| 5V | 2| 2 | 5V | Red
+| GND | 4 | 5 | GND | Black
 | NC | |  |  |
 | NC | |  |  |
 | GPIO 17 - TX | 16 | 3 | RX |
@@ -101,23 +111,21 @@ Use the Gerber files for the PCB and the STEP files for the housing. I'd recomme
 
 ### Features 
 
-- Connected to UM980.
+- Connected to UM980 or 2.
  
 - Connects to Wifi.
 
 - Programs the UM982 to send generate RTK correction data
 
-- Sends correction data to both RTK Casters
+- Sends correction data to all RTK Casters
 
 ### ESP32 device setup
 
-You will need to install the software onto the new Waveshare device
-
+You will need to install the software onto the new Waveshare device. You can install it before connecting anything up just to see how it works.
 
  - [How to upload software](README_Upload.md)
 
-
-
+Remember it can take up to 3 minutes to startup the first time new firmware has been loaded on the Waveshare.
 
 ### Connect WIFI
 
@@ -128,40 +136,30 @@ You will need to install the software onto the new Waveshare device
 	- Password will be `John123456`
 	- Browse to http://192.168.4.1 (This may happen automatically)
 	- Select "Configure WiFi"
-	- Select your HOME WiFi network and enter credential
+	- Select your HOME WiFi network and enter the credentials
+	- Select Save
 - Connect your phone or computer to you HOME WiFi 
-	- You should be able to browse to the WiFi address shown on the ESP32 screen (NOT 192.168.4.1)
-
-
-
-
+	- You should be able to browse to the WiFi address shown on the ESP32 screen (NOT 192.168.4.1) or use the 
 
 ### Config parameters 
 
-Config browse to you device using http://RtkServer.local/settings
+Config can be found by browsing to http://RtkServer.local/settings
 
 Note : You don't need to sign up to all three. Leave the CASTER ADDRESS blank to only use one or two casters. 
 
 | Parameter | Usage | 
 | --- | --- | 
-| SSID | Your WiFi network name. Note: Not all speed are supported by ESP32 |
-| Password | Your Wifi password |
-| CASTER 1 ADDRESS | Usually "ntrip.rtkdirect.com" |
-| CASTER 1 PORT | Port usually 2101 |
-| CASTER 1 CREDENTIAL | This is the reference station Credential. NOT the Mount point name |
-| CASTER 1 PASSWORD | Sign up to get this from Onocoy |
-| CASTER 2 ADDRESS | Usually "servers.onocoy.com" |
-| CASTER 2 PORT | Port usually 2101 |
-| CASTER 2 CREDENTIAL | This is the reference station Credential. NOT the Mount point name |
-| CASTER 2 PASSWORD | Sign up to get this from Onocoy |
-| CASTER_3 ADDRESS | Usually "rtk2go.com" |
-| CASTER 3 PORT | Port usually 2101 |
-| CASTER 3 CREDENTIAL | Mount point name |
-| CASTER 3 PASSWORD | Create this with Rtk2Go signup |
+| CASTER ADDRESS | Usually "servers.onocoy.com" |
+| CASTER PORT | Port usually 2101 (0 to disable) |
+| CASTER CREDENTIAL | This is the reference station Credential. NOT the Mount point name |
+| CASTER PASSWORD | Sign up to get this from Onocoy |
+| Multicast DNS | Name to use to access this portal on the local domain. Don't mess with this unless you have more than one RtkServer |
+| Time zone | Correction for UTC time. Used when writing to the logs |
+| Station calibration location | Leave this blank for now |
 
-WARNING :  Do not run without real credentials or your IP may be blocked!!
+WARNING :  Do not run without real credentials or your IP may be blocked!! Set the port to zero to disable the endpoint without deleteing the credentials
 
-### Configuration 
+### Getting Credentails 
 
 1. Create the accounts with [Oncony register](https://console.onocoy.com/auth/register/personal), [RtkDirect](https://cloud.rtkdirect.com/) or [RTK2GO](http://rtk2go.com/sample-page/new-reservation/)
 
@@ -201,7 +199,7 @@ The top line of the display shows the following
 
 
 ### General
-<img src="https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/TTGO-Display-S3/S3-Screen-Home.jpg?raw=true" width="300"/>
+<img src="Photos/ScreenShots/Screen1Home.JPG?raw=true" width="240" />
 
 | Title | Meaning | 
 | --- | --- | 
