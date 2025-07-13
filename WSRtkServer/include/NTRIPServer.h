@@ -21,6 +21,7 @@ public:
 	bool EnqueueData(const byte *pBytes, int length);
 	std::vector<std::string> GetLogHistory();
 	const char *GetStatus() const;
+	unsigned long MaxLoopTime();
 
 	inline const int GetIndex() const { return _index; }
 	inline int GetReconnects() const { return _reconnects; }
@@ -55,8 +56,9 @@ private:
 	int _overflowSetSize = 0;							// Number of times the overflow set was used in single set
 	int _timeOutIndex = 0;								// Index even increasing timeout periods
 	int _totalTimeouts = 0;								// Total number of timeouts
- 	int _consecutiveTimeouts = 0;						// Number of consecutive timeouts
+	int _consecutiveTimeouts = 0;						// Number of consecutive timeouts
 	bool _forceReconnect = false;						// Force a reconnect on next loop if setting have changed
+	unsigned long _maxLoopTime;							// Max time the processing of the loop took
 
 	std::string _sAddress;
 	int _port;

@@ -57,6 +57,7 @@ public:
 		AppendRowTitle("Reconne.", TblFormat::Right, 3);
 		AppendRowTitle("Packets", TblFormat::Right, 3);
 		AppendRowTitle("Timeouts", TblFormat::Right, 3);
+		AppendRowTitle("Loop (ms)", TblFormat::Right, 3);
 
 		SetTableString(0, ShortServerName(_ntripServer0.GetAddress()), 1);
 		SetTableString(0, ShortServerName(_ntripServer1.GetAddress()), 2);
@@ -149,6 +150,7 @@ public:
 		SetTableShort(2, svr.GetReconnects(), column);
 		SetTableShort(3, svr.GetPacketsSent(), column);
 		SetTableShort(4, svr.GetTotalTimeouts(), column);
+		SetTableShort(5, svr.MaxLoopTime(), column);
 	}
 
 	///////////////////////////////////////////////////////////////////////////

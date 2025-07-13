@@ -22,6 +22,7 @@ bool IsValidHex(const std::string& str);
 bool IsValidDouble(const char* str, double *pVal);
 const char* WifiStatus(wl_status_t status);
 const char *WiFiModeText(wifi_mode_t mode);
+const char *ResetReasonText(esp_reset_reason_t reason);
 std::string ReplaceNewlineWithTab(const std::string& input);
 std::string Replace(const std::string &input, const std::string &search, const std::string &replace);
 void RemoveLastLfCr(std::string &str);

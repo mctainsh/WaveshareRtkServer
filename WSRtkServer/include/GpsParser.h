@@ -136,7 +136,7 @@ public:
 		ProcessStream(stream);
 
 		// Check output command queue
-		_commandQueue.CheckForTimeouts();
+		_commandQueue.CheckForSendTimeouts();
 
 		// Check for loss of RTK data
 		if ((millis() - _timeOfLastMessage) > GPS_TIMEOUT)

@@ -68,34 +68,30 @@ public:
 		//_strings.push_back("VERSION");	   // Used to determine device type
 
 		_strings.push_back("CONFIG UNDULATION 0"); // Disable undulation
-		_strings.push_back("RTCM1005 10");		   // Base station antenna reference point (ARP) coordinates
-		_strings.push_back("RTCM1006 1");
-		_strings.push_back("RTCM1007 1");
-		_strings.push_back("RTCM1013 1");
-		_strings.push_back("RTCM1019 1");
-		_strings.push_back("RTCM1020 1");
-		_strings.push_back("RTCM1042 1");
-		_strings.push_back("RTCM1044 1");
-		_strings.push_back("RTCM1045 1");
-		_strings.push_back("RTCM1046 1");
+		_strings.push_back("RTCM1005 30");		   // Base station antenna reference point (ARP) coordinates
+		// _strings.push_back("RTCM1006 1");
+		// _strings.push_back("RTCM1007 1");
+		// _strings.push_back("RTCM1013 1");
+		// _strings.push_back("RTCM1019 1");
+		// _strings.push_back("RTCM1020 1");
+		// _strings.push_back("RTCM1042 1");
+		// _strings.push_back("RTCM1044 1");
+		// _strings.push_back("RTCM1045 1");
+		// _strings.push_back("RTCM1046 1");
 
-		_strings.push_back("RTCM1033 10"); // Receiver and antenna description
-		_strings.push_back("RTCM1077 1");  // GPS MSM7. The type 7 Multiple Signal Message format for the USA’s GPS system, popular.
-		_strings.push_back("RTCM1087 1");  // GLONASS MSM7. The type 7 Multiple Signal Message format for the Russian GLONASS system.
-		_strings.push_back("RTCM1097 1");  // Galileo MSM7. The type 7 Multiple Signal Message format for Europe’s Galileo system.
-		_strings.push_back("RTCM1117 1");  // QZSS MSM7. The type 7 Multiple Signal Message format for Japan’s QZSS system.
-		_strings.push_back("RTCM1127 1");  // BeiDou MSM7. The type 7 Multiple Signal Message format for China’s BeiDou system.
+		_strings.push_back("RTCM1033 30"); // Receiver and antenna description
+		_strings.push_back("RTCM1077 1");  //*GPS MSM7. The type 7 Multiple Signal Message format for the USA’s GPS system, popular.
+		_strings.push_back("RTCM1087 1");  //*GLONASS MSM7. The type 7 Multiple Signal Message format for the Russian GLONASS system.
+		_strings.push_back("RTCM1097 1");  //*Galileo MSM7. The type 7 Multiple Signal Message format for Europe’s Galileo system.
+		_strings.push_back("RTCM1117 1");  //*QZSS MSM7. The type 7 Multiple Signal Message format for Japan’s QZSS system.
+		// _strings.push_back("RTCM1124 1");
+		_strings.push_back("RTCM1127 1");  //*BeiDou MSM7. The type 7 Multiple Signal Message format for China’s BeiDou system.
 		_strings.push_back("RTCM1137 1");  // NavIC MSM7. The type 7 Multiple Signal Message format for India’s NavIC system.
 
-		//	_strings.push_back("RTCM1147 1");  // IMES MSM7. The type 7 Multiple Signal Message format for South Korea’s IMES system.
-		//	_strings.push_back("RTCM1157 1");  // IRNSS MSM7. The type 7 Multiple Signal Message format for India’s IRNSS system.
-		//	_strings.push_back("RTCM1167 1");  // QZSS L6 MSM7. The type 7 Multiple Signal Message format for Japan’s QZSS L6 system.
-		//	_strings.push_back("RTCM1177 1");  // GPS MSM4. The type 4 Multiple Signal Message format for the USA’s GPS system.
-		//	_strings.push_back("RTCM1187 1");  // GLONASS MSM4. The type 4 Multiple Signal Message format for the Russian GLONASS system.
-		_strings.push_back("RTCM1084 1");
-		_strings.push_back("RTCM1094 1");
-		_strings.push_back("RTCM1114 1");
-		_strings.push_back("RTCM1124 1");
+		// _strings.push_back("RTCM1084 1");
+		// _strings.push_back("RTCM1094 1");
+		// _strings.push_back("RTCM1114 1");
+		
 
 		// CONFIG UNDULATION 0
 
@@ -327,7 +323,7 @@ public:
 
 	//////////////////////////////////////////////////////////////////////////
 	// Check queue for timeouts
-	void CheckForTimeouts()
+	void CheckForSendTimeouts()
 	{
 		if (_strings.empty())
 			return;

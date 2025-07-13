@@ -33,7 +33,7 @@ NOTE : Using ESP32 S3 allows sending to up to three RTK casters without blocking
   - [Wiring Diagram](#wiring-diagram) 
 - [Software](#software)  
   - [Features](#features)
-  - [Key Mappings](#key-mappings) 
+  - [Connect WiFi](#connect-wifi) 
   - [Doing your own mods](#modifying-the-code-and-doing-your-own-thing)
 - [Getting Credentails](#Getting-Credentails) 
   - [Usage](#usage)
@@ -60,7 +60,7 @@ If you purchase a PCB and housing, be sure to combine the PCB and housing into o
 			<b>Waveshare S3 3.5" Touch</b> (Standard Ver.) - US$25.99<br/> ESP32-S3 3.5inch Capacitive Touch Display Development Board Type B, 320×480 Pixels, IPS Panel, 262K Color, Supports Wi-Fi and Bluetooth 5, ESP32 With Display <br/><a href="https://www.waveshare.com/esp32-s3-zero.htm?&aff_id=117711">[Buy with my referral link]</a>
 		</td>
 		<td>
-			<img src="Photos/WS-s3-touch-lcd-3.5b.jpg" Height='80px'/>
+			<img src="Photos/WS-s3-touch-lcd-3.5b.jpg" Width='110px'/>
 		</td>
 	</tr>
 	<tr>
@@ -68,7 +68,7 @@ If you purchase a PCB and housing, be sure to combine the PCB and housing into o
 			<b>**UM980 with antenna**</b> - US$180.00<br/> Witte Intelligent WTRTK-982 high-precision positioning and orientation module. I got it from AliExpress for about US$180.00 <br/>[Not affiliate link] https://www.aliexpress.com/item/1005009184512773.html
 		</td>
 		<td>
-			<img src="Photos/UM980_Antenna.png" Height='70px'/>
+			<img src="Photos/UM980_Antenna.png" Width='130px'/>
 		</td>
 	</tr>
 	<tr>
@@ -76,18 +76,18 @@ If you purchase a PCB and housing, be sure to combine the PCB and housing into o
 			<b>Fan</b> - US$5.00.<br/>5V Radial fan 3101. Radial fans are quieter. Ball bearing ones are best. I used<br/> https://vi.aliexpress.com/item/1005007887849652.html
 		</td>
 		<td>
-			<img src="Photos/Fan.png" Height='70px' />
+			<img src="Photos/Fan.png" Width='70px' />
 		</td>
 	</tr>
 </table>
 
 
 
-[PCB and 3D files can be found here]("https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Hardware)
+[PCB and 3D files can be found here](NOT READY)
 
 Use the Gerber files for the PCB and the STEP files for the housing. I'd recommend printing the housing in PETG or ABS if the housing is likely to get above 30°C. Otherwise PLA is fine.
 
-[CAD model for the housing can be found here](https://cad.onshape.com/documents/74fb209b99d44f491024cad5/w/d695f66a36f4f125a0ac2fbd/e/87e432215d8df56d6e5c41c9?renderMode=0&uiState=680d5e0b9650f900c65faf0c)
+[CAD model for the housing can be found here](NOT READY)
 
 
 ## Wiring Diagram
@@ -177,81 +177,71 @@ WARNING :  Do not run without real credentials or your IP may be blocked!! Set t
 
 8. Review the status and logs through the web interface (http://x.x.x.x/i)
 
-### Important
-
-The T-Display-S3 will turn off it's display after about 30 seconds. This is OK, just press either button to turn it on again.
-
 ### Display
 
-The display has several screens you can toggle through them by pressing one of the buttons.
+The display has several screens you can toggle through them by swiping on the screen or tapping buttons.
 
-The top line of the display shows the following
+The top line of the Home and settings display shows the following
 
 | Type | Usage | 
 | --- | --- | 
-| / | Rotating animation to show main loop is running |
-| Title | Title of the page currently displayed |
-| X | Connection state of RTK Server 3 |
-| X | Connection state of RTK Server 2 |
-| X | Connection state of RTK Server 1 |
-| X | Connection state of WIFI |
-| X | Connection State to UM98x |
+| 🔋 | Battery percentage |
+| Time | Day and date |
+| 🛜 | Connection state of WIFI |
+| 🛰️ | Connection State to UM98x |
+| S1 | Connection state of RTK Server 1 |
+| S2 | Connection state of RTK Server 2 |
+| S3 | Connection state of RTK Server 3 |
 
 
-### General
+### Home
 <img src="Photos/ScreenShots/Screen1Home.JPG?raw=true" width="240" />
 
 | Title | Meaning | 
 | --- | --- | 
-| Wi-Fi | Wifi IP address. | 
-| Version | Software version | 
-| Up time | How log it has been running. Max 76 days before the counter rolls over  | 
-| Speed | Now many times to process is being checked per second | 
+| Uptime | How long the system has been running. Rolls over every 76 days. | 
+| GPS | Connection details including the number of bytes and packets received. Also reconnect count. | 
+| WIFI | WiFi details. Check IP and host name  | 
+| Server | Details about the data sent to each RTK caster | 
 
-### GPS State
-<img src="https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/TTGO-Display-S3/S3-Screen-GPS.jpg?raw=true" width="300"/>
+### Setting
+<img src="Photos/ScreenShots/Screen2Settings.jpg?raw=true" width="240" />
+
 
 | Title | Meaning | 
 | --- | --- | 
-| Type | Type of GPS device. Queried at startup | 
-| Resets |  | 
-| Packets | How many packets have been received | 
-| Serial # | GPS module serial number | 
-| Firmware | GPS module firmware verison | 
+| Power | Show the power screen | 
+| System | Shows Flash, SD card and WiFi details | 
+| CPU Temperature | Graph of CPU Temperature in °C | 
+| Log | Review the system log | 
+| Brightness | Control the screen brightness. This resets after restart |
 
-### RTK Server
+### Power Page
 
-<img src="https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/TTGO-Display-S3/S3-Screen-RTK.jpg?raw=true" width="300"/>
-
-Only shows the state of the first two casters
+<img src="Photos/ScreenShots/Screen3Power.JPG?raw=true" width="240" />
 
 | Title | Meaning | 
 | --- | --- | 
-| State | Connection state | 
-| Reconnect | Number of time the connection was lost | 
-| Sends | Number of packets sent | 
-| μs | Microseconds per byte sent | 
+| Battery | Charge state and level. Check the battery is charging here | 
+| VBus | Which bus the device is powered from | 
+| Voltages | Voltages for bus and battery | 
+| CPU Temperature | Current CPU Temperature in °C | 
 
-### GPS Log
+### System
 
-<img src="https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/TTGO-Display-S3/S3-Screen-Log-GPS.jpg?raw=true" width="300"/>
+<img src="Photos/ScreenShots/Screen4IO.JPG?raw=true" width="240" />
+	
+SD Card, Flash and WiFi details
 
+### Temperature Graph
 
-### First RTK Caster Log
+<img src="Photos/ScreenShots/Screen5Temperature.JPG?raw=true" Width="240"/>
 
-<img src="https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/TTGO-Display-S3/S3-Screen-Log-C1.jpg?raw=true" width="300"/>
+### Log view
 
-### Second RTK Caster Log
+View the log and page up or down.
 
-<img src="https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/TTGO-Display-S3/S3-Screen-Log-C2.jpg?raw=true" width="300"/>
-
-### Third RTK Caster Log
-
-<img src="https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/TTGO-Display-S3/S3-Screen-Log-C3.jpg?raw=true" width="300"/>
-
-## TODO
-
-1. Make better looking STL
+<img src="Photos/ScreenShots/Screen6Log.JPG?raw=true" width="240" />
 
 ## License 
 This project is licensed under the GNU General Public License - see the [LICENSE](https://github.com/mctainsh/Esp32/blob/main/LICENSE)  file for details.

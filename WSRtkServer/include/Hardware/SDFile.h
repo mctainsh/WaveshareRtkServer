@@ -494,6 +494,8 @@ public:
 
 		if (!xSemaphoreTake(_mutexLog, portMAX_DELAY))
 			return;
+
+		// SD_MMC and Arduino File I/O do not throw exceptions, so try-catch is not needed.
 		if (_fsLog)
 		{
 			_fsLog.println(message);

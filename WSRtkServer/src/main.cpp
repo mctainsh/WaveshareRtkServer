@@ -75,6 +75,7 @@ void SlowLoop(unsigned long t);
 void setup()
 {
 	//_wifiManager.resetSettings();
+	esp_log_level_set("*", ESP_LOG_VERBOSE); // Set log level to INFO for all components
 
 	Serial.begin(115200); // Initialize serial communication for debugging
 	delay(100);			  // Wait for a short time to ensure the serial connection is established
@@ -87,7 +88,11 @@ void setup()
 	// Setup the serial buffer for the GPS port
 	Logf("GPS Buffer size %d", Serial2.setRxBufferSize(GPS_BUFFER_SIZE));
 
-	Logln("Enable WIFI");
+	// Record if WDT tripped
+	esp_reset_reason_t reason = esp_reset_reason();
+	Logf("Watch Dog Timer (WDT) RESET Reason : %d - %s", reason, ResetReasonText(reason)); // ESP_RST_TASK_WDT means task watchdog triggered
+
+	Logln("Enable WIFI Events");
 	SetupWiFiEvents();
 
 	// Check if the internal time chip is working
@@ -176,7 +181,7 @@ void loop()
 
 	// Log slow loops
 	auto delay = millis() - t;
-	if (delay > 500)
+	if (delay > 200)
 		Logf("Slow loop %d ms", delay);
 }
 
@@ -192,7 +197,7 @@ void FastLoop(unsigned long t, ConnectionState gpsState)
 		_display.RefreshRtk(i);
 	_lvCore.SetTitleTime(_handyTime.Format("%a %H:%M:%S"));
 
-	_swipePageHome.RefreshData(	t - _lastWiFiConnected );
+	_swipePageHome.RefreshData(t - _lastWiFiConnected);
 
 	// Check power management system
 	if (_pagePower != nullptr && _pagePower->Ready())
@@ -232,13 +237,19 @@ void SlowLoop(unsigned long t)
 	_loopPersSecondCount = 0;
 
 	// Update the loop performance counter
-	Serial.printf("%s Loop %d/s G:%" PRId64 " Free Heap:%d%% %.1f°C %s\n",
-				  _handyTime.LongString().c_str(),
-				  lps,
-				  _gpsParser.GetGpsBytesRec(),
-				  (int)(100.0 * free / total),
-				  temperature,
-				  WiFi.localIP().toString().c_str());
+	auto perf = StringPrintf(
+		"%s Loop %d/s G:%" PRId64 " Free Heap:%d%% %.1f°C %s N0:%" PRIu32 " N1:%" PRIu32 " N2:%" PRIu32,
+		_handyTime.LongString().c_str(),
+		lps,
+		_gpsParser.GetGpsBytesRec(),
+		(int)(100.0 * free / total),
+		temperature,
+		WiFi.localIP().toString().c_str(),
+		_ntripServer0.MaxLoopTime(),
+		_ntripServer1.MaxLoopTime(),
+		_ntripServer2.MaxLoopTime());
+	Serial.println(perf.c_str());
+	_sdFile.AppendLog(perf.c_str());
 
 	// Disable Access point mode
 	if (WiFi.getMode() != WIFI_STA && WiFi.status() == WL_CONNECTED)

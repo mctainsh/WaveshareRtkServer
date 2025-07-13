@@ -118,6 +118,8 @@ void NTRIPServer::TaskFunction()
 	Serial.printf("+++++ NTRIP Server %d Starting\r\n", _index);
 	while (true)
 	{
+		auto t = millis();
+
 		// Get the next item from the queue
 		QueueData *pItem = DequeueData();
 		if (pItem == nullptr)
@@ -132,12 +134,15 @@ void NTRIPServer::TaskFunction()
 		{
 			_lastStackCheck = millis();
 			_maxStackHeight = uxTaskGetStackHighWaterMark(NULL);
-			Serial.printf("%d) Stack %d\r\n", _index, _maxStackHeight);
+			//Serial.printf("%d) Stack %d\r\n", _index, _maxStackHeight);
+			
+			//Serial(StringPrintf("NTRIP %d Max Loop Time %dms", _index, _maxLoopTime));
 		}
 
-		// Wifi check interval
+		// Wifi check interval (30ms to here)
 		if (_client.connected())
 		{
+			// 35ms to here
 			ConnectedProcessing(pItem->getData(), pItem->getLength());
 		}
 		else
@@ -150,6 +155,11 @@ void NTRIPServer::TaskFunction()
 
 		// Delete the item
 		delete pItem;
+
+		// Record the loop time
+		unsigned long loopTime = millis() - t;
+		if (loopTime > _maxLoopTime)
+			_maxLoopTime = loopTime;
 	}
 }
 
@@ -352,7 +362,7 @@ bool NTRIPServer::Reconnect()
 
 	if (!WriteText(StringPrintf("SOURCE %s %s\r\n", _sPassword.c_str(), _sCredential.c_str()).c_str()))
 		return false;
-	if (!WriteText("Source-Agent: NTRIP UM98/ESP32_T_Display_S3\r\n"))
+	if (!WriteText("Source-Agent: NTRIP UM98/Waveshare3_5_Touch\r\n"))
 		return false;
 	if (!WriteText("STR: \r\n"))
 		return false;
@@ -488,4 +498,13 @@ QueueData *NTRIPServer::DequeueData()
 		xSemaphoreGive(_queMutex);
 	}
 	return nullptr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Get the maximum loop time and reset it
+unsigned long NTRIPServer::MaxLoopTime()
+{ 
+	auto n = _maxLoopTime;
+	_maxLoopTime = 0; // Reset the max loop time
+	return n; 
 }
