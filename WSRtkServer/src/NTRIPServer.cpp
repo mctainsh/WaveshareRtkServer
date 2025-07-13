@@ -137,6 +137,8 @@ void NTRIPServer::TaskFunction()
 			//Serial.printf("%d) Stack %d\r\n", _index, _maxStackHeight);
 			
 			//Serial(StringPrintf("NTRIP %d Max Loop Time %dms", _index, _maxLoopTime));
+			_maxLoopTime = _currentMaxLoopTime;
+			_currentMaxLoopTime = 0; // Reset the max loop time for the next loop
 		}
 
 		// Wifi check interval (30ms to here)
@@ -158,8 +160,8 @@ void NTRIPServer::TaskFunction()
 
 		// Record the loop time
 		unsigned long loopTime = millis() - t;
-		if (loopTime > _maxLoopTime)
-			_maxLoopTime = loopTime;
+		if (loopTime > _currentMaxLoopTime)
+			_currentMaxLoopTime = loopTime;
 	}
 }
 
@@ -498,13 +500,4 @@ QueueData *NTRIPServer::DequeueData()
 		xSemaphoreGive(_queMutex);
 	}
 	return nullptr;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Get the maximum loop time and reset it
-unsigned long NTRIPServer::MaxLoopTime()
-{ 
-	auto n = _maxLoopTime;
-	_maxLoopTime = 0; // Reset the max loop time
-	return n; 
 }

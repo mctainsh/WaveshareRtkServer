@@ -21,7 +21,6 @@ public:
 	bool EnqueueData(const byte *pBytes, int length);
 	std::vector<std::string> GetLogHistory();
 	const char *GetStatus() const;
-	unsigned long MaxLoopTime();
 
 	inline const int GetIndex() const { return _index; }
 	inline int GetReconnects() const { return _reconnects; }
@@ -37,6 +36,7 @@ public:
 	inline unsigned long GetTotalTimeouts() const { return _totalTimeouts; }
 	inline bool IsEnabled() const { return _status != ConnectionState::Disabled; }
 	inline ConnectionState ConState() const { return _status; }
+	inline unsigned long MaxLoopTime() const { return _maxLoopTime; }
 	void TaskFunction();
 
 private:
@@ -59,6 +59,7 @@ private:
 	int _consecutiveTimeouts = 0;						// Number of consecutive timeouts
 	bool _forceReconnect = false;						// Force a reconnect on next loop if setting have changed
 	unsigned long _maxLoopTime;							// Max time the processing of the loop took
+	unsigned long _currentMaxLoopTime;							// Max time the processing of the loop took (Currently being built)
 
 	std::string _sAddress;
 	int _port;
