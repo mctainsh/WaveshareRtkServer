@@ -69,34 +69,38 @@ public:
 
 		_strings.push_back("CONFIG UNDULATION 0"); // Disable undulation
 		_strings.push_back("RTCM1005 30");		   // Base station antenna reference point (ARP) coordinates
-		// _strings.push_back("RTCM1006 1");
-		// _strings.push_back("RTCM1007 1");
-		// _strings.push_back("RTCM1013 1");
-		// _strings.push_back("RTCM1019 1");
-		// _strings.push_back("RTCM1020 1");
-		// _strings.push_back("RTCM1042 1");
-		// _strings.push_back("RTCM1044 1");
-		// _strings.push_back("RTCM1045 1");
-		// _strings.push_back("RTCM1046 1");
-
+		_strings.push_back("RTCM1006 1");
+		_strings.push_back("RTCM1007 1");
+		_strings.push_back("RTCM1013 1");
+		_strings.push_back("RTCM1019 1");
+		_strings.push_back("RTCM1020 1");
 		_strings.push_back("RTCM1033 30"); // Receiver and antenna description
-		_strings.push_back("RTCM1077 1");  //*GPS MSM7. The type 7 Multiple Signal Message format for the USA’s GPS system, popular.
-		_strings.push_back("RTCM1087 1");  //*GLONASS MSM7. The type 7 Multiple Signal Message format for the Russian GLONASS system.
-		_strings.push_back("RTCM1097 1");  //*Galileo MSM7. The type 7 Multiple Signal Message format for Europe’s Galileo system.
-		_strings.push_back("RTCM1117 1");  //*QZSS MSM7. The type 7 Multiple Signal Message format for Japan’s QZSS system.
+		_strings.push_back("RTCM1042 1");
+		_strings.push_back("RTCM1044 1");
+		_strings.push_back("RTCM1045 1");
+		_strings.push_back("RTCM1046 1");
+
+		_strings.push_back("RTCM1077 1"); //*GPS MSM7. The type 7 Multiple Signal Message format for the USA’s GPS system, popular.
+		_strings.push_back("RTCM1087 1"); //*GLONASS MSM7. The type 7 Multiple Signal Message format for the Russian GLONASS system.
+		_strings.push_back("RTCM1097 1"); //*Galileo MSM7. The type 7 Multiple Signal Message format for Europe’s Galileo system.
+		_strings.push_back("RTCM1117 1"); //*QZSS MSM7. The type 7 Multiple Signal Message format for Japan’s QZSS system.
 		// _strings.push_back("RTCM1124 1");
-		_strings.push_back("RTCM1127 1");  //*BeiDou MSM7. The type 7 Multiple Signal Message format for China’s BeiDou system.
-		_strings.push_back("RTCM1137 1");  // NavIC MSM7. The type 7 Multiple Signal Message format for India’s NavIC system.
+		_strings.push_back("RTCM1127 1"); //*BeiDou MSM7. The type 7 Multiple Signal Message format for China’s BeiDou system.
+		_strings.push_back("RTCM1137 1"); // NavIC MSM7. The type 7 Multiple Signal Message format for India’s NavIC system.
 
 		// _strings.push_back("RTCM1084 1");
 		// _strings.push_back("RTCM1094 1");
 		// _strings.push_back("RTCM1114 1");
-		
 
-		// CONFIG UNDULATION 0
-
-
-
+		// Recommendations from GNSS.STORE
+		// https://gnss.store/blog/post/optimizing-onocoy-quality-via-receiver-settings.html
+		_strings.push_back("CONFIG SBAS DISABLE");			  // SBAS is ignored by Onocoy. While it should be disabled on most receivers, Mosaic-X5's 62 channels mean SBAS occupies up to 9 unnecessarily. Use:
+		_strings.push_back("CONFIG MMP ENABLE");			  // Multipath Mitigation
+		//_strings.push_back("CONFIG RTCMCLOCKOFFSET DISABLE"); // Disabling this slightly improves measurement quality on UM980:
+		_strings.push_back("MASK 0");						  // Only satellites above 10° are considered in scoring. Lower masks can increase rewards. For other receivers:
+		_strings.push_back("MASK RTCMCN0 32");				  // Signals with SNR below 34 are excluded from scoring. Setting SNR mask to 32+ may improve results.
+		_strings.push_back("MASK RTCMCN0 36 GLO");			  // To improve GLONASS performance on UM980:
+		_strings.push_back("CONFIG PPS ENABLE GPS POSITIVE 100000 1000 0 0");
 
 		// Setup base station mode
 		if (_baseLocation.empty())

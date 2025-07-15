@@ -77,13 +77,6 @@ void WebPortal::OnConnected()
 	// 	delay(250);
 	// }
 
-	// Start the log if not already started
-	if (!_sdFile.LogStarted())
-	{
-		auto logCopy = CopyMainLog();
-		_sdFile.StartLogFile(&logCopy);
-	}
-
 	// Setup the MDNS responder
 	// .. This will allow us to access the server using http://RtkServer.local
 	Logln("MDNS Read");
@@ -353,6 +346,7 @@ void ServerStatsHtml(NTRIPServer &server, WebPageWrapper &p)
 	p.TableRow(3, "Packets sent", server.GetPacketsSent());
 	p.TableRow(3, "Queue overflows", server.GetQueueOverflows());
 	p.TableRow(3, "Send timeouts", server.GetTotalTimeouts());
+	p.TableRow(3, "Max loop time (ms)", server.MaxLoopTime());
 	p.TableRow(3, "Expired packets", server.GetExpiredPackets());
 	p.TableRow(
 		3, "Median Send (&micro;s)", _history.MedianSendTime(server.GetIndex()));

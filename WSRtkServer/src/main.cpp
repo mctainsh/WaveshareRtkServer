@@ -58,9 +58,7 @@ bool IsWifiConnected(unsigned long t);
 LVCore _lvCore;
 
 // Pages
-// SwipePageHome _systemPageGps;
 SwipePageHome _swipePageHome;
-//  SwipePagePower _swipePagePower;
 SwipePageSettings _swipePageSettings;
 
 PageIO *_pageIO = nullptr;
@@ -95,19 +93,11 @@ void setup()
 	Logln("Enable WIFI Events");
 	SetupWiFiEvents();
 
-	// Check if the internal time chip is working
-	_handyTime.Setup(); // Setup the time functions
-
-	// Setup the SD Card
+	// Setup the SD Card (Must call before the HandyTime setup)
 	_sdFile.Setup();
 
-	// If we have time, start the logging
-	if (_handyTime.IsTimeSet())
-	{
-		Logln("Start logging early");
-		auto logCopy = CopyMainLog();
-		_sdFile.StartLogFile(&logCopy);
-	}
+	// Check if the internal time chip is working
+	_handyTime.Setup(); // Setup the time functions
 
 	// Verify file IO (This can take up tpo 60s is SPIFFs not initialised)
 	Logln("Setup SPIFFS");

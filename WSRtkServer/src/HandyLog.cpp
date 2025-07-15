@@ -11,6 +11,8 @@ std::vector<std::string> _mainLog;
 static SemaphoreHandle_t _serialMutex;
 extern SDFile _sdFile;
 
+bool _logToSdStarted = false; // Flag to indicate if we have started logging to SD card
+
 //////////////////////////////////////////////////////////////////////////
 // Setup the logging stuff
 void SetupLog()
@@ -53,20 +55,20 @@ const std::string Uptime(unsigned long millis)
 }
 const std::string UptimeDMS(unsigned long millis)
 {
-	uint32_t t = millis / 1000;					   // Seconds
-	uint32_t r = t % 60;						   // Remainder (Seconds)
-	std::string uptime = StringPrintf(":%02d", r); 
+	uint32_t t = millis / 1000; // Seconds
+	uint32_t r = t % 60;		// Remainder (Seconds)
+	std::string uptime = StringPrintf(":%02d", r);
 
 	t = (t - r) / 60; // Minutes
 	r = t % 60;
 	uptime = StringPrintf(":%02d", r) + uptime;
 
 	t = (t - r) / 60; // Hours
-	r = t % 24;	
+	r = t % 24;
 	uptime = StringPrintf("%02d", r) + uptime;
 
 	t = (t - r) / 24; // Days
-	if( t < 1 )
+	if (t < 1)
 		return uptime; // No days
 	uptime = StringPrintf("%d days ", t) + uptime;
 	return uptime;
@@ -80,6 +82,20 @@ std::string Logln(const char *msg, bool timePrefix)
 	Serial.print(s.c_str());
 	Serial.print("\r\n");
 #endif
+
+	// Are we ready to write to SD card?
+	if (!_logToSdStarted)
+	{
+		if (!_handyTime.IsTimeSet())
+			return s;
+		_logToSdStarted = true; // Set the flag to indicate we started logging
+
+		Serial.println("Start logging to SD card");
+		auto logCopy = CopyMainLog();
+		_sdFile.StartLogFile(&logCopy);
+	}
+
+	// All startup complete. Start writing to the SD card
 	_sdFile.AppendLog(s.c_str());
 	return s;
 }

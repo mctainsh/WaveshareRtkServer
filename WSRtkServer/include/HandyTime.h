@@ -65,7 +65,7 @@ public:
 		Logf("Read %d-%02d-%02d %02d:%02d", datetime.getYear(), datetime.getMonth(), datetime.getDay(), datetime.getHour(), datetime.getMinute());
 
 		// If the RTC is not set, we will set it to a default value
-		if (datetime.getYear() < 1)
+		if (datetime.getYear() < 2020)
 		{
 			Logln("[ERROR]: RTC is not set, setting to default time");
 			return;
@@ -142,13 +142,20 @@ public:
 			sntp_set_time_sync_notification_cb(HandyTime::OnTimeSyncCallback);
 
 			// Request a new time sync
-			Logln(StringPrintf("Sync NTP time (%d)", _gmtOffset_sec).c_str(), false);
+			auto msg = StringPrintf("Sync NTP time (%d)", _gmtOffset_sec);
+			Serial.println(msg.c_str());
+			Logln(msg.c_str(), false);
 			configTime(_gmtOffset_sec, _daylightOffset_sec, "pool.ntp.org", "time.nist.gov", "time.google.com");
 		}
 
 		// Try to get the local time
 		if (getLocalTime(info))
+		{
+			// Do we have the first good time?
+			if (!_rtcInitialized && info->tm_year > 120)
+				_rtcInitialized = true; // Set RTC initialized flag if we have a valid time
 			return true;
+		}
 
 		// If we failed to get the local time, try again after a short delay
 		// .. program runs real slow here

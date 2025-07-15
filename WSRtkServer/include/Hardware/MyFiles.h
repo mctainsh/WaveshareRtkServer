@@ -29,9 +29,9 @@ public:
 		_mutex = xSemaphoreCreateMutex();
 		_mutexLog = xSemaphoreCreateMutex();
 		if (_mutex == NULL)
-			Logln("*** ERROR : Failed to create flash FILE mutex\n");
+			Logln("*** FLASH ERROR : Failed to create flash FILE mutex\n");
 		else
-			Logln("File Mutex Created");
+			Logln("Flash : File Mutex Created");
 
 		// Check if the file system is mounted
 		if (SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED))
@@ -42,7 +42,7 @@ public:
 		}
 		else
 		{
-			Logln("*** ERROR : SPIFFS Mount Failed");
+			Logln("*** FLASH ERROR : SPIFFS Mount Failed");
 		}
 	}
 
@@ -234,32 +234,6 @@ public:
 			return std::string();
 		}
 	}
-
-	// ////////////////////////////////////////////////////////////////////////////////
-	// /// @brief Save the string to the file system.
-	// void AppendLog(const char *message)
-	// {
-	// 	if (_logLength < 0)
-	// 		return;
-
-	// 	_logLength += strlen(message);
-
-	// 	if (_logLength > 100000)
-	// 	{
-	// 		std::vector<std::string> logHeader;
-	// 		logHeader.push_back(StringPrintf("***** Rolling over from log file, length %s", _fsLog.path()));
-	// 		StartLogFile(&logHeader);
-	// 	}
-
-	// 	if (!xSemaphoreTake(_mutexLog, portMAX_DELAY))
-	// 		return;
-	// 	if (_fsLog)
-	// 	{
-	// 		_fsLog.println(message);
-	// 		_fsLog.flush();
-	// 	}
-	// 	xSemaphoreGive(_mutexLog);
-	// }
 
 	////////////////////////////////////////////////////////////////////////////////
 	/// @brief Close the log file if it is open.

@@ -88,8 +88,7 @@ public:
 		// ReadFile(SD_MMC, "/foo.txt");
 
 		TestFileIO(SD_MMC, "/test.txt");
-		Logf("Total space: %lluMB", SD_MMC.totalBytes() / (1024 * 1024));
-		Logf("Used space: %lluMB", SD_MMC.usedBytes() / (1024 * 1024));
+		Logf("SD Card used space: %lluMB of %lluMB", SD_MMC.usedBytes() / (1024 * 1024), SD_MMC.totalBytes() / (1024 * 1024));
 	}
 
 	// ////////////////////////////////////////////////////////////////////////////////
@@ -400,6 +399,8 @@ public:
 	/// @brief Start a new logging file or open the existing one
 	void StartLogFile(std::vector<std::string> *pMainLog)
 	{
+		Serial.println("StartLogFile");
+
 		if (!xSemaphoreTake(_mutexLog, portMAX_DELAY))
 			return;
 
@@ -407,6 +408,7 @@ public:
 		// Open the current file if already exists
 		if (_fsLog)
 		{
+			Serial.println("Closing file");
 			_fsLog.println("**** CLOSING EXISTING FILE FOR ROLLOVER ****");
 			_fsLog.close(); // Close the existing log file
 		}
@@ -428,12 +430,11 @@ public:
 		size_t totalFree = SD_MMC.totalBytes() - SD_MMC.usedBytes();
 		for (const auto &file : files)
 		{
-			if( filesToRemove > 0)
+			if (filesToRemove > 0)
 			{
 				filesToRemove--;
-				
 			}
-			else 
+			else
 			{
 				if (totalFree > 1024 * 1024) // Keep at least 1MB free
 					break;

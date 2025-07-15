@@ -18,7 +18,11 @@
 		"QSPI",
 		"Reconne",
 		"robtillaart",
-		"SNAPPABLE"
+		"RTCMCLOCKOFFSET",
+		"RTCMCN",
+		"SBAS",
+		"SNAPPABLE",
+		"sntp"
 	],
 	"files.associations": {
 		"new": "cpp",
