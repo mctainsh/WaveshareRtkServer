@@ -15,12 +15,11 @@
 class MyFiles
 {
 	int _logLength = -1;		 // Length of the log file
-	fs::File _fsLog;			 // Log file
+	//fs::File _fsLog;			 // Log file
 	SemaphoreHandle_t _mutexLog; // Thread safe access to writing logs
 	SemaphoreHandle_t _mutex;	 // Thread safe access
 	bool _flashOk = false;		 // Flash system access working
 public:
-
 	///////////////////////////////////////////////////////////////////////////
 	// Setup the file system
 	void Setup()
@@ -92,7 +91,6 @@ public:
 	/// @return A vector of fs::File objects sorted by their path.
 	std::vector<LogFileSummary> GetAllFilesSorted()
 	{
-		const char *logPath = _fsLog ? _fsLog.path() : "";
 		std::vector<LogFileSummary> files;
 		auto root = SPIFFS.open("/");
 		auto file = root.openNextFile();
@@ -105,7 +103,7 @@ public:
 								   { return strcmp(log.Path.c_str(), file.path()) == 0; });
 			if (it == files.end()) // Only add if not already in the list
 			{
-				files.push_back(LogFileSummary(file, strcmp(file.path(), logPath) == 0));
+				files.push_back(LogFileSummary(file, false));
 			}
 			file = root.openNextFile();
 		}
@@ -115,7 +113,6 @@ public:
 				  { return strcmp(a.Path.c_str(), b.Path.c_str()) < 0; });
 		return files;
 	}
-
 
 	////////////////////////////////////////////////////////////////////////////////
 	/// @brief Write a message to the file system.
@@ -235,14 +232,21 @@ public:
 		}
 	}
 
-	////////////////////////////////////////////////////////////////////////////////
-	/// @brief Close the log file if it is open.
-	void CloseLogFile()
-	{
-		if (_fsLog)
-		{
-			_fsLog.close();
-			_logLength = -1; // Reset the log length
-		}
-	}
+	// ////////////////////////////////////////////////////////////////////////////////
+	// /// @brief Close the log file if it is open.
+	// void CloseLogFile(const char *closeMessage)
+	// {
+	// 	if (_fsLog)
+	// 	{
+	// 		if (closeMessage)
+	// 			_fsLog.println(closeMessage);
+	// 		_fsLog.close();
+	// 		Serial.printf("Closing log file '%s'", _fsLog.path());
+	// 	}
+	// 	else
+	// 	{
+	// 		Serial.println("No log file to close");
+	// 	}
+	// 	_logLength = -1; // Reset the log length
+	// }
 };

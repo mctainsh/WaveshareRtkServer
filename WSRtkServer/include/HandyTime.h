@@ -7,11 +7,12 @@
 #include <time.h>
 #include <lvgl.h>	  // Add this include for lv_label_set_text
 #include <esp_sntp.h> // Include SNTP for time synchronization
+
 #include "Global.h"
 #include "HandyLog.h"
 #include "HandyString.h"
 
-#define TIME_SYNC_SHORT 60 * 1000		   // 2 minutes
+#define TIME_SYNC_SHORT 60 * 1000		   // 1 minute
 #define TIME_SYNC_LONG 12 * 60 * 60 * 1000 // 12 hours
 
 class HandyTime;
@@ -149,13 +150,9 @@ public:
 		}
 
 		// Try to get the local time
-		if (getLocalTime(info))
-		{
-			// Do we have the first good time?
-			if (!_rtcInitialized && info->tm_year > 120)
-				_rtcInitialized = true; // Set RTC initialized flag if we have a valid time
-			return true;
-		}
+		if (_rtcInitialized)
+			if (getLocalTime(info))
+				return true;
 
 		// If we failed to get the local time, try again after a short delay
 		// .. program runs real slow here
@@ -183,6 +180,10 @@ public:
 		_handyTime._rtc.setDateTime(info.tm_year + 1900, info.tm_mon + 1, info.tm_mday,
 									info.tm_hour, info.tm_min, info.tm_sec);
 		_handyTime._syncInterval = TIME_SYNC_LONG;
+
+		// Do we have the first good time?
+		//	if (!_rtcInitialized && info->tm_year > 120)
+		_handyTime._rtcInitialized = true; // Set RTC initialized flag if we have a valid time
 	}
 
 	///////////////////////////////////////////////////////////////////////////

@@ -94,13 +94,16 @@ public:
 
 		// Recommendations from GNSS.STORE
 		// https://gnss.store/blog/post/optimizing-onocoy-quality-via-receiver-settings.html
-		_strings.push_back("CONFIG SBAS DISABLE");			  // SBAS is ignored by Onocoy. While it should be disabled on most receivers, Mosaic-X5's 62 channels mean SBAS occupies up to 9 unnecessarily. Use:
-		_strings.push_back("CONFIG MMP ENABLE");			  // Multipath Mitigation
-		//_strings.push_back("CONFIG RTCMCLOCKOFFSET DISABLE"); // Disabling this slightly improves measurement quality on UM980:
-		_strings.push_back("MASK 0");						  // Only satellites above 10° are considered in scoring. Lower masks can increase rewards. For other receivers:
-		_strings.push_back("MASK RTCMCN0 32");				  // Signals with SNR below 34 are excluded from scoring. Setting SNR mask to 32+ may improve results.
-		_strings.push_back("MASK RTCMCN0 36 GLO");			  // To improve GLONASS performance on UM980:
+		_strings.push_back("CONFIG SBAS DISABLE"); // SBAS is ignored by Onocoy. While it should be disabled on most receivers, Mosaic-X5's 62 channels mean SBAS occupies up to 9 unnecessarily. Use:
+		_strings.push_back("CONFIG MMP ENABLE");   // Multipath Mitigation
+		_strings.push_back("MASK 0");			   // Only satellites above 10° are considered in scoring. Lower masks can increase rewards. For other receivers:
+		_strings.push_back("MASK RTCMCN0 32");	   // Signals with SNR below 34 are excluded from scoring. Setting SNR mask to 32+ may improve results.
+		_strings.push_back("MASK RTCMCN0 36 GLO"); // To improve GLONASS performance on UM980:
 		_strings.push_back("CONFIG PPS ENABLE GPS POSITIVE 100000 1000 0 0");
+		// This seems to be an issue on UM980
+		//_strings.push_back("CONFIG RTCMCLOCKOFFSET DISABLE"); // Disabling this slightly improves measurement quality on UM980:
+
+		//_strings.push_back("GPGSV 10"); // Satellite positions and signal strength
 
 		// Setup base station mode
 		if (_baseLocation.empty())
@@ -110,7 +113,7 @@ public:
 		// It is better to workout your exact location and set it here as latitude, longitude, height
 		//_strings.push_back("MODE BASE  latitude longitude height");
 
-		// TODO :Only ever save once to protect the flash
+		// TODO : Only ever save once to protect the flash
 		_strings.push_back("SAVECONFIG");
 #endif
 

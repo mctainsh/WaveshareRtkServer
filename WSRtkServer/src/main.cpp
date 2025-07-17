@@ -1,4 +1,7 @@
 #include <Arduino.h>
+#include <WiFiManager.h>  //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
+#include "esp_task_wdt.h" // Include for esp_task_wdt_delete
+
 #include "Global.h"
 #include "LV/LVCore.h"
 
@@ -12,8 +15,6 @@
 #include <LV/SwipePageSettings.h>
 
 #include "Hardware/PowerManagementSystem.h"
-
-#include <WiFiManager.h> //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
 
 #include "HandyLog.h"
 #include "HandyString.h"
@@ -72,8 +73,15 @@ void SlowLoop(unsigned long t);
 // It initializes the display, touch, and LVGL library
 void setup()
 {
+	perror("RTL Server - Starting");
+	perror(APP_VERSION);
+
 	//_wifiManager.resetSettings();
 	esp_log_level_set("*", ESP_LOG_VERBOSE); // Set log level to INFO for all components
+
+	// Disable the watchdog timer
+	esp_task_wdt_delete(NULL); // Delete the default task watchdog
+	esp_task_wdt_deinit();	   // Deinitialize the watchdog timer
 
 	Serial.begin(115200); // Initialize serial communication for debugging
 	delay(100);			  // Wait for a short time to ensure the serial connection is established
@@ -137,6 +145,11 @@ void setup()
 	Logln("Setup complete");
 	Serial.println(" ========================== Setup done ========================== ");
 	_webPortal.Setup();
+
+	// Start the watch dog timer
+	esp_task_wdt_init(120, true); // 60 seconds timeout, panic on timeout
+	esp_task_wdt_add(NULL);		  // Add the current task to the watchdog
+	esp_task_wdt_reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -212,6 +225,8 @@ void FastLoop(unsigned long t, ConnectionState gpsState)
 // This function is called every 10 seconds to handle slow tasks
 void SlowLoop(unsigned long t)
 {
+	esp_task_wdt_reset();
+
 	_slowLoopWaitTime = t;
 	//_swipePageHome.RefreshData();
 	_lvCore.UpdateWiFiIndicator();
@@ -361,4 +376,13 @@ bool IsWifiConnected(unsigned long t)
 	// _display.RefreshWiFiState();
 
 	return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// This function is called when the task watchdog timer is triggered
+extern "C" void esp_task_wdt_isr_user_handler(void)
+{
+	const char *msg = "⚠️ Task Watchdog Timer triggered!";
+	_sdFile.CloseLogFile(msg);
+	Serial.println(msg);
 }

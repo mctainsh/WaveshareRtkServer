@@ -400,6 +400,11 @@ public:
 	void StartLogFile(std::vector<std::string> *pMainLog)
 	{
 		Serial.println("StartLogFile");
+		if (!_isMounted)
+		{
+			Serial.println("SD_MMC not mounted");
+			return;
+		}
 
 		if (!xSemaphoreTake(_mutexLog, portMAX_DELAY))
 			return;
@@ -481,6 +486,9 @@ public:
 	/// @brief Save the string to the file system.
 	void AppendLog(const char *message)
 	{
+		if (!_isMounted)
+			return;
+
 		if (_logLength < 0)
 			return;
 
@@ -507,12 +515,21 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////
 	/// @brief Close the log file if it is open.
-	void CloseLogFile()
+	void CloseLogFile(const char *closeMessage)
 	{
+		if (!_isMounted)
+			return;
 		if (_fsLog)
 		{
+			if (closeMessage)
+				_fsLog.println(closeMessage);
 			_fsLog.close();
-			_logLength = -1; // Reset the log length
+			Serial.printf("Closing log file '%s'", _fsLog.path());
 		}
+		else
+		{
+			Serial.println("No log file to close");
+		}
+		_logLength = -1; // Reset the log length
 	}
 };

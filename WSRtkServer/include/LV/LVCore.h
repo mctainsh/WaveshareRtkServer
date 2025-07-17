@@ -250,8 +250,8 @@ public:
 		switch (state)
 		{
 		case ConnectionState::Unknown:
-			fg = lv_color_hex(0x505050);
-			bg = lv_color_hex(0xE0E0E0);
+			fg = lv_color_hex(0x0);
+			bg = lv_color_hex(0xFFFF00);
 			break;
 		case ConnectionState::Disconnected:
 			fg = lv_color_hex(0xFFFFFF);
@@ -262,8 +262,8 @@ public:
 			bg = lv_color_hex(0x00FF00);
 			break;
 		case ConnectionState::Disabled:
-			fg = lv_color_hex(0x0);
-			bg = lv_color_hex(0xFFFF00);
+			fg = lv_color_hex(0x505050);
+			bg = lv_color_hex(0xE0E0E0);
 			break;
 		}
 		lv_obj_set_style_bg_color(btn, bg, LV_PART_MAIN | LV_STATE_DEFAULT);
