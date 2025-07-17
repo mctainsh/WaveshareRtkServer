@@ -57,7 +57,7 @@ If you purchase a PCB and housing, be sure to combine the PCB and housing into o
 <table>
 	<tr>
 		<td width="70%">
-			<b>Waveshare S3 3.5" Touch</b> (Standard Ver.) - US$25.99<br/> ESP32-S3 3.5inch Capacitive Touch Display Development Board Type B, 320×480 Pixels, IPS Panel, 262K Color, Supports Wi-Fi and Bluetooth 5, ESP32 With Display <br/><a href="https://www.waveshare.com/esp32-s3-zero.htm?&aff_id=117711">[Buy with my referral link]</a>
+			<b>Waveshare S3 3.5" Touch</b> (Standard Ver.) - US$25.99<br/> ESP32-S3 3.5inch Capacitive Touch Display Development Board Type B, 320×480 Pixels, IPS Panel, 262K Color, Supports Wi-Fi and Bluetooth 5, ESP32 With Display <br/><a href="https://www.waveshare.com/esp32-s3-touch-lcd-3.5b.htm?&aff_id=117711">[Buy with my referral link]</a>
 		</td>
 		<td>
 			<img src="Photos/WS-s3-touch-lcd-3.5b.jpg" Width='110px'/>
