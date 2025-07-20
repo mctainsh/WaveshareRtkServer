@@ -6,44 +6,51 @@
 
 ## Upload the binary to the Waveshare ESP32 S3 3.5" Touch
 
-These instructions will walk you through the steps to install the firmware on the to 
+These instructions will walk you through the steps to install the firmware on the device. You can do this before connecting the GPS.
 
 ```
-If everything goes bad you can reset the device by uploading the original firmware at address 0x0.  The firmware can be downloaded from https://files.waveshare.com/wiki/ESP32-S3-Touch-LCD-3.5/ESP32-S3-Touch-LCD-3.5-Demo.zip The firmware bin can be found at '..\ESP32-S3-Touch-LCD-3.5-Demo\Firmware'
+NOTE : 
+
+If everything goes wrong you can factory reset the device by uploading the original firmware at address 0x0.  The firmware can be downloaded from https://files.waveshare.com/wiki/ESP32-S3-Touch-LCD-3.5/ESP32-S3-Touch-LCD-3.5-Demo.zip The firmware bin can be found at '..\ESP32-S3-Touch-LCD-3.5-Demo\Firmware'
 
 Also check out the Wiki 
 https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-3.5
 ```
 
-- Download the files from [Waveshare ESP32 S3 3.5" Touch](https://1drv.ms/f/c/85ac5a1466e8dffa/Qvrf6GYUWqwggIWYqgEAAAAAAQn6uUMdvsv8OQ). Ensure you load the one for your ESP32 and GPS receiver
+
+
+- Download the RTK Server files from [Waveshare ESP32 S3 3.5" Touch](https://1drv.ms/f/c/85ac5a1466e8dffa/Qvrf6GYUWqwggIWYqgEAAAAAAQn6uUMdvsv8OQ). 
 
 ## Method 1 (Easier)
 
 1) Open https://espressif.github.io/esp-launchpad/ which does not require anything to be downloaded to your computer.
 
-2) Select `Connect` the choose the device in the popup
+2) Select `Connect` the choose the device in the popup. If you cant connect, try holding down the boot button on the back of the device while tapping the reset button.
 
 3) Select `DIY`
 
-4) Add the files shown in the files and addresses table below
+4) Add the files shown in the files and addresses table below. Note for a fresh install from the factory you only need to add `firmware.bin` at address `0x10000`. IMPORTANT the address default to `0x1000` which is missing one `0`
 
 <table style='margin-left:100px;'>
-<tr><th>File</th><th>Address</th></tr>
-<tr><td>bootloader.bin</td><td class='r2'>0x0000</td></tr>
-<tr><td>partitions.bin</td><td class='r2'>0x8000</td></tr>
-<tr><td>boot_app0.bin</td><td class='r2'>0xE000</td></tr>
-<tr><td>firmware.bin/td><td class='r2'>0x10000</td></tr>
+<tr><th>File</th><th>Address</th><th>Required</th></tr>
+<tr><td>bootloader.bin</td><td class='r2'>0x0000</td><td>No</td></tr>
+<tr><td>partitions.bin</td><td class='r2'>0x8000</td><td>No</td></tr>
+<tr><td>boot_app0.bin</td><td class='r2'>0xE000</td><td>No</td></tr>
+<tr><td>firmware.bin<td class='r2'>0x10000</td><td>YES</td></tr>
 </table>
 
 5) Select `Program`
 
 6) Once upload completes. Wait 30 seconds thenselect `RESET`.
 
-7) The device will reboot. The first time it runs, it will format the flash memory. This can rake upto 3 minutes. (Please be patient).
+7) The device will reboot. The first time it runs, it will format the flash memory. This can rake up to 3 minutes. (Please be patient).
 
-8) Once startup is complete the seceen should look like
+8) Once startup is complete the screen should look like the following without the green buttons.
 
+	<img src="Photos/ScreenShots/StartupScreen.JPG?raw=true" width="200"/>
 
+9) Next go to the [WiFi setup - Here](README.md#connect-wifi)
+ 
 
 
 ## Method 2

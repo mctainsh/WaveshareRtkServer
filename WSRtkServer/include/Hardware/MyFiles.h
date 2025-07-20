@@ -22,7 +22,7 @@ class MyFiles
 public:
 	///////////////////////////////////////////////////////////////////////////
 	// Setup the file system
-	void Setup()
+	void SetupFlash()
 	{
 		// Setup mutex
 		_mutex = xSemaphoreCreateMutex();

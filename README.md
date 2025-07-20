@@ -19,11 +19,30 @@ The display also allow you to see at an instant if the system is connected and s
 	<img src="Photos/ScreenShots/Screen6Log.JPG?raw=true" width="100" />
 </div>
 
-[![IMAGE ALT TEXT HERE](https://github.com/mctainsh/Esp32/blob/main/WaveshareRtkServer/Photos/YouTube.png?raw=true)](https://www.youtube.com/watch?v=e3zAwOrCTnI)
+<br/>
 
-NOTE : Using ESP32 S3 allows sending to up to three RTK casters without blocking.
+[![IMAGE ALT TEXT HERE](Photos/YouTube.png?raw=true)](https://youtu.be/w79WLH-z_R0)
 
-<img src="Photos/Onocoy_Screen.png?raw=true" width="400" />
+<table>
+	<tr>
+		<td>
+<img src="Photos/WS35T_PCB1.png?raw=true" width="200" />			
+		</td>
+		<td>
+			<a href="Gerber_Waveshare-3.5-Touch-V01.zip">Gerber files can be found here</a>
+		</td>
+	</tr>
+</tr>
+	<tr>
+		<td>
+<img src="Photos/CAD.PNG?raw=true" width="200" />
+		</td>
+		<td>
+			<a href="https://cad.onshape.com/documents/1b53f87a885344615447e9f1/w/d29af1aa47ae2ab2ff71988b/e/8193115e5c7e18be8f22c924?renderMode=0&uiState=687d5ca10c467c402749ce32">STEP files for the housing can be found here</a>
+		</td>
+	</tr>
+</table>
+
 
 
 ## Table of Contents 

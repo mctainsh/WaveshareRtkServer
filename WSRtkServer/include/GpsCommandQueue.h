@@ -67,7 +67,6 @@ public:
 #else
 		//_strings.push_back("VERSION");	   // Used to determine device type
 
-		_strings.push_back("CONFIG UNDULATION 0"); // Disable undulation
 		_strings.push_back("RTCM1005 30");		   // Base station antenna reference point (ARP) coordinates
 		_strings.push_back("RTCM1006 1");
 		_strings.push_back("RTCM1007 1");
@@ -94,6 +93,7 @@ public:
 
 		// Recommendations from GNSS.STORE
 		// https://gnss.store/blog/post/optimizing-onocoy-quality-via-receiver-settings.html
+		_strings.push_back("CONFIG UNDULATION 0"); // Disable undulation
 		_strings.push_back("CONFIG SBAS DISABLE"); // SBAS is ignored by Onocoy. While it should be disabled on most receivers, Mosaic-X5's 62 channels mean SBAS occupies up to 9 unnecessarily. Use:
 		_strings.push_back("CONFIG MMP ENABLE");   // Multipath Mitigation
 		_strings.push_back("MASK 0");			   // Only satellites above 10° are considered in scoring. Lower masks can increase rewards. For other receivers:

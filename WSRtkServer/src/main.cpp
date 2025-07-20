@@ -80,8 +80,8 @@ void setup()
 	esp_log_level_set("*", ESP_LOG_VERBOSE); // Set log level to INFO for all components
 
 	// Disable the watchdog timer
-	esp_task_wdt_delete(NULL); // Delete the default task watchdog
-	esp_task_wdt_deinit();	   // Deinitialize the watchdog timer
+	//esp_task_wdt_delete(NULL); // Delete the default task watchdog
+	//esp_task_wdt_deinit();	   // Deinitialize the watchdog timer
 
 	Serial.begin(115200); // Initialize serial communication for debugging
 	delay(100);			  // Wait for a short time to ensure the serial connection is established
@@ -110,7 +110,7 @@ void setup()
 	// Verify file IO (This can take up tpo 60s is SPIFFs not initialised)
 	Logln("Setup SPIFFS");
 	// tft.println("This can take up to 60 seconds ...");
-	_myFiles.Setup();
+	_myFiles.SetupFlash();
 	_myFiles.LoadString(_baseLocation, BASE_LOCATION_FILENAME);
 	_handyTime.LoadTimezoneOffset(_myFiles.LoadString(TIMEZONE_MINUTES));
 
@@ -147,9 +147,9 @@ void setup()
 	_webPortal.Setup();
 
 	// Start the watch dog timer
-	esp_task_wdt_init(120, true); // 60 seconds timeout, panic on timeout
-	esp_task_wdt_add(NULL);		  // Add the current task to the watchdog
-	esp_task_wdt_reset();
+	//esp_task_wdt_init(20, true); // 120 seconds timeout, panic on timeout
+	//esp_task_wdt_add(NULL);		  // Add the current task to the watchdog
+	//esp_task_wdt_reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -225,7 +225,7 @@ void FastLoop(unsigned long t, ConnectionState gpsState)
 // This function is called every 10 seconds to handle slow tasks
 void SlowLoop(unsigned long t)
 {
-	esp_task_wdt_reset();
+	//esp_task_wdt_reset();
 
 	_slowLoopWaitTime = t;
 	//_swipePageHome.RefreshData();
@@ -243,7 +243,7 @@ void SlowLoop(unsigned long t)
 
 	// Update the loop performance counter
 	auto perf = StringPrintf(
-		"%s Loop %d/s G:%" PRId64 " Free Heap:%d%% %.1f°C %s N0:%" PRIu32 " N1:%" PRIu32 " N2:%" PRIu32,
+		"%s Loop %d/s G:%" PRId64 " Free Heap:%d%% %.1fC %s N0:%" PRIu32 " N1:%" PRIu32 " N2:%" PRIu32,
 		_handyTime.LongString().c_str(),
 		lps,
 		_gpsParser.GetGpsBytesRec(),
@@ -382,7 +382,7 @@ bool IsWifiConnected(unsigned long t)
 // This function is called when the task watchdog timer is triggered
 extern "C" void esp_task_wdt_isr_user_handler(void)
 {
-	const char *msg = "⚠️ Task Watchdog Timer triggered!";
+	const char *msg = "Task Watchdog Timer triggered!";
 	_sdFile.CloseLogFile(msg);
 	Serial.println(msg);
 }

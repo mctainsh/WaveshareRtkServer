@@ -75,17 +75,6 @@ public:
 		Logf("SD_MMC Card Size: %lluMB", _cardSize / (1024 * 1024));
 
 		CreateDir(SD_MMC, "/logs");
-		// ListDir(SD_MMC, "/", 0);
-		// CreateDir(SD_MMC, "/mydir");
-		// ListDir(SD_MMC, "/", 0);
-		// RemoveDir(SD_MMC, "/mydir");
-		// ListDir(SD_MMC, "/", 2);
-		// WriteFile(SD_MMC, "/hello.txt", "Hello ");
-		// AppendFile(SD_MMC, "/hello.txt", "World!");
-		// ReadFile(SD_MMC, "/hello.txt");
-		// DeleteFile(SD_MMC, "/foo.txt");
-		// RenameFile(SD_MMC, "/hello.txt", "/foo.txt");
-		// ReadFile(SD_MMC, "/foo.txt");
 
 		TestFileIO(SD_MMC, "/test.txt");
 		Logf("SD Card used space: %lluMB of %lluMB", SD_MMC.usedBytes() / (1024 * 1024), SD_MMC.totalBytes() / (1024 * 1024));
@@ -531,5 +520,6 @@ public:
 			Serial.println("No log file to close");
 		}
 		_logLength = -1; // Reset the log length
+		_isMounted = false; // Mark as not mounted
 	}
 };
