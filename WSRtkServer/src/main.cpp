@@ -80,8 +80,8 @@ void setup()
 	esp_log_level_set("*", ESP_LOG_VERBOSE); // Set log level to INFO for all components
 
 	// Disable the watchdog timer
-	//esp_task_wdt_delete(NULL); // Delete the default task watchdog
-	//esp_task_wdt_deinit();	   // Deinitialize the watchdog timer
+	esp_task_wdt_delete(NULL); // Delete the default task watchdog
+	esp_task_wdt_deinit();	   // Deinitialize the watchdog timer
 
 	Serial.begin(115200); // Initialize serial communication for debugging
 	delay(100);			  // Wait for a short time to ensure the serial connection is established
@@ -147,9 +147,9 @@ void setup()
 	_webPortal.Setup();
 
 	// Start the watch dog timer
-	//esp_task_wdt_init(20, true); // 120 seconds timeout, panic on timeout
-	//esp_task_wdt_add(NULL);		  // Add the current task to the watchdog
-	//esp_task_wdt_reset();
+	esp_task_wdt_init(120, true); // 120 seconds timeout, panic on timeout
+	esp_task_wdt_add(NULL);		  // Add the current task to the watchdog
+	esp_task_wdt_reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -225,7 +225,7 @@ void FastLoop(unsigned long t, ConnectionState gpsState)
 // This function is called every 10 seconds to handle slow tasks
 void SlowLoop(unsigned long t)
 {
-	//esp_task_wdt_reset();
+	esp_task_wdt_reset();
 
 	_slowLoopWaitTime = t;
 	//_swipePageHome.RefreshData();
