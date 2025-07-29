@@ -27,7 +27,7 @@ public:
 	}
 
 	///////////////////////////////////////////////////////////////////////////////
-	/// @brief Confirm the GPS Reset
+	/// @brief Show the settings page
 	void ShowHtml()
 	{
 		Logln("ShowSettingsHtml");

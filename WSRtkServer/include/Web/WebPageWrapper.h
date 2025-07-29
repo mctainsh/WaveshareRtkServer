@@ -217,8 +217,8 @@ public:
 		)rawliteral", redirectUrl);
 
 		client.flush();
-		_sdFile.CloseLogFile("*** RESTART DEVICE ***"); 
 		delay(1000);
+		_sdFile.CloseLogFile("*** RESTART DEVICE ***"); 
 		ESP.restart();
 	}
 };
