@@ -67,17 +67,20 @@ public:
 #else
 		//_strings.push_back("VERSION");	   // Used to determine device type
 
-		_strings.push_back("RTCM1005 30");		   // Base station antenna reference point (ARP) coordinates
-		_strings.push_back("RTCM1006 1");
-		_strings.push_back("RTCM1007 1");
-		_strings.push_back("RTCM1013 1");
-		_strings.push_back("RTCM1019 1");
-		_strings.push_back("RTCM1020 1");
+		_strings.push_back("RTCM1005 30"); // Base station antenna reference point (ARP) coordinates
 		_strings.push_back("RTCM1033 30"); // Receiver and antenna description
-		_strings.push_back("RTCM1042 1");
-		_strings.push_back("RTCM1044 1");
-		_strings.push_back("RTCM1045 1");
-		_strings.push_back("RTCM1046 1");
+
+		// Adding the following messages will push the latency to over a second
+		// TODO : Check which message causes this (Probably due to send buffer size issue?)
+		// _strings.push_back("RTCM1006 1");
+		// _strings.push_back("RTCM1007 1");
+		// _strings.push_back("RTCM1013 1");
+		// _strings.push_back("RTCM1019 1");
+		// _strings.push_back("RTCM1020 1");
+		// _strings.push_back("RTCM1042 1");
+		// _strings.push_back("RTCM1044 1");
+		// _strings.push_back("RTCM1045 1");
+		// _strings.push_back("RTCM1046 1");
 
 		_strings.push_back("RTCM1077 1"); //*GPS MSM7. The type 7 Multiple Signal Message format for the USA’s GPS system, popular.
 		_strings.push_back("RTCM1087 1"); //*GLONASS MSM7. The type 7 Multiple Signal Message format for the Russian GLONASS system.
